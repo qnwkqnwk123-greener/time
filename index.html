@@ -2,109 +2,124 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>상용 서비스 전환 플래너 ✨</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>마이 파스텔 플래너 ✨</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+  /* 🎨 세련되고 귀여운 파스텔 톤 색상 변수 */
   :root {
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
+    --primary: #818cf8;       /* 소프트 인디고 */
+    --primary-hover: #6366f1;
     --border-color: #e2e8f0;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --success: #10b981;
-    --success-bg: #d1fae5;
+    --text-main: #334155;
+    --text-muted: #94a3b8;
+    --success: #34d399;       /* 민트 그린 */
+    --success-bg: #ecfdf5;
     --done-bg: #fdf2f8;
-    --done-color: #ec4899;
-  }
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text-main);
-    background: #f8fafc;
-    padding: 20px;
-    margin: 0;
+    --done-color: #f472b6;    /* 파스텔 핑크 */
+    --bg-color: #f8fafc;
+    --shadow: 0 10px 15px -3px rgba(129, 140, 248, 0.1), 0 4px 6px -2px rgba(129, 140, 248, 0.05);
   }
   
+  * { box-sizing: border-box; font-family: 'Pretendard', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  body { color: var(--text-main); background: var(--bg-color); padding: 15px; margin: 0; line-height: 1.5; }
+  
+  /* 둥글둥글한 버튼 스타일 */
   button {
-    padding: 8px 16px;
-    border: 1px solid var(--border-color);
-    background: white;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 10px 16px; border: 1px solid var(--border-color); background: white; 
+    border-radius: 20px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 600;
   }
-  button:hover { background: #f1f5f9; }
-  .btn-primary { background: var(--primary); color: white; border: none; }
+  button:hover { background: #f1f5f9; transform: translateY(-1px); }
+  .btn-primary { background: var(--primary); color: white; border: none; box-shadow: 0 4px 6px rgba(129, 140, 248, 0.3); }
   .btn-primary:hover { background: var(--primary-hover); }
-  .btn-danger { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 8px 12px;}
+  .btn-danger { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 8px 12px; border-radius: 12px;}
   .hidden { display: none !important; }
 
-  /* 캘린더 뷰 */
-  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-  .day-name { text-align: center; font-weight: bold; color: var(--text-muted); padding-bottom: 10px; }
+  /* 📅 캘린더 뷰 (모바일 대응 Grid) */
+  .cal-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  @media (min-width: 600px) { .calendar-grid { gap: 10px; } }
+  .day-name { text-align: center; font-weight: bold; color: var(--text-muted); padding-bottom: 5px; font-size: 14px; }
   
   .cal-day {
-    padding: 10px; text-align: left; cursor: pointer; border-radius: 8px; font-size: 14px;
-    border: 1px solid var(--border-color); background: white; transition: all 0.2s; min-height: 100px;
-    display: flex; flex-direction: column; gap: 4px;
+    padding: 10px 5px; text-align: center; cursor: pointer; border-radius: 16px; font-size: 14px;
+    border: 1px solid var(--border-color); background: white; transition: all 0.2s; min-height: 80px;
+    display: flex; flex-direction: column; gap: 4px; align-items: center;
   }
-  .cal-day:hover { background: #eef2ff; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-  .cal-day.today { border: 2px solid var(--primary); background: #f8fafc; }
+  .cal-day:hover { background: #eef2ff; border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow); }
+  .cal-day.today { border: 2px solid var(--done-color); background: #fff1f2; }
   
-  .sun { color: #ef4444; font-weight: bold; }
-  .sat { color: #3b82f6; font-weight: bold; }
-  .holiday-text { color: #ef4444; font-size: 11px; font-weight: bold; background: #fee2e2; padding: 2px 4px; border-radius: 4px; }
-  .event-text { color: var(--primary); font-size: 11px; background: #e0e7ff; padding: 2px 4px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .priority-text { color: var(--success); font-size: 11px; background: var(--success-bg); padding: 2px 4px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sun { color: #f87171; font-weight: bold; }
+  .sat { color: #60a5fa; font-weight: bold; }
+  .holiday-text { color: #ef4444; font-size: 10px; font-weight: bold; background: #fee2e2; padding: 2px 4px; border-radius: 4px; }
+  .event-text { color: var(--primary); font-size: 10px; background: #e0e7ff; padding: 2px 4px; border-radius: 4px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .priority-text { color: var(--success); font-size: 10px; background: var(--success-bg); padding: 2px 4px; border-radius: 4px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
-  /* 플래너 뷰 */
-  .planner-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-  .kpi-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
-  .kpi-card { background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; text-align: center; }
-  .kpi-card h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--text-muted); font-weight: normal; }
-  .kpi-card .value { font-size: 24px; font-weight: bold; margin: 0; color: var(--text-main); }
+  /* 📝 플래너 뷰 레이아웃 (반응형 1단 -> 2단) */
+  .planner-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 20px; box-shadow: var(--shadow); gap: 10px; }
+  .kpi-board { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  @media (min-width: 768px) { .kpi-board { grid-template-columns: repeat(4, 1fr); } }
   
-  .planner-body { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-  @media (max-width: 900px) { .planner-body { grid-template-columns: 1fr; } }
+  .kpi-card { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 15px; text-align: center; box-shadow: var(--shadow); }
+  .kpi-card h3 { margin: 0 0 5px 0; font-size: 13px; color: var(--text-muted); font-weight: normal; }
+  .kpi-card .value { font-size: 22px; font-weight: bold; margin: 0; color: var(--text-main); }
   
-  .box-panel { background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-  .box-title { font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+  .planner-body { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  @media (min-width: 900px) { .planner-body { grid-template-columns: 2fr 1fr; } } /* PC에서는 2단 */
+  
+  .box-panel { background: white; border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+  .box-title { font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-bottom: 2px dashed var(--border-color); padding-bottom: 10px; gap: 10px; }
 
-  /* 타임테이블 설정 및 행 */
-  .time-settings { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--text-muted); }
-  .time-settings input { width: 50px; padding: 4px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; }
-  .time-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; gap: 10px; }
-  .time-label { width: 60px; font-size: 14px; font-weight: bold; color: var(--text-muted); text-align: center; }
-  .time-input { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; transition: all 0.2s; }
+  /* ⏳ 24시간 집중 타이머 영역 */
+  .timer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 15px; }
+  @media (max-width: 500px) { .timer-grid { grid-template-columns: repeat(4, 1fr); } }
+  .timer-chip { padding: 6px 0; font-size: 13px; border-radius: 10px; background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color); text-align: center; transition: all 0.2s; }
+  .timer-chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 8px rgba(129,140,248,0.4); transform: scale(1.05); }
+  .timer-chip.done { background: var(--success-bg); color: var(--success); text-decoration: line-through; border-color: #a7f3d0; }
+  
+  .timer-display { text-align: center; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); }
+  .timer-title { font-size: 14px; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+  .timer-time { font-size: 48px; font-weight: 800; color: var(--text-main); font-variant-numeric: tabular-nums; margin-bottom: 15px; letter-spacing: 2px; }
+  .timer-controls { display: flex; gap: 8px; justify-content: center; }
+
+  /* 🕒 타임테이블 */
+  .time-settings { display: flex; gap: 5px; align-items: center; font-size: 12px; color: var(--text-muted); }
+  .time-settings input { width: 45px; padding: 6px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center; }
+  
+  .time-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; gap: 8px; }
+  .time-label { width: 55px; font-size: 13px; font-weight: bold; color: var(--primary); text-align: center; flex-shrink: 0; }
+  .time-input { flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; outline: none; transition: all 0.2s; font-size: 14px; min-width: 0; }
+  .time-input:focus { border-color: var(--primary); background: #fbfbfe; }
   .time-input.done-input { background: var(--done-bg); color: #9ca3af; text-decoration: line-through; border-color: #fbcfe8; }
-  .status-btn { width: 85px; padding: 8px 0; font-size: 13px; border-radius: 20px; background: white; cursor: pointer; color: var(--text-muted); }
-  .status-btn.done { background: var(--done-color); color: white; border-color: var(--done-color); }
+  
+  .status-btn { width: 75px; padding: 10px 0; font-size: 12px; border-radius: 20px; background: #f1f5f9; color: var(--text-muted); flex-shrink: 0; border: none; }
+  .status-btn.done { background: var(--done-color); color: white; box-shadow: 0 4px 6px rgba(244, 114, 182, 0.3); }
 
   /* 우측 위젯들 */
   .priority-list, .finance-list { display: flex; flex-direction: column; gap: 10px; }
-  .priority-item input { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; }
+  .priority-item input, .finance-item select, .finance-item input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 12px; box-sizing: border-box; font-size: 14px; }
   
-  .finance-item { display: flex; gap: 8px; }
-  .finance-item select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; }
-  .finance-item input.desc { flex: 2; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; }
-  .finance-item input.amt { flex: 1; text-align: right; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; }
+  .finance-item { display: flex; gap: 6px; flex-wrap: wrap; }
+  @media (min-width: 400px) { .finance-item { flex-wrap: nowrap; } } /* 아주 좁을때만 줄바꿈 */
+  .finance-item select { flex: 1; min-width: 70px; }
+  .finance-item input.desc { flex: 2; min-width: 100px; }
+  .finance-item input.amt { flex: 1.5; text-align: right; min-width: 80px; }
   
-  .chart-container { position: relative; height: 180px; width: 100%; margin-bottom: 15px; }
-  .finance-chart-container { position: relative; height: 150px; width: 100%; margin-top: 15px; }
-  .growth-stats { display: flex; justify-content: space-around; margin-bottom: 15px; }
+  .chart-container, .finance-chart-container { position: relative; height: 180px; width: 100%; margin: 15px 0; }
+  
+  .growth-stats { display: flex; justify-content: space-around; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 12px; }
   .growth-stat-item { text-align: center; }
-  .growth-stat-item .label { font-size: 12px; color: var(--text-muted); }
+  .growth-stat-item .label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
   .growth-stat-item .val { font-size: 18px; font-weight: bold; }
-  .feedback-message { background: var(--success-bg); color: var(--success); padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; text-align: center; line-height: 1.4;}
+  
+  .feedback-message { background: var(--success-bg); color: var(--success); padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; text-align: center; }
 
+  /* 토스트 알림 */
   #toastContainer {
-    visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px;
-    padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%);
-    opacity: 0; transition: opacity 0.3s, visibility 0.3s;
+    visibility: hidden; min-width: 250px; background-color: rgba(51, 65, 85, 0.9); color: #fff; text-align: center; border-radius: 20px;
+    padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 40px; transform: translateX(-50%);
+    opacity: 0; transition: opacity 0.3s, visibility 0.3s; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   }
   #toastContainer.show { visibility: visible; opacity: 1; }
 </style>
@@ -113,13 +128,14 @@
 
   <div id="calendarView">
     <div class="cal-header">
-      <h2>📅 캘린더 요약 뷰 🍀</h2>
-      <div>
-        <button onclick="app.ui.changeMonth(-1)">◀ 이전 달</button>
-        <span id="currentMonthStr" style="margin: 0 15px; font-weight: bold; font-size: 18px;"></span>
-        <button onclick="app.ui.changeMonth(1)">다음 달 ▶</button>
+      <h2 style="margin:0;">📅 마이 파스텔 플래너 ✨</h2>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button onclick="app.ui.changeMonth(-1)">◀</button>
+        <span id="currentMonthStr" style="font-weight: 800; font-size: 18px; color: var(--primary);"></span>
+        <button onclick="app.ui.changeMonth(1)">▶</button>
       </div>
     </div>
+    
     <div class="calendar-grid">
       <div class="day-name sun">Sun</div><div class="day-name">Mon</div><div class="day-name">Tue</div>
       <div class="day-name">Wed</div><div class="day-name">Thu</div><div class="day-name">Fri</div>
@@ -129,39 +145,85 @@
   </div>
 
   <div id="plannerView" class="hidden">
-    <div style="margin-bottom: 20px;">
-      <button onclick="app.ui.showCalendar()">◀ 캘린더로 돌아가기 📆</button>
+    <div style="margin-bottom: 15px;">
+      <button onclick="app.ui.showCalendar()" style="background: white; color: var(--text-main);">🏠 캘린더로 돌아가기</button>
     </div>
     
     <div class="planner-header">
-      <h2 style="margin:0;" id="plannerTitle">📝 데일리 플래너</h2>
-      <div>
-        <button onclick="app.exportCSV()" style="margin-right: 8px;">📥 CSV 다운로드</button>
-        <button class="btn-primary" onclick="app.saveDailyData()">💾 현재 데이터 저장</button>
+      <h2 style="margin:0; color: var(--primary);" id="plannerTitle">📝 데일리 플래너</h2>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="app.exportCSV()">📥 CSV 다운</button>
+        <button class="btn-primary" onclick="app.saveDailyData()">💾 저장</button>
       </div>
     </div>
 
     <div class="kpi-board">
-      <div class="kpi-card"><h3>🔥 오늘의 달성률</h3><p class="value" id="kpiProgress">0%</p></div>
-      <div class="kpi-card"><h3>💸 총 지출액</h3><p class="value" id="kpiExpenditure">₩0</p></div>
-      <div class="kpi-card"><h3>☁️ 하늘 점수</h3><p class="value" id="kpiScore">0점</p></div>
-      <div class="kpi-card"><h3>🏆 알람 모드</h3><p class="value" style="color:var(--primary); font-size:18px;">활성화됨 🔔</p></div>
+      <div class="kpi-card"><h3>🔥 달성률</h3><p class="value" id="kpiProgress">0%</p></div>
+      <div class="kpi-card"><h3>💸 총 지출</h3><p class="value" id="kpiExpenditure">₩0</p></div>
+      <div class="kpi-card"><h3>☁️ 하늘 점수</h3><p class="value" id="kpiScore" style="color: var(--primary);">0점</p></div>
+      <div class="kpi-card"><h3>🔔 알람</h3><p class="value" style="color:var(--done-color); font-size:16px; margin-top:5px;">활성화됨</p></div>
     </div>
 
     <div class="planner-body">
-      <div class="box-panel">
-        <div class="box-title">
-          <span>🕒 유연한 타임테이블</span>
-          <div class="time-settings">
-            시작 <input type="number" id="timeStart" value="6" min="0" max="23"> 
-            종료 <input type="number" id="timeEnd" value="24" min="1" max="24">
-            <button onclick="app.ui.updateTimetableRange()" style="padding:4px 8px;">적용</button>
+      <div class="left-col">
+        
+        <div class="box-panel">
+          <h3 class="box-title">
+            <span>⏳ 24시간 집중 타이머 <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">(40분 집중/20분 휴식)</span></span>
+          </h3>
+          <div class="timer-grid" id="timerGrid">
+            </div>
+          <div class="timer-display">
+            <div class="timer-title" id="timerTitle">원하는 시간대를 선택해주세요 👆</div>
+            <div class="timer-time" id="timerTime">00:00</div>
+            <div class="timer-controls">
+              <button class="btn-primary" onclick="app.timer.start()">▶ 시작</button>
+              <button onclick="app.timer.pause()">⏸ 정지</button>
+              <button class="btn-danger" onclick="app.timer.reset()">⏹ 초기화</button>
+            </div>
           </div>
         </div>
-        <div id="timetableContainer"></div>
+
+        <div class="box-panel">
+          <div class="box-title">
+            <span>🕒 유연한 타임테이블</span>
+            <div class="time-settings">
+              시작 <input type="number" id="timeStart" value="6" min="0" max="23"> 
+              종료 <input type="number" id="timeEnd" value="24" min="1" max="24">
+              <button onclick="app.ui.updateTimetableRange()" style="padding:6px 10px;">적용</button>
+            </div>
+          </div>
+          <div id="timetableContainer"></div>
+        </div>
       </div>
 
       <div class="right-col">
+        <div class="box-panel">
+          <h3 class="box-title">🎯 핵심 우선순위 (Top 3)</h3>
+          <div class="priority-list">
+            <div class="priority-item"><input type="text" id="pri1" placeholder="🥇 1순위 목표" onchange="app.saveDailyData()"></div>
+            <div class="priority-item"><input type="text" id="pri2" placeholder="🥈 2순위 목표" onchange="app.saveDailyData()"></div>
+            <div class="priority-item"><input type="text" id="pri3" placeholder="🥉 3순위 목표" onchange="app.saveDailyData()"></div>
+          </div>
+        </div>
+
+        <div class="box-panel">
+          <h3 class="box-title">🎉 기념일 추가</h3>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="eventTitle" placeholder="예: 생일🎂" style="flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 12px;">
+            <button class="btn-primary" onclick="app.addEventToCurrentDate()">추가</button>
+          </div>
+        </div>
+
+        <div class="box-panel">
+          <h3 class="box-title">
+            💰 지출 내역
+            <button onclick="app.ui.addFinanceRow()">➕ 추가</button>
+          </h3>
+          <div class="finance-list" id="financeList"></div>
+          <div class="finance-chart-container"><canvas id="financeChart"></canvas></div>
+        </div>
+
         <div class="box-panel">
           <h3 class="box-title">📈 성장 리포트</h3>
           <div class="growth-stats">
@@ -171,32 +233,6 @@
           </div>
           <div class="chart-container"><canvas id="growthChart"></canvas></div>
           <div id="growthFeedback" class="feedback-message"></div>
-        </div>
-
-        <div class="box-panel">
-          <h3 class="box-title">🎯 핵심 우선순위 (Top 3)</h3>
-          <div class="priority-list" id="priorityList">
-            <div class="priority-item"><input type="text" id="pri1" placeholder="🥇 1순위 목표를 입력하세요" onchange="app.saveDailyData()"></div>
-            <div class="priority-item"><input type="text" id="pri2" placeholder="🥈 2순위 목표를 입력하세요" onchange="app.saveDailyData()"></div>
-            <div class="priority-item"><input type="text" id="pri3" placeholder="🥉 3순위 목표를 입력하세요" onchange="app.saveDailyData()"></div>
-          </div>
-        </div>
-
-        <div class="box-panel">
-          <h3 class="box-title">🎉 기념일/일정 추가</h3>
-          <div style="display: flex; gap: 8px;">
-            <input type="text" id="eventTitle" placeholder="예: 생일🎂" style="flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            <button class="btn-primary" onclick="app.addEventToCurrentDate()">추가</button>
-          </div>
-        </div>
-
-        <div class="box-panel">
-          <h3 class="box-title">
-            💰 지출 내역 (카테고리별)
-            <button onclick="app.ui.addFinanceRow()">➕ 추가</button>
-          </h3>
-          <div class="finance-list" id="financeList"></div>
-          <div class="finance-chart-container"><canvas id="financeChart"></canvas></div>
         </div>
       </div>
     </div>
@@ -214,19 +250,17 @@
     holidays: {},
     growthChartInstance: null,
     financeChartInstance: null,
-    alarmTriggered: {}, // 중복 알람 방지용 객체
+    alarmTriggered: {}, 
     
     init() {
       this.fetchHolidays(this.currentDate.getFullYear()).then(() => {
         this.ui.renderCalendar();
       });
 
-      // 브라우저 Notification 권한 요청 (진짜 푸시 알람)
       if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
         Notification.requestPermission();
       }
 
-      // 1분마다 타임테이블을 체크하여 알람 발생
       setInterval(() => this.checkAlarms(), 60000);
     },
 
@@ -243,7 +277,6 @@
       }
     },
 
-    // 매 분 실행되는 푸시 알람 핵심 로직
     checkAlarms() {
       if ("Notification" in window && Notification.permission === "granted") {
         const now = new Date();
@@ -254,13 +287,11 @@
         if (!todayData || !todayData.timetable || !todayData.timetable[currentHour]) return;
 
         const task = todayData.timetable[currentHour];
-        // 일정이 입력되어 있고, 아직 달성하지 않았으며, 이번 시간에 알람이 울린 적이 없다면
         if (task.text.trim() !== "" && !task.done && !this.alarmTriggered[todayStr + currentHour]) {
           new Notification("🔔 플래너 일정 알림", {
             body: `${currentHour}시 일정: "${task.text}" (달성 후 완료 체크해주세요!)`,
-            icon: "https://cdn-icons-png.flaticon.com/512/826/826165.png"
           });
-          this.alarmTriggered[todayStr + currentHour] = true; // 중복 방지
+          this.alarmTriggered[todayStr + currentHour] = true; 
         }
       }
     },
@@ -272,7 +303,8 @@
       this.events.push({ date: this.selectedDateStr, title: title });
       localStorage.setItem('appEvents', JSON.stringify(this.events));
       document.getElementById('eventTitle').value = '';
-      this.ui.showToast('일정이 추가되었습니다! 🎉');
+      this.ui.showToast('기념일이 귀엽게 추가되었습니다! 🎉');
+      this.ui.renderCalendar();
     },
 
     saveDailyData(showToast = true) {
@@ -297,15 +329,18 @@
         };
       });
 
-      // 달성률 계산 
       const plannedTasks = Object.values(timetableData).filter(t => t.text.trim() !== "");
       const completedTasks = plannedTasks.filter(t => t.done);
       const currentProgress = plannedTasks.length > 0 ? Math.round((completedTasks.length / plannedTasks.length) * 100) : 0;
+
+      // 기존 타이머 데이터 보존
+      const existingTimers = (this.dailyData[this.selectedDateStr] && this.dailyData[this.selectedDateStr].timers) || {};
 
       this.dailyData[this.selectedDateStr] = {
         priorities: [p1, p2, p3],
         timetable: timetableData,
         finances: finances,
+        timers: existingTimers,
         progress: currentProgress 
       };
       localStorage.setItem('appDailyData', JSON.stringify(this.dailyData));
@@ -315,25 +350,24 @@
       if(showToast) this.ui.showToast('데이터가 성공적으로 저장되었습니다. 💾');
     },
 
-    // CSV 내보내기 기능
     exportCSV() {
-      let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // 한글 깨짐 방지 BOM 추가
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
       csvContent += "Date,Progress(%),Total Expense,Priority 1,Priority 2,Priority 3\n";
       
       Object.keys(this.dailyData).sort().forEach(date => {
         const d = this.dailyData[date];
-        const totalExp = d.finances.reduce((sum, item) => sum + item.amount, 0);
+        const totalExp = d.finances ? d.finances.reduce((sum, item) => sum + item.amount, 0) : 0;
         const p1 = d.priorities[0] ? d.priorities[0].replace(/,/g, '') : "";
         const p2 = d.priorities[1] ? d.priorities[1].replace(/,/g, '') : "";
         const p3 = d.priorities[2] ? d.priorities[2].replace(/,/g, '') : "";
         
-        csvContent += `${date},${d.progress},${totalExp},${p1},${p2},${p3}\n`;
+        csvContent += `${date},${d.progress||0},${totalExp},${p1},${p2},${p3}\n`;
       });
       
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "planner_data_backup.csv");
+      link.setAttribute("download", "pastel_planner_backup.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -344,6 +378,128 @@
       const date = new Date(baseDateStr);
       date.setDate(date.getDate() - offsetDays);
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    },
+
+    // ⏳ 타이머 객체 추가
+    timer: {
+      activeHour: null,
+      mode: 'study', // 'study' (40분) 또는 'rest' (20분)
+      timeLeft: 40 * 60, // 초기값 40분 (초 단위)
+      interval: null,
+      isRunning: false,
+      
+      init() {
+        this.renderGrid();
+        this.updateDisplay();
+      },
+      
+      renderGrid() {
+        const grid = document.getElementById('timerGrid');
+        grid.innerHTML = '';
+        const timersData = (app.dailyData[app.selectedDateStr] && app.dailyData[app.selectedDateStr].timers) || {};
+        
+        for(let i = 0; i < 24; i++) {
+          const btn = document.createElement('button');
+          btn.className = 'timer-chip';
+          btn.textContent = `${i}시`;
+          
+          if (this.activeHour === i) btn.classList.add('active');
+          if (timersData[i] === 'done') btn.classList.add('done');
+          
+          btn.onclick = () => this.selectHour(i);
+          grid.appendChild(btn);
+        }
+      },
+      
+      selectHour(hour) {
+        this.pause();
+        this.activeHour = hour;
+        this.mode = 'study';
+        this.timeLeft = 40 * 60;
+        this.renderGrid(); // active 클래스 갱신
+        this.updateDisplay();
+      },
+      
+      start() {
+        if(this.activeHour === null) return app.ui.showToast('먼저 위에서 시간대(0~23시)를 선택해주세요! 👆');
+        if(this.isRunning) return;
+        
+        this.isRunning = true;
+        this.interval = setInterval(() => {
+          if(this.timeLeft > 0) {
+            this.timeLeft--;
+            this.updateDisplay();
+          } else {
+            this.switchMode();
+          }
+        }, 1000);
+      },
+      
+      pause() {
+        this.isRunning = false;
+        clearInterval(this.interval);
+      },
+      
+      reset() {
+        if(this.activeHour === null) return;
+        this.pause();
+        this.mode = 'study';
+        this.timeLeft = 40 * 60;
+        this.updateDisplay();
+      },
+      
+      switchMode() {
+        this.pause();
+        // 알림 전송
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification(this.mode === 'study' ? "🎉 집중 완료!" : "🔔 휴식 끝!", {
+            body: this.mode === 'study' ? "40분 집중 완료! 20분 휴식을 시작하세요." : "20분 휴식 종료! 한 시간 세션이 완료되었습니다."
+          });
+        }
+
+        if(this.mode === 'study') {
+          app.ui.showToast('🎉 40분 집중 완료! 달콤한 20분 휴식을 시작하세요 ☕');
+          this.mode = 'rest';
+          this.timeLeft = 20 * 60;
+          // 자동으로 타이머 시작하지 않고 사용자가 누르도록 대기
+          this.updateDisplay();
+        } else {
+          app.ui.showToast('✅ 1시간 세션 완료! 너무 수고하셨습니다 👏');
+          
+          // 해당 시간을 완료(done) 처리하여 데이터에 저장
+          if (!app.dailyData[app.selectedDateStr]) app.dailyData[app.selectedDateStr] = { timers: {} };
+          if (!app.dailyData[app.selectedDateStr].timers) app.dailyData[app.selectedDateStr].timers = {};
+          
+          app.dailyData[app.selectedDateStr].timers[this.activeHour] = 'done';
+          app.saveDailyData(false); // 로컬 스토리지 업데이트
+          
+          this.activeHour = null;
+          this.renderGrid();
+          this.updateDisplay();
+        }
+      },
+      
+      updateDisplay() {
+        const titleEl = document.getElementById('timerTitle');
+        const timeEl = document.getElementById('timerTime');
+        
+        if(this.activeHour === null) {
+          titleEl.textContent = '원하는 시간대를 선택해주세요 👆';
+          titleEl.style.color = 'var(--text-muted)';
+          timeEl.textContent = '00:00';
+          return;
+        }
+        
+        if (this.mode === 'study') {
+          titleEl.innerHTML = `<span style="color:#ef4444;">[${this.activeHour}시]</span> 🔥 40분 집중 모드`;
+        } else {
+          titleEl.innerHTML = `<span style="color:#3b82f6;">[${this.activeHour}시]</span> ☕ 20분 휴식 모드`;
+        }
+        
+        const m = String(Math.floor(this.timeLeft / 60)).padStart(2, '0');
+        const s = String(this.timeLeft % 60).padStart(2, '0');
+        timeEl.textContent = `${m}:${s}`;
+      }
     },
 
     ui: {
@@ -363,11 +519,14 @@
         app.selectedDateStr = dateStr;
         document.getElementById('calendarView').classList.add('hidden');
         document.getElementById('plannerView').classList.remove('hidden');
-        document.getElementById('plannerTitle').textContent = `📝 ${dateStr} 플래너`;
+        document.getElementById('plannerTitle').textContent = `📝 ${dateStr.split('-')[1]}월 ${dateStr.split('-')[2]}일 플래너`;
         this.loadPlannerData();
+        window.scrollTo(0, 0); // 화면 최상단 이동
       },
 
       showCalendar() {
+        // 타이머가 돌고있다면 멈춤
+        app.timer.pause(); 
         document.getElementById('plannerView').classList.add('hidden');
         document.getElementById('calendarView').classList.remove('hidden');
         this.renderCalendar();
@@ -380,7 +539,7 @@
         app.settings.start = start; app.settings.end = end;
         localStorage.setItem('appSettings', JSON.stringify(app.settings));
         
-        app.saveDailyData(false); // 현재 입력값 보존
+        app.saveDailyData(false); 
         this.loadPlannerData();
         this.showToast("타임테이블 시간이 변경되었습니다. 🕒");
       },
@@ -399,7 +558,7 @@
       },
 
       loadPlannerData() {
-        const data = app.dailyData[app.selectedDateStr] || { priorities: ["","",""], timetable: {}, finances: [], progress: 0 };
+        const data = app.dailyData[app.selectedDateStr] || { priorities: ["","",""], timetable: {}, finances: [], timers: {}, progress: 0 };
         
         document.getElementById('pri1').value = data.priorities[0] || "";
         document.getElementById('pri2').value = data.priorities[1] || "";
@@ -427,13 +586,14 @@
 
         const fContainer = document.getElementById('financeList');
         fContainer.innerHTML = '';
-        if(data.finances.length === 0) this.addFinanceRow();
+        if(!data.finances || data.finances.length === 0) this.addFinanceRow();
         else {
           data.finances.forEach(f => this.addFinanceRow(f.category, f.desc, f.amount));
         }
         
         this.calculateExpenditure();
         this.updateGrowthReport(); 
+        app.timer.init(); // 타이머 초기화 (그리드 및 디스플레이 리렌더링)
       },
 
       addFinanceRow(category = "식비", desc = "", amount = "") {
@@ -485,7 +645,7 @@
         const labels = Object.keys(categorySums).filter(k => categorySums[k] > 0);
         const data = labels.map(k => categorySums[k]);
 
-        if(data.length === 0) return; // 데이터 없으면 차트 그리지 않음
+        if(data.length === 0) return; 
 
         app.financeChartInstance = new Chart(ctx, {
           type: 'doughnut',
@@ -494,7 +654,7 @@
             datasets: [{
               data: data,
               backgroundColor: ['#f87171', '#60a5fa', '#fcd34d', '#34d399', '#a78bfa'],
-              borderWidth: 1
+              borderWidth: 0
             }]
           },
           options: {
@@ -544,11 +704,11 @@
           data: {
             labels: labels,
             datasets: [{
-              label: '일일 달성률 (%)', data: dataPts, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)',
-              borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: '#ec4899', pointRadius: 4
+              label: '일일 달성률 (%)', data: dataPts, borderColor: '#818cf8', backgroundColor: 'rgba(129, 140, 248, 0.2)',
+              borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#f472b6', pointRadius: 5, pointBorderColor: '#fff', pointBorderWidth: 2
             }]
           },
-          options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, grid: { borderDash: [5, 5] } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
         });
       },
 
@@ -586,7 +746,7 @@
             extraHtml += `<div class="event-text">🎉 ${e.title}</div>`;
           });
           
-          if (app.dailyData[dateStr] && app.dailyData[dateStr].priorities[0]) {
+          if (app.dailyData[dateStr] && app.dailyData[dateStr].priorities && app.dailyData[dateStr].priorities[0]) {
              extraHtml += `<div class="priority-text">📌 ${app.dailyData[dateStr].priorities[0]}</div>`;
           }
 
