@@ -10,33 +10,24 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-  /* ============ 디자인 토큰 : "하늘의 시간" 팔레트 ============
-     여명(dawn) · 한낮 하늘(sky) · 노을(dusk) · 밤(night) — 실제 날씨에 따라
-     상단 히어로 그라디언트가 은은하게 반응한다.
-  */
   :root {
-    --ink:        #2f2a3d;   /* 짙은 잉크 */
-    --ink-soft:   #7a7288;   /* 보조 텍스트 */
+    --ink:        #2f2a3d;
+    --ink-soft:   #7a7288;
     --ink-faint:  #ada6bd;
 
-    --paper:      #faf8f4;   /* 따뜻한 종이 배경 */
+    --paper:      #faf8f4;
     --paper-raised: #ffffff;
     --line:       #ece5f3;
 
-    --accent:      #6e63e0;  /* 트와일라잇 인디고 */
+    --accent:      #6e63e0;
     --accent-deep: #564cc4;
     --accent-bg:   #eeecfb;
 
-    --peach:      #ffb99a;   /* 여명 */
-    --peach-bg:   #fff1e8;
-    --sky:        #7fb8e6;   /* 맑은 하늘 */
     --sky-bg:     #eaf4fc;
-    --dusk:       #c3a6e6;   /* 노을 */
-    --mint:       #58c9a3;   /* 성취 · 성공 */
+    --mint:       #58c9a3;
     --mint-bg:    #e9f8f2;
-    --blush:      #ef8fb3;   /* 완료 태그 */
+    --blush:      #ef8fb3;
     --blush-bg:   #fdeef3;
-    --amber:      #e8ab4c;
     --amber-bg:   #fcf1de;
 
     --shadow-sm: 0 2px 8px -2px rgba(47, 42, 61, 0.08);
@@ -47,6 +38,18 @@
 
     --font-display: 'Gowun Batang', 'Noto Serif KR', serif;
     --font-body: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    --g-default: linear-gradient(135deg, #7fb8e6 0%, #6e63e0 100%);
+    --g-sunny:   linear-gradient(135deg, #ffcf8a 0%, #ff9a76 55%, #6e63e0 100%);
+    --g-cloudy:  linear-gradient(135deg, #b7c2d6 0%, #8f9dc4 55%, #5d5aa8 100%);
+    --g-rain:    linear-gradient(135deg, #7a94b8 0%, #5b6ea0 55%, #443f8c 100%);
+    --g-snow:    linear-gradient(135deg, #cfe6f5 0%, #a8c7e6 55%, #7d7fd6 100%);
+    --g-fog:     linear-gradient(135deg, #c7c3d6 0%, #a29ec4 55%, #75699d 100%);
+    --g-storm:   linear-gradient(135deg, #6c6a92 0%, #4c4a80 55%, #322c5e 100%);
+    --g-night:   linear-gradient(135deg, #4b5aa8 0%, #362c74 55%, #1f1a4a 100%);
+
+    --tint-sunny: #fff3e2; --tint-cloudy: #eef0f6; --tint-rain: #e7eefc;
+    --tint-snow: #eef7fc; --tint-fog: #efeaf5; --tint-storm: #e6e3f2;
   }
 
   * { box-sizing: border-box; font-family: var(--font-body); }
@@ -74,47 +77,87 @@
   .btn-danger { background: var(--blush-bg); color: var(--blush); border: 1px solid #f7c9dc; padding: 8px 12px; border-radius: 12px; }
   .hidden { display: none !important; }
 
-  /* ============ 히어로 밴드 (날씨 반응형) ============ */
+  /* ============ 히어로 밴드 ============ */
   .hero {
     position: relative; border-radius: 26px; padding: 22px 24px; margin-bottom: 20px;
     overflow: hidden; color: white; box-shadow: var(--shadow-md);
-    background: linear-gradient(135deg, #7fb8e6 0%, #6e63e0 100%);
-    transition: background 0.6s ease;
+    background: var(--g-default); transition: background 0.6s ease;
   }
   .hero::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background: radial-gradient(circle at 85% -10%, rgba(255,255,255,0.35), transparent 55%);
   }
-  .hero.weather-sunny   { background: linear-gradient(135deg, #ffcf8a 0%, #ff9a76 55%, #6e63e0 100%); }
-  .hero.weather-cloudy  { background: linear-gradient(135deg, #b7c2d6 0%, #8f9dc4 55%, #5d5aa8 100%); }
-  .hero.weather-rain    { background: linear-gradient(135deg, #7a94b8 0%, #5b6ea0 55%, #443f8c 100%); }
-  .hero.weather-snow    { background: linear-gradient(135deg, #cfe6f5 0%, #a8c7e6 55%, #7d7fd6 100%); }
-  .hero.weather-fog     { background: linear-gradient(135deg, #c7c3d6 0%, #a29ec4 55%, #75699d 100%); }
-  .hero.weather-storm   { background: linear-gradient(135deg, #6c6a92 0%, #4c4a80 55%, #322c5e 100%); }
-  .hero.weather-night   { background: linear-gradient(135deg, #4b5aa8 0%, #362c74 55%, #1f1a4a 100%); }
+  .hero.weather-sunny  { background: var(--g-sunny); }
+  .hero.weather-cloudy { background: var(--g-cloudy); }
+  .hero.weather-rain   { background: var(--g-rain); }
+  .hero.weather-snow   { background: var(--g-snow); }
+  .hero.weather-fog    { background: var(--g-fog); }
+  .hero.weather-storm  { background: var(--g-storm); }
+  .hero.weather-night  { background: var(--g-night); }
 
   .hero-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 14px; position: relative; z-index: 1; }
   .hero-title { margin: 0; font-size: 22px; font-weight: 700; }
   .hero-sub { margin: 4px 0 0; font-size: 12.5px; opacity: 0.85; font-weight: 500; }
-  .hero-nav { display: flex; align-items: center; gap: 8px; }
+  .hero-quote { margin: 10px 0 0; font-size: 12.5px; font-style: italic; opacity: 0.95; background: rgba(255,255,255,0.16);
+    padding: 9px 13px; border-radius: 12px; border-left: 3px solid rgba(255,255,255,0.65); position: relative; z-index: 1; max-width: 480px; }
+  .hero-nav { display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; }
   .hero-nav button { background: rgba(255,255,255,0.18); color: white; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(2px); }
   .hero-nav button:hover { background: rgba(255,255,255,0.3); }
+
+  /* ============ 일기 / 메모 ============ */
+  .diary-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--paper-raised);
+    padding: 16px 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 18px; flex-wrap: wrap; }
+  .diary-date-nav { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--accent-deep); }
+  .diary-quote { font-size: 12.5px; font-style: italic; color: var(--ink-soft); background: var(--accent-bg); padding: 10px 14px;
+    border-radius: 12px; margin-bottom: 14px; border-left: 3px solid var(--accent); }
+  .diary-textarea { width: 100%; min-height: 320px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius-md);
+    font-size: 14px; line-height: 1.7; background: var(--paper-raised); resize: vertical; outline: none; font-family: var(--font-body); }
+  .diary-textarea:focus { border-color: var(--accent); }
+  .diary-meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 8px; text-align: right; }
+  .diary-indicator { color: #b8792a; font-size: 9.5px; background: var(--amber-bg); padding: 2px 5px; border-radius: 5px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
   #currentMonthStr { font-weight: 800; font-size: 17px; min-width: 108px; text-align: center; display: inline-block; }
 
-  /* 날씨 배지 */
+  .city-chips { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+  .city-chip { padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.32);
+    color: white; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .city-chip.active { background: rgba(255,255,255,0.92); color: var(--accent-deep); }
+
   .weather-badge { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 18px; padding: 8px 14px; cursor: pointer; position: relative; z-index: 1; backdrop-filter: blur(2px); }
+    border-radius: 18px; padding: 8px 14px; cursor: pointer; }
   .weather-badge:hover { background: rgba(255,255,255,0.28); }
   .weather-badge svg { width: 30px; height: 30px; flex-shrink: 0; }
   .weather-badge .wb-temp { font-size: 20px; font-weight: 800; line-height: 1; }
   .weather-badge .wb-meta { font-size: 11px; opacity: 0.9; line-height: 1.3; }
 
-  /* 위치 설정 패널 */
-  .location-panel {
-    position: absolute; top: 100%; right: 0; margin-top: 8px; width: 260px; background: var(--paper-raised);
-    color: var(--ink); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 14px; z-index: 30;
-  }
-  .location-panel input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 13px; margin-bottom: 8px; }
+  /* ============ 날씨 상세 패널 (모달) ============ */
+  #weatherPanelOverlay { position: fixed; inset: 0; background: rgba(47,42,61,0.38); z-index: 200; display: flex;
+    align-items: flex-start; justify-content: center; padding: 64px 16px 16px; }
+  .weather-panel { background: var(--paper-raised); width: 100%; max-width: 420px; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md); padding: 20px; max-height: 78vh; overflow-y: auto; }
+  .weather-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .weather-panel-header h3 { margin: 0; font-size: 17px; }
+  .wx-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .wx-tab-btn { flex: 1; padding: 9px 0; font-size: 12px; border-radius: 10px; background: #f4f1fa; border: none; color: var(--ink-soft); font-weight: 700; }
+  .wx-tab-btn.active { background: var(--accent); color: white; }
+  .wx-tab-panel.hidden { display: none; }
+  .wx-aq-bar { display: flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; margin-bottom: 12px; font-size: 12px; font-weight: 700; color: var(--ink); }
+  .aq-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+  .wx-hourly-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 700; }
+  .wx-hourly-nav button { padding: 6px 10px; }
+  .wx-hourly-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+  .wx-hour-item { flex: 0 0 auto; text-align: center; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; min-width: 56px; font-size: 12px; }
+  .wx-hour-item svg { width: 22px; height: 22px; }
+
+  .wx-week-row { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid #f4f1fa; }
+  .wx-week-row svg { width: 26px; height: 26px; }
+  .wx-week-row .wx-day-label { width: 58px; font-size: 12px; font-weight: 700; line-height: 1.3; }
+  .wx-week-row .wx-day-desc { flex: 1; font-size: 12px; color: var(--ink-soft); }
+  .wx-week-row .wx-day-temp { font-size: 12.5px; font-weight: 700; }
+
+  .wx-settings-block { margin-bottom: 16px; }
+  .wx-settings-label { font-size: 12.5px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+  .wx-settings-block input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 13px; margin-bottom: 8px; }
   .location-result { padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--ink-soft); }
   .location-result:hover { background: var(--accent-bg); color: var(--accent-deep); }
 
@@ -125,11 +168,21 @@
 
   .cal-day {
     padding: 10px 6px; text-align: center; cursor: pointer; border-radius: var(--radius-sm); font-size: 13.5px;
-    border: 1px solid var(--line); background: var(--paper-raised); transition: all 0.18s ease; min-height: 82px;
-    display: flex; flex-direction: column; gap: 4px; align-items: center;
+    border: 1px solid var(--line); background: var(--paper-raised); transition: all 0.18s ease; min-height: 88px;
+    display: flex; flex-direction: column; gap: 3px; align-items: center;
   }
   .cal-day:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
   .cal-day.today { border: 1.5px solid var(--blush); background: var(--blush-bg); }
+  .cal-day.wx-sunny  { background: linear-gradient(180deg, var(--tint-sunny), var(--paper-raised)); }
+  .cal-day.wx-cloudy { background: linear-gradient(180deg, var(--tint-cloudy), var(--paper-raised)); }
+  .cal-day.wx-rain   { background: linear-gradient(180deg, var(--tint-rain), var(--paper-raised)); }
+  .cal-day.wx-snow   { background: linear-gradient(180deg, var(--tint-snow), var(--paper-raised)); }
+  .cal-day.wx-fog    { background: linear-gradient(180deg, var(--tint-fog), var(--paper-raised)); }
+  .cal-day.wx-storm  { background: linear-gradient(180deg, var(--tint-storm), var(--paper-raised)); }
+  .cal-day.today.wx-sunny, .cal-day.today.wx-cloudy, .cal-day.today.wx-rain,
+  .cal-day.today.wx-snow, .cal-day.today.wx-fog, .cal-day.today.wx-storm { background: var(--blush-bg); }
+  .cal-wx-icon { width: 15px; height: 15px; color: var(--accent-deep); opacity: 0.85; }
+  .cal-wx-temp { font-size: 9px; color: var(--ink-faint); font-weight: 700; }
 
   .sun { color: #e8748f; font-weight: 700; }
   .sat { color: #5b8fd6; font-weight: 700; }
@@ -137,9 +190,18 @@
   .event-text { color: var(--accent-deep); font-size: 9.5px; background: var(--accent-bg); padding: 2px 5px; border-radius: 5px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
   .priority-text { color: #2f9d78; font-size: 9.5px; background: var(--mint-bg); padding: 2px 5px; border-radius: 5px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
-  /* ============ 플래너 뷰 ============ */
-  .planner-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 18px; background: var(--paper-raised); padding: 16px 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); gap: 10px; }
+  /* ============ 플래너 ============ */
+  .planner-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 14px; background: var(--paper-raised); padding: 16px 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); gap: 10px; }
   #plannerTitle { font-size: 19px; color: var(--accent-deep); margin: 0; }
+
+  .mood-bar { border-radius: 14px; padding: 11px 16px; margin-bottom: 16px; color: white; display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 700; background: var(--g-default); }
+  .mood-bar svg { width: 24px; height: 24px; flex-shrink: 0; }
+  .mood-bar.weather-sunny { background: var(--g-sunny); }
+  .mood-bar.weather-cloudy { background: var(--g-cloudy); }
+  .mood-bar.weather-rain { background: var(--g-rain); }
+  .mood-bar.weather-snow { background: var(--g-snow); }
+  .mood-bar.weather-fog { background: var(--g-fog); }
+  .mood-bar.weather-storm { background: var(--g-storm); }
 
   .kpi-board { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
   @media (min-width: 768px) { .kpi-board { grid-template-columns: repeat(4, 1fr); } }
@@ -154,15 +216,13 @@
   .box-panel { background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
   .box-title { font-size: 15.5px; font-weight: 700; margin-top: 0; margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--line); padding-bottom: 12px; gap: 10px; font-family: var(--font-display); }
 
-  /* 날씨 카드 (플래너용) */
-  .weather-card { display: flex; align-items: center; gap: 14px; background: linear-gradient(120deg, var(--sky-bg), var(--accent-bg)); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 18px; }
-  .weather-card svg { width: 42px; height: 42px; flex-shrink: 0; }
+  .weather-card { display: flex; align-items: center; gap: 14px; background: linear-gradient(120deg, var(--sky-bg), var(--accent-bg)); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .weather-card svg { width: 40px; height: 40px; flex-shrink: 0; }
   .weather-card .wc-temp { font-size: 24px; font-weight: 800; color: var(--ink); }
   .weather-card .wc-desc { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; }
   .weather-card .wc-range { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
   .weather-card .wc-loc { margin-left: auto; font-size: 11px; color: var(--accent-deep); background: rgba(255,255,255,0.6); padding: 4px 10px; border-radius: 999px; font-weight: 700; }
 
-  /* 타이머 */
   .timer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 15px; }
   @media (max-width: 500px) { .timer-grid { grid-template-columns: repeat(4, 1fr); } }
   .timer-chip { padding: 7px 0; font-size: 12.5px; border-radius: 10px; background: #f4f1fa; color: var(--ink-soft); border: 1px solid var(--line); text-align: center; transition: all 0.18s; }
@@ -171,10 +231,10 @@
 
   .timer-display { text-align: center; background: var(--paper); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--line); }
   .timer-title { font-size: 13.5px; font-weight: 700; color: var(--accent-deep); margin-bottom: 5px; }
-  .timer-time { font-size: 46px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; margin-bottom: 15px; letter-spacing: 1px; }
+  .timer-time { font-size: 46px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; margin-bottom: 12px; letter-spacing: 1px; }
   .timer-controls { display: flex; gap: 8px; justify-content: center; }
+  .timer-note { font-size: 10.8px; color: var(--ink-faint); margin-top: 12px; line-height: 1.5; }
 
-  /* 타임테이블 */
   .time-settings { display: flex; gap: 5px; align-items: center; font-size: 11.5px; color: var(--ink-soft); }
   .time-settings input { width: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; text-align: center; }
 
@@ -222,20 +282,17 @@
         <div>
           <h1 class="hero-title">🕊️ 서재, 하늘 플래너</h1>
           <p class="hero-sub" id="heroSub">오늘의 하늘을 살피며 하루를 그려보세요</p>
+          <p class="hero-quote" id="heroQuote">💬 오늘의 한마디를 불러오는 중…</p>
         </div>
-        <div style="display:flex; align-items:center; gap:12px; position:relative;">
-          <div class="weather-badge" id="weatherBadgeCal" onclick="app.weather.togglePanel()">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+          <div class="city-chips" id="cityChips"></div>
+          <div class="weather-badge" id="weatherBadgeCal" onclick="app.weather.openPanel('hourly')">
             <span id="wbIconCal">🌤️</span>
             <div>
               <div class="wb-temp" id="wbTempCal">--°</div>
               <div class="wb-meta" id="wbMetaCal">날씨 불러오는 중</div>
+              <div class="wb-meta" id="wbAqCal" style="margin-top:2px;"></div>
             </div>
-          </div>
-          <div class="location-panel hidden" id="locationPanel">
-            <div style="font-size:12.5px; font-weight:700; margin-bottom:8px; color:var(--ink);">📍 지역 설정</div>
-            <input type="text" id="locationInput" placeholder="도시 이름 검색 (예: 부산)" onkeydown="if(event.key==='Enter') app.weather.searchLocation()">
-            <button class="btn-primary" style="width:100%; margin-bottom:8px;" onclick="app.weather.searchLocation()">검색</button>
-            <div id="locationResults"></div>
           </div>
         </div>
       </div>
@@ -243,7 +300,13 @@
         <button onclick="app.ui.changeMonth(-1)">◀</button>
         <span id="currentMonthStr"></span>
         <button onclick="app.ui.changeMonth(1)">▶</button>
+        <button onclick="app.ui.openDiary(app.todayStr(), 'calendarView')" style="margin-left:auto;">🗒️ 오늘의 일기</button>
       </div>
+    </div>
+
+    <div class="box-panel" style="padding:16px 18px;">
+      <h3 class="box-title" style="margin-bottom:10px; padding-bottom:8px;">📅 일주일 날씨 <span style="font-size:11px; font-weight:500; color:var(--ink-soft);" id="weeklyStripLoc"></span></h3>
+      <div class="wx-hourly-strip" id="weeklyStripDays"></div>
     </div>
 
     <div class="calendar-grid">
@@ -262,10 +325,13 @@
     <div class="planner-header">
       <h2 id="plannerTitle">📝 데일리 플래너</h2>
       <div style="display: flex; gap: 8px;">
+        <button onclick="app.ui.openDiary(app.selectedDateStr, 'plannerView')">🗒️ 일기</button>
         <button onclick="app.exportCSV()">📥 CSV 다운</button>
         <button class="btn-primary" onclick="app.saveDailyData()">💾 저장</button>
       </div>
     </div>
+
+    <div class="mood-bar" id="plannerMoodBar">오늘의 날씨를 불러오는 중…</div>
 
     <div class="kpi-board">
       <div class="kpi-card"><h3>🔥 달성률</h3><p class="value" id="kpiProgress">0%</p></div>
@@ -284,8 +350,15 @@
               <div class="wc-temp" id="wcTemp">--°</div>
               <div class="wc-desc" id="wcDesc">날씨 불러오는 중…</div>
               <div class="wc-range" id="wcRange"></div>
+              <div class="wc-range" id="wcAq" style="margin-top:2px;"></div>
             </div>
+            <button class="btn-ghost" style="padding:6px 10px; font-size:11px;" onclick="app.weather.openPanel('hourly', true)">자세히</button>
             <div class="wc-loc" id="wcLoc">서울</div>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px;">⏰ 시간별 날씨 <span style="font-weight:500; color:var(--ink-soft);" id="plannerHourlyLabel"></span></div>
+            <div class="wx-hourly-strip" id="plannerHourlyStrip"></div>
           </div>
 
           <h3 class="box-title">
@@ -300,6 +373,7 @@
               <button onclick="app.timer.pause()">⏸ 정지</button>
               <button class="btn-danger" onclick="app.timer.reset()">⏹ 초기화</button>
             </div>
+            <div class="timer-note">🔒 이 브라우저 탭이 열려있는 한, 다른 탭이나 앱을 보고 있어도 시간이 계속 흐르고 완료 시 알림이 와요. (탭을 완전히 닫으면 타이머는 멈춰요)</div>
           </div>
         </div>
 
@@ -357,6 +431,78 @@
     </div>
   </div>
 
+  <!-- 🗒️ 일기 / 메모 페이지: 어느 화면에서든 그날에 맞게 열람 -->
+  <div id="diaryView" class="hidden">
+    <div style="margin-bottom: 15px;">
+      <button class="btn-ghost" onclick="app.ui.closeDiary()">◀ 돌아가기</button>
+    </div>
+    <div class="diary-header">
+      <div class="diary-date-nav">
+        <button onclick="app.ui.shiftDiaryDate(-1)">◀</button>
+        <span id="diaryDateLabel">오늘의 일기</span>
+        <button onclick="app.ui.shiftDiaryDate(1)">▶</button>
+      </div>
+      <button onclick="app.ui.openDiary(app.todayStr())">오늘로 이동</button>
+    </div>
+    <div class="box-panel">
+      <div class="diary-quote" id="diaryQuote"></div>
+      <textarea class="diary-textarea" id="diaryTextarea" placeholder="오늘 하루는 어땠나요? 자유롭게 적어보세요 ✍️" onchange="app.ui.saveDiary(false)"></textarea>
+      <div class="diary-meta" id="diaryMeta"></div>
+      <div style="text-align:right; margin-top:10px;">
+        <button class="btn-primary" onclick="app.ui.saveDiary()">💾 일기 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 날씨 상세 모달: 시간별 / 주간 / 지역설정 -->
+  <div id="weatherPanelOverlay" class="hidden" onclick="if(event.target===this) app.weather.closePanel()">
+    <div class="weather-panel">
+      <div class="weather-panel-header">
+        <h3>🌤️ 날씨 자세히 보기</h3>
+        <button class="btn-ghost" style="padding:6px 10px;" onclick="app.weather.closePanel()">✕</button>
+      </div>
+      <div id="wxAqBar" class="wx-aq-bar"></div>
+      <div class="wx-tabs">
+        <button class="wx-tab-btn" data-tab="hourly" onclick="app.weather.setTab('hourly')">⏰ 오늘 시간별</button>
+        <button class="wx-tab-btn" data-tab="weekly" onclick="app.weather.setTab('weekly')">📅 주간 날씨</button>
+        <button class="wx-tab-btn" data-tab="settings" onclick="app.weather.setTab('settings')">📍 지역 설정</button>
+      </div>
+
+      <div class="wx-tab-panel hidden" id="wxTab-hourly">
+        <div class="wx-hourly-nav">
+          <button onclick="app.weather.shiftDetailDate(-1)">◀</button>
+          <span id="wxHourlyDateLabel">오늘 시간별</span>
+          <button onclick="app.weather.shiftDetailDate(1)">▶</button>
+        </div>
+        <div id="wxHourlyMinMax" style="font-size:12px; color:var(--ink-soft); margin-bottom:8px; font-weight:600;"></div>
+        <div class="wx-hourly-strip" id="wxHourlyStrip"></div>
+      </div>
+
+      <div class="wx-tab-panel hidden" id="wxTab-weekly">
+        <div id="wxWeeklyList"></div>
+      </div>
+
+      <div class="wx-tab-panel hidden" id="wxTab-settings">
+        <div class="wx-settings-block">
+          <div class="wx-settings-label">🏠 내 지역 <span style="font-weight:500; color:var(--ink-soft);" id="homeLocationLabel"></span></div>
+          <input type="text" id="locationInputHome" placeholder="도시 이름 검색 (예: 광주)" onkeydown="if(event.key==='Enter') app.weather.searchLocation('home')">
+          <div style="display:flex; gap:6px;">
+            <button class="btn-primary" style="flex:1;" onclick="app.weather.searchLocation('home')">검색</button>
+            <button class="btn-ghost" onclick="app.weather.useGeolocation()">📍 현재 위치</button>
+          </div>
+          <div id="locationResultsHome"></div>
+        </div>
+        <div class="wx-settings-block">
+          <div class="wx-settings-label">🌆 비교 도시</div>
+          <div id="compareLocationBox" style="margin-bottom:8px;"></div>
+          <input type="text" id="locationInputCompare" placeholder="도시 이름 검색 (예: 부산)" onkeydown="if(event.key==='Enter') app.weather.searchLocation('compare')">
+          <button class="btn-primary" style="width:100%;" onclick="app.weather.searchLocation('compare')">검색해서 추가</button>
+          <div id="locationResultsCompare"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toastContainer">저장되었습니다.</div>
 
 <script>
@@ -365,23 +511,104 @@
     selectedDateStr: "",
     events: JSON.parse(localStorage.getItem('appEvents')) || [],
     dailyData: JSON.parse(localStorage.getItem('appDailyData')) || {},
+    diary: JSON.parse(localStorage.getItem('appDiary')) || {},
     settings: JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24 },
     holidays: {},
     growthChartInstance: null,
     financeChartInstance: null,
     alarmTriggered: {},
+    diaryDateStr: "",
+    diaryFromView: "calendarView",
+
+    quotes: [
+      "오늘 하루도 당신의 속도로 충분해요.",
+      "완벽한 계획보다 작은 실천이 더 멀리 데려다줘요.",
+      "쉬는 것도 계획의 일부예요.",
+      "어제보다 1%만 나아가도 충분히 잘하고 있는 거예요.",
+      "지금의 흐림도 언젠간 걷혀요. 하늘도, 마음도.",
+      "할 일 목록보다 중요한 건, 오늘 나를 돌보는 일이에요.",
+      "작은 습관이 쌓여 결국 큰 변화를 만들어요.",
+      "완벽하지 않아도 괜찮아요, 시작한 것만으로도 충분해요.",
+      "오늘의 실수는 내일의 지혜가 됩니다.",
+      "가장 중요한 일부터, 천천히 하나씩.",
+      "비교는 그만, 오늘의 나와만 경쟁해요.",
+      "지친 날엔 잠깐 멈춰도 괜찮아요.",
+      "생각보다 당신은 훨씬 잘 해내고 있어요.",
+      "오늘 못한 일은 내일의 나에게 맡겨도 돼요.",
+      "작은 성취를 크게 축하해주세요.",
+      "당신의 페이스를 믿어요.",
+      "불안할수록 지금 이 순간에 집중해봐요.",
+      "누군가에게 보여주기 위한 하루가 아니어도 괜찮아요.",
+      "충분히 애쓰고 있어요, 스스로를 다그치지 마세요.",
+      "루틴이 무너져도, 다시 시작하면 그만이에요.",
+      "오늘의 날씨처럼, 마음도 흐렸다 맑았다 해요.",
+      "가장 큰 응원은 스스로에게서 나와요.",
+      "잘하고 있는지보다, 계속하고 있는지가 더 중요해요.",
+      "휴식은 게으름이 아니라 다음을 위한 준비예요.",
+      "오늘 하루, 나를 위한 결정을 하나만 내려봐요.",
+      "성장은 늘 눈에 보이지 않게 조용히 일어나요.",
+      "지금의 노력은 반드시 어딘가에 남아요.",
+      "떨림도 설렘의 다른 이름이에요.",
+      "오늘의 계획이 틀어져도, 하루가 실패한 건 아니에요.",
+      "당신의 이야기는 아직 진행 중이에요.",
+      "느려도 멈추지만 않으면 결국 도착해요.",
+      "잘 자는 것도 훌륭한 계획이에요.",
+      "생각을 정리하는 것만으로도 오늘은 잘 보낸 하루예요.",
+      "당신이 애쓴 만큼, 내일은 조금 더 가벼울 거예요.",
+      "오늘 하루 수고한 나에게 작은 선물을 줘보세요.",
+      "완벽한 하루보다, 솔직한 하루가 더 소중해요.",
+      "지금 이 순간에도 당신은 성장하고 있어요.",
+      "마음이 복잡할 땐, 종이에 적어보는 것만으로도 도움이 돼요.",
+      "오늘의 작은 선택들이 모여 내일의 나를 만들어요.",
+      "당신의 하루도 누군가에게는 소중한 이야기예요.",
+    ],
+
+    todayStr() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    },
+
+    dayOfYear(dateStr) {
+      const d = new Date(dateStr);
+      const start = new Date(d.getFullYear(), 0, 0);
+      return Math.floor((d - start) / 86400000);
+    },
+
+    renderDailyQuote() {
+      const el = document.getElementById('heroQuote');
+      if (!el) return;
+      const idx = this.dayOfYear(this.todayStr()) % this.quotes.length;
+      el.textContent = `💬 ${this.quotes[idx]}`;
+    },
 
     init() {
       this.fetchHolidays(this.currentDate.getFullYear()).then(() => {
         this.ui.renderCalendar();
       });
 
+      this.renderDailyQuote();
+
       if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
         Notification.requestPermission();
       }
 
       this.weather.init();
+      this.timer.init();
+
       setInterval(() => this.checkAlarms(), 60000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          this.timer.catchUp();
+          this.timer.updateDisplay();
+          this.timer.renderGrid();
+          if (this.timer.isRunning) this.timer.resumeInterval();
+        }
+      });
+      window.addEventListener('focus', () => {
+        this.timer.catchUp();
+        this.timer.updateDisplay();
+      });
     },
 
     async fetchHolidays(year) {
@@ -499,36 +726,42 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     },
 
+    diffDaysFromToday(dateStr) {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const target = new Date(dateStr); target.setHours(0,0,0,0);
+      return Math.round((target - today) / 86400000);
+    },
+
     /* ==================================================================
-       🌤️ 날씨 모듈 (Open-Meteo API — 무료 / API 키 불필요)
-       - 지오코딩: geocoding-api.open-meteo.com
-       - 실시간+예보(최대 16일): api.open-meteo.com/v1/forecast
-       - 과거 날씨: archive-api.open-meteo.com/v1/archive
+       🌤️ 날씨 모듈 — Open-Meteo (무료 / API 키 불필요)
        ================================================================== */
     weather: {
-      location: JSON.parse(localStorage.getItem('weatherLocation')) || { lat: 37.5665, lon: 126.9780, name: "서울" },
-      current: null,
+      cities: { home: null, compare: null },
+      active: 'home',
+      data: { home: null, compare: null },
       dailyCache: {},
+      detailDateStr: null,
+      activeTab: 'hourly',
 
       codeMap: {
-        0:  { text: "맑음",      group: "sunny",  icon: "sun" },
+        0:  { text: "맑음",       group: "sunny",  icon: "sun" },
         1:  { text: "대체로 맑음", group: "sunny",  icon: "sun" },
         2:  { text: "구름 조금",  group: "cloudy", icon: "cloud" },
-        3:  { text: "흐림",      group: "cloudy", icon: "cloud" },
-        45: { text: "안개",      group: "fog",    icon: "fog" },
+        3:  { text: "흐림",       group: "cloudy", icon: "cloud" },
+        45: { text: "안개",       group: "fog",    icon: "fog" },
         48: { text: "짙은 안개",  group: "fog",    icon: "fog" },
-        51: { text: "이슬비",    group: "rain",   icon: "rain" },
-        53: { text: "이슬비",    group: "rain",   icon: "rain" },
+        51: { text: "이슬비",     group: "rain",   icon: "rain" },
+        53: { text: "이슬비",     group: "rain",   icon: "rain" },
         55: { text: "강한 이슬비", group: "rain",  icon: "rain" },
-        56: { text: "언 이슬비", group: "rain",   icon: "rain" },
-        57: { text: "언 이슬비", group: "rain",   icon: "rain" },
+        56: { text: "언 이슬비",  group: "rain",   icon: "rain" },
+        57: { text: "언 이슬비",  group: "rain",   icon: "rain" },
         61: { text: "약한 비",    group: "rain",   icon: "rain" },
-        63: { text: "비",        group: "rain",   icon: "rain" },
+        63: { text: "비",         group: "rain",   icon: "rain" },
         65: { text: "강한 비",    group: "rain",   icon: "rain" },
         66: { text: "언 비",      group: "rain",   icon: "rain" },
         67: { text: "강한 언 비", group: "rain",   icon: "rain" },
         71: { text: "약한 눈",    group: "snow",   icon: "snow" },
-        73: { text: "눈",        group: "snow",   icon: "snow" },
+        73: { text: "눈",         group: "snow",   icon: "snow" },
         75: { text: "강한 눈",    group: "snow",   icon: "snow" },
         77: { text: "싸락눈",     group: "snow",   icon: "snow" },
         80: { text: "약한 소나기", group: "rain",  icon: "rain" },
@@ -536,7 +769,7 @@
         82: { text: "강한 소나기", group: "rain",  icon: "rain" },
         85: { text: "약한 눈보라", group: "snow",  icon: "snow" },
         86: { text: "강한 눈보라", group: "snow",  icon: "snow" },
-        95: { text: "뇌우",       group: "storm",  icon: "storm" },
+        95: { text: "뇌우",        group: "storm", icon: "storm" },
         96: { text: "우박 동반 뇌우", group: "storm", icon: "storm" },
         99: { text: "강한 우박 뇌우", group: "storm", icon: "storm" },
       },
@@ -551,47 +784,204 @@
         storm: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 13.5a3.7 3.7 0 0 1-.4-7.35 4.7 4.7 0 0 1 9.1-1.75A4.2 4.2 0 0 1 16 13.5Z"/><path d="M12.5 14.5L10 19h3l-2 4"/></svg>`
       },
 
-      init() {
-        this.renderLocationLabel();
-        this.fetchCurrent();
+      todayStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       },
 
-      groupToHeroClass(group, isNight) {
-        if (isNight && (group === "sunny" || group === "cloudy")) return "weather-night";
-        return "weather-" + group;
+      airData: { home: null, compare: null },
+
+      async init() {
+        const legacy = JSON.parse(localStorage.getItem('weatherLocation') || 'null');
+        const savedHome = JSON.parse(localStorage.getItem('weatherHome') || 'null');
+        this.cities.compare = JSON.parse(localStorage.getItem('weatherCompare') || 'null');
+        this.active = localStorage.getItem('weatherActive') || 'home';
+        if (this.active === 'compare' && !this.cities.compare) this.active = 'home';
+
+        if (savedHome || legacy) {
+          this.cities.home = savedHome || legacy;
+        } else {
+          // 처음 사용하는 경우 IP 기반으로 대략적인 현재 지역을 자동 추정 (실패 시 서울로 대체)
+          this.cities.home = { lat: 37.5665, lon: 126.9780, name: "서울" };
+          try {
+            const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+            const geo = await res.json();
+            if (geo && geo.latitude && geo.longitude) {
+              this.cities.home = { lat: parseFloat(geo.latitude), lon: parseFloat(geo.longitude), name: geo.city || geo.region || "내 지역" };
+              localStorage.setItem('weatherHome', JSON.stringify(this.cities.home));
+            }
+          } catch (e) {
+            console.error('IP 기반 지역 추정 실패, 기본값(서울) 사용', e);
+          }
+        }
+
+        this.detailDateStr = this.todayStr();
+        this.renderCityChips();
+        this.fetchAll();
       },
 
-      async fetchCurrent() {
-        const { lat, lon } = this.location;
+      async fetchAll() {
+        const jobs = [this.fetchCity('home'), this.fetchAirQuality('home')];
+        if (this.cities.compare) {
+          jobs.push(this.fetchCity('compare'), this.fetchAirQuality('compare'));
+        }
+        await Promise.all(jobs);
+        // 비교 도시 로딩에 실패했는데 현재 활성 도시로 설정돼있다면 홈으로 되돌림
+        if (this.active === 'compare' && this.cities.compare && !this.data.compare) {
+          this.active = 'home';
+          localStorage.setItem('weatherActive', 'home');
+          app.ui.showToast('비교 도시의 날씨를 불러오지 못해 내 지역으로 돌아왔어요 🙏');
+        }
+        this.renderAll();
+      },
+
+      async fetchCity(key) {
+        const loc = this.cities[key];
+        if (!loc) return;
         try {
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia%2FSeoul&forecast_days=16`;
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&hourly=temperature_2m,weathercode&timezone=Asia%2FSeoul&forecast_days=16`;
           const res = await fetch(url);
-          const data = await res.json();
-          this.current = data.current_weather;
-          this.forecastDaily = data.daily;
-          this.renderBadges();
-          if (app.selectedDateStr) this.renderPlannerCard(app.selectedDateStr);
+          this.data[key] = await res.json();
         } catch (e) {
-          console.error('날씨 정보를 불러오지 못했습니다', e);
-          document.getElementById('wbMetaCal').textContent = '날씨 정보 없음';
+          console.error('날씨 정보를 불러오지 못했습니다', key, e);
+          this.data[key] = null;
         }
       },
 
-      renderBadges() {
-        if (!this.current) return;
-        const code = this.current.weathercode;
-        const info = this.codeMap[code] || { text: "정보 없음", group: "cloudy", icon: "cloud" };
-        const isNight = this.current.is_day === 0;
+      async fetchAirQuality(key) {
+        const loc = this.cities[key];
+        if (!loc) return;
+        try {
+          const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${loc.lat}&longitude=${loc.lon}&current=pm10,pm2_5&timezone=Asia%2FSeoul`;
+          const res = await fetch(url);
+          const json = await res.json();
+          this.airData[key] = json.current || null;
+        } catch (e) {
+          console.error('미세먼지 정보를 불러오지 못했습니다', key, e);
+          this.airData[key] = null;
+        }
+      },
+
+      categorizeAQ(pm10, pm25) {
+        const lvl10 = pm10 == null ? 0 : pm10 <= 30 ? 0 : pm10 <= 80 ? 1 : pm10 <= 150 ? 2 : 3;
+        const lvl25 = pm25 == null ? 0 : pm25 <= 15 ? 0 : pm25 <= 35 ? 1 : pm25 <= 75 ? 2 : 3;
+        const lvl = Math.max(lvl10, lvl25);
+        const labels = ['좋음', '보통', '나쁨', '매우나쁨'];
+        const colors = ['#58c9a3', '#7fb8e6', '#e8ab4c', '#ef8fb3'];
+        return { label: labels[lvl], color: colors[lvl], lvl };
+      },
+
+      renderAqBadges() {
+        const d = this.airData[this.active];
+        const badgeEl = document.getElementById('wbAqCal');
+        const cardEl = document.getElementById('wcAq');
+        const barEl = document.getElementById('wxAqBar');
+        if (!d || d.pm10 == null) {
+          if (badgeEl) badgeEl.textContent = '';
+          if (cardEl) cardEl.textContent = '';
+          if (barEl) barEl.innerHTML = '<span style="color:var(--ink-soft); font-weight:500;">미세먼지 정보를 불러오는 중이에요…</span>';
+          return;
+        }
+        const aq = this.categorizeAQ(d.pm10, d.pm2_5);
+        const text = `미세먼지 ${aq.label} (PM10 ${Math.round(d.pm10)} · PM2.5 ${Math.round(d.pm2_5)}㎍/㎥)`;
+        if (badgeEl) badgeEl.innerHTML = `<span class="aq-dot" style="display:inline-block; background:${aq.color};"></span> ${aq.label} · PM10 ${Math.round(d.pm10)}`;
+        if (cardEl) cardEl.innerHTML = `<span class="aq-dot" style="display:inline-block; background:${aq.color};"></span> ${text}`;
+        if (barEl) barEl.innerHTML = `<span class="aq-dot" style="background:${aq.color};"></span> <span>${this.activeLoc().name} 미세먼지: <b style="color:${aq.color};">${aq.label}</b> · PM10 ${Math.round(d.pm10)}㎍/㎥ · PM2.5 ${Math.round(d.pm2_5)}㎍/㎥</span>`;
+      },
+
+      renderAll() {
+        this.renderCityChips();
+        this.renderBadge();
+        this.renderAqBadges();
+        this.renderWeeklyStripCalendar();
+        this.renderPanel();
+        app.ui.renderCalendar();
+        if (app.selectedDateStr) this.renderPlannerWeather(app.selectedDateStr);
+      },
+
+      renderWeeklyStripCalendar() {
+        const box = document.getElementById('weeklyStripDays');
+        const locEl = document.getElementById('weeklyStripLoc');
+        if (!box) return;
+        const data = this.activeData();
+        if (locEl) locEl.textContent = `· ${this.activeLoc().name}`;
+        if (!data || !data.daily) { box.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
+        let html = '';
+        for (let i = 0; i < 7 && i < data.daily.time.length; i++) {
+          const dStr = data.daily.time[i];
+          const d = new Date(dStr);
+          const info = this.groupInfo(data.daily.weathercode[i]);
+          const max = Math.round(data.daily.temperature_2m_max[i]);
+          const min = Math.round(data.daily.temperature_2m_min[i]);
+          const dayLabel = i === 0 ? '오늘' : ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
+          html += `<div class="wx-hour-item" style="min-width:64px; cursor:pointer;" onclick="app.weather.openPanel('weekly')"><div style="font-weight:700;">${dayLabel}</div><div style="color:var(--ink-faint); font-size:10.5px;">${d.getMonth() + 1}/${d.getDate()}</div><div style="color:var(--accent-deep); margin:4px 0;">${this.icons[info.icon]}</div><div style="font-weight:700;">${max}°</div><div style="color:var(--ink-faint); font-size:10.5px;">${min}°</div></div>`;
+        }
+        box.innerHTML = html;
+      },
+
+      renderPlannerHourlyStrip(dateStr) {
+        const strip = document.getElementById('plannerHourlyStrip');
+        const label = document.getElementById('plannerHourlyLabel');
+        if (!strip) return;
+        const diff = app.diffDaysFromToday(dateStr);
+        const d = new Date(dateStr);
+        if (label) label.textContent = `· ${d.getMonth() + 1}월 ${d.getDate()}일`;
+        if (diff < 0 || diff > 15) {
+          strip.innerHTML = `<div style="font-size:12px; color:var(--ink-soft); padding:10px;">${diff < 0 ? '지난 날짜는 시간별 날씨를 제공하지 않아요' : '16일 이후는 시간별 예보가 없어요'}</div>`;
+          return;
+        }
+        const data = this.activeData();
+        if (!data || !data.hourly) { strip.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
+        let html = '';
+        data.hourly.time.forEach((t, idx) => {
+          if (!t.startsWith(dateStr)) return;
+          const hour = t.split('T')[1].slice(0, 5);
+          const temp = Math.round(data.hourly.temperature_2m[idx]);
+          const info = this.groupInfo(data.hourly.weathercode[idx]);
+          html += `<div class="wx-hour-item"><div>${hour}</div><div style="color:var(--accent-deep); margin:4px 0;">${this.icons[info.icon]}</div><div style="font-weight:700;">${temp}°</div></div>`;
+        });
+        strip.innerHTML = html || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">시간별 데이터가 없어요</div>';
+      },
+
+      activeData() { return this.data[this.active]; },
+      activeLoc() { return this.cities[this.active]; },
+      groupInfo(code) { return this.codeMap[code] || { text: "정보 없음", group: "cloudy", icon: "cloud" }; },
+
+      renderCityChips() {
+        const box = document.getElementById('cityChips');
+        if (!box) return;
+        let html = `<div class="city-chip ${this.active === 'home' ? 'active' : ''}" onclick="app.weather.setActive('home')">🏠 ${this.cities.home.name}</div>`;
+        if (this.cities.compare) {
+          html += `<div class="city-chip ${this.active === 'compare' ? 'active' : ''}" onclick="app.weather.setActive('compare')">🌆 ${this.cities.compare.name}</div>`;
+        } else {
+          html += `<div class="city-chip" onclick="app.weather.openPanel('settings')">+ 도시 추가</div>`;
+        }
+        box.innerHTML = html;
+      },
+
+      setActive(key) {
+        if (key === 'compare' && !this.cities.compare) return;
+        this.active = key;
+        localStorage.setItem('weatherActive', key);
+        this.renderAll();
+      },
+
+      renderBadge() {
+        const d = this.activeData();
+        if (!d || !d.current_weather) return;
+        const code = d.current_weather.weathercode;
+        const info = this.groupInfo(code);
+        const isNight = d.current_weather.is_day === 0;
         const icon = isNight && info.group === "sunny" ? this.icons.moon : this.icons[info.icon];
 
         document.getElementById('wbIconCal').innerHTML = icon;
-        document.getElementById('wbTempCal').textContent = `${Math.round(this.current.temperature)}°`;
-        document.getElementById('wbMetaCal').textContent = `${this.location.name} · ${info.text}`;
+        document.getElementById('wbTempCal').textContent = `${Math.round(d.current_weather.temperature)}°`;
+        document.getElementById('wbMetaCal').textContent = `${this.activeLoc().name} · ${info.text}`;
 
         const hero = document.getElementById('calHero');
-        hero.className = 'hero ' + this.groupToHeroClass(info.group, isNight);
+        const cls = isNight && (info.group === "sunny" || info.group === "cloudy") ? 'weather-night' : 'weather-' + info.group;
+        hero.className = 'hero ' + cls;
 
-        const sub = document.getElementById('heroSub');
         const subMsgs = {
           sunny: "볕이 좋은 날, 목표 하나쯤은 산책하듯 가볍게 ☀️",
           cloudy: "구름 낀 하루, 잔잔한 집중력이 빛나는 날이에요 ☁️",
@@ -600,117 +990,278 @@
           fog: "안개 낀 아침, 오늘의 우선순위부터 또렷하게 🌫️",
           storm: "천둥이 치는 날엔 실내에서 집중 모드로 ⛈️",
         };
-        sub.textContent = subMsgs[info.group] || "오늘의 하늘을 살피며 하루를 그려보세요";
+        document.getElementById('heroSub').textContent = subMsgs[info.group] || "오늘의 하늘을 살피며 하루를 그려보세요";
       },
 
-      async renderPlannerCard(dateStr) {
+      openPanel(tab, useSelectedDate) {
+        if (useSelectedDate && app.selectedDateStr) {
+          const diff = app.diffDaysFromToday(app.selectedDateStr);
+          this.detailDateStr = (diff >= 0 && diff <= 15) ? app.selectedDateStr : this.todayStr();
+        }
+        this.activeTab = tab || this.activeTab;
+        document.getElementById('weatherPanelOverlay').classList.remove('hidden');
+        this.renderPanel();
+      },
+      closePanel() { document.getElementById('weatherPanelOverlay').classList.add('hidden'); },
+      setTab(tab) { this.activeTab = tab; this.renderPanel(); },
+
+      renderPanel() {
+        const overlay = document.getElementById('weatherPanelOverlay');
+        if (overlay.classList.contains('hidden')) return;
+        document.querySelectorAll('.wx-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === this.activeTab));
+        document.querySelectorAll('.wx-tab-panel').forEach(p => p.classList.add('hidden'));
+        const target = document.getElementById('wxTab-' + this.activeTab);
+        if (target) target.classList.remove('hidden');
+        if (this.activeTab === 'hourly') this.renderHourly();
+        if (this.activeTab === 'weekly') this.renderWeekly();
+        if (this.activeTab === 'settings') this.renderSettingsTab();
+      },
+
+      shiftDetailDate(offset) {
+        const d = new Date(this.detailDateStr);
+        d.setDate(d.getDate() + offset);
+        const s = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const diff = app.diffDaysFromToday(s);
+        if (diff < 0 || diff > 15) return app.ui.showToast('시간별 예보는 오늘부터 15일 후까지만 볼 수 있어요 🙏');
+        this.detailDateStr = s;
+        this.renderHourly();
+      },
+
+      renderHourly() {
+        const data = this.activeData();
+        const label = document.getElementById('wxHourlyDateLabel');
+        const strip = document.getElementById('wxHourlyStrip');
+        const d = new Date(this.detailDateStr);
+        const isToday = this.detailDateStr === this.todayStr();
+        label.textContent = `${isToday ? '오늘 · ' : ''}${d.getMonth() + 1}월 ${d.getDate()}일 시간별`;
+        const minMaxEl = document.getElementById('wxHourlyMinMax');
+        if (data && data.daily) {
+          const dIdx = data.daily.time.indexOf(this.detailDateStr);
+          if (dIdx !== -1) {
+            const max = Math.round(data.daily.temperature_2m_max[dIdx]);
+            const min = Math.round(data.daily.temperature_2m_min[dIdx]);
+            minMaxEl.textContent = `최고 ${max}° · 최저 ${min}°`;
+          } else minMaxEl.textContent = '';
+        }
+        if (!data || !data.hourly) { strip.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
+        let html = '';
+        data.hourly.time.forEach((t, idx) => {
+          if (!t.startsWith(this.detailDateStr)) return;
+          const hour = t.split('T')[1].slice(0, 5);
+          const temp = Math.round(data.hourly.temperature_2m[idx]);
+          const info = this.groupInfo(data.hourly.weathercode[idx]);
+          html += `<div class="wx-hour-item"><div>${hour}</div><div style="color:var(--accent-deep); margin:4px 0;">${this.icons[info.icon]}</div><div style="font-weight:700;">${temp}°</div></div>`;
+        });
+        strip.innerHTML = html || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">해당 날짜의 시간별 데이터가 없어요</div>';
+      },
+
+      renderWeekly() {
+        const data = this.activeData();
+        const box = document.getElementById('wxWeeklyList');
+        if (!data || !data.daily) { box.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
+        let html = '';
+        for (let i = 0; i < 7 && i < data.daily.time.length; i++) {
+          const dStr = data.daily.time[i];
+          const d = new Date(dStr);
+          const info = this.groupInfo(data.daily.weathercode[i]);
+          const max = Math.round(data.daily.temperature_2m_max[i]);
+          const min = Math.round(data.daily.temperature_2m_min[i]);
+          const dayLabel = i === 0 ? '오늘' : ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
+          html += `<div class="wx-week-row"><div class="wx-day-label">${dayLabel}<br><span style="color:var(--ink-faint); font-weight:500;">${d.getMonth() + 1}/${d.getDate()}</span></div><span style="color:var(--accent-deep);">${this.icons[info.icon]}</span><div class="wx-day-desc">${info.text}</div><div class="wx-day-temp">${max}° / ${min}°</div></div>`;
+        }
+        box.innerHTML = html;
+      },
+
+      renderSettingsTab() {
+        document.getElementById('homeLocationLabel').textContent = `· ${this.cities.home.name}`;
+        const compareBox = document.getElementById('compareLocationBox');
+        if (this.cities.compare) {
+          compareBox.innerHTML = `<div style="display:flex; align-items:center; gap:8px;"><span style="font-size:13px; font-weight:700;">🌆 ${this.cities.compare.name}</span><button class="btn-danger" style="padding:6px 10px; font-size:11px;" onclick="app.weather.removeCompare()">삭제</button></div>`;
+        } else {
+          compareBox.innerHTML = `<div style="font-size:12px; color:var(--ink-soft);">비교하고 싶은 도시를 검색해서 추가해보세요</div>`;
+        }
+      },
+
+      useGeolocation() {
+        if (!navigator.geolocation) return app.ui.showToast('이 브라우저는 위치 정보를 지원하지 않아요');
+        app.ui.showToast('📍 현재 위치를 확인하고 있어요…');
+        navigator.geolocation.getCurrentPosition(
+          pos => this.selectLocation('home', pos.coords.latitude, pos.coords.longitude, '내 위치'),
+          () => app.ui.showToast('위치 정보를 가져오지 못했어요. 도시 이름으로 검색해주세요 🙏')
+        );
+      },
+
+      async searchLocation(target) {
+        const inputId = target === 'home' ? 'locationInputHome' : 'locationInputCompare';
+        const resultsId = target === 'home' ? 'locationResultsHome' : 'locationResultsCompare';
+        const q = document.getElementById(inputId).value.trim();
+        if (!q) return;
+        const box = document.getElementById(resultsId);
+        box.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:6px;">검색 중…</div>';
+        try {
+          const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=ko&format=json`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (!data.results || data.results.length === 0) {
+            box.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:6px;">검색 결과가 없어요 😢</div>';
+            return;
+          }
+          box.innerHTML = data.results.map(r => {
+            const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
+            return `<div class="location-result" onclick="app.weather.selectLocation('${target}', ${r.latitude}, ${r.longitude}, '${r.name.replace(/'/g, "")}')">📍 ${label}</div>`;
+          }).join('');
+        } catch (e) {
+          box.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:6px;">검색에 실패했어요</div>';
+        }
+      },
+
+      async selectLocation(target, lat, lon, name) {
+        this.cities[target] = { lat, lon, name };
+        localStorage.setItem(target === 'home' ? 'weatherHome' : 'weatherCompare', JSON.stringify(this.cities[target]));
+        document.getElementById(target === 'home' ? 'locationInputHome' : 'locationInputCompare').value = '';
+        document.getElementById(target === 'home' ? 'locationResultsHome' : 'locationResultsCompare').innerHTML = '';
+        app.ui.showToast(`📍 ${name}(으)로 설정되었습니다`);
+        this.dailyCache = {};
+        // 방금 설정/추가한 도시로 바로 전환해서 변경 사항이 눈에 바로 보이도록 함
+        this.active = target;
+        localStorage.setItem('weatherActive', target);
+        await Promise.all([this.fetchCity(target), this.fetchAirQuality(target)]);
+        this.renderAll();
+        this.renderPanel();
+      },
+
+      removeCompare() {
+        this.cities.compare = null;
+        localStorage.removeItem('weatherCompare');
+        this.data.compare = null;
+        this.airData.compare = null;
+        if (this.active === 'compare') { this.active = 'home'; localStorage.setItem('weatherActive', 'home'); }
+        this.renderAll();
+      },
+
+      async renderPlannerWeather(dateStr) {
         const iconEl = document.getElementById('wcIcon');
         const tempEl = document.getElementById('wcTemp');
         const descEl = document.getElementById('wcDesc');
         const rangeEl = document.getElementById('wcRange');
-        document.getElementById('wcLoc').textContent = this.location.name;
+        document.getElementById('wcLoc').textContent = this.activeLoc().name;
+
+        this.renderPlannerHourlyStrip(dateStr);
 
         descEl.textContent = '날씨 불러오는 중…';
         tempEl.textContent = '--°';
         rangeEl.textContent = '';
 
-        const today = new Date(); today.setHours(0,0,0,0);
-        const target = new Date(dateStr); target.setHours(0,0,0,0);
-        const diffDays = Math.round((target - today) / 86400000);
+        const diffDays = app.diffDaysFromToday(dateStr);
+        const cacheKey = this.active + ':' + dateStr;
 
-        if (this.dailyCache[dateStr]) return this.paintPlannerCard(this.dailyCache[dateStr]);
+        const paint = (day) => {
+          const info = this.groupInfo(day.code);
+          iconEl.innerHTML = `<span style="color:var(--accent-deep);">${this.icons[info.icon]}</span>`;
+          tempEl.textContent = `${Math.round((day.max + day.min) / 2)}°`;
+          descEl.textContent = info.text;
+          rangeEl.textContent = `최고 ${Math.round(day.max)}° · 최저 ${Math.round(day.min)}°`;
+          const moodBar = document.getElementById('plannerMoodBar');
+          moodBar.className = 'mood-bar weather-' + info.group;
+          moodBar.innerHTML = `${this.icons[info.icon]}<span>${this.activeLoc().name} · ${info.text} · 최고 ${Math.round(day.max)}° / 최저 ${Math.round(day.min)}°</span>`;
+        };
+
+        if (this.dailyCache[cacheKey]) return paint(this.dailyCache[cacheKey]);
 
         try {
           let day;
-          if (diffDays >= 0 && diffDays <= 15 && this.forecastDaily) {
-            const idx = this.forecastDaily.time.indexOf(dateStr);
+          const activeD = this.activeData();
+          if (diffDays >= 0 && diffDays <= 15 && activeD && activeD.daily) {
+            const idx = activeD.daily.time.indexOf(dateStr);
             if (idx === -1) throw new Error('범위 밖');
-            day = {
-              code: this.forecastDaily.weathercode[idx],
-              max: this.forecastDaily.temperature_2m_max[idx],
-              min: this.forecastDaily.temperature_2m_min[idx]
-            };
+            day = { code: activeD.daily.weathercode[idx], max: activeD.daily.temperature_2m_max[idx], min: activeD.daily.temperature_2m_min[idx] };
           } else if (diffDays < 0) {
-            const { lat, lon } = this.location;
+            const { lat, lon } = this.activeLoc();
             const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${dateStr}&end_date=${dateStr}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia%2FSeoul`;
             const res = await fetch(url);
             const data = await res.json();
             if (!data.daily || data.daily.weathercode[0] === null || data.daily.weathercode[0] === undefined) throw new Error('과거 데이터 없음');
             day = { code: data.daily.weathercode[0], max: data.daily.temperature_2m_max[0], min: data.daily.temperature_2m_min[0] };
           } else {
-            throw new Error('예보 범위 밖 (16일 이후)');
+            throw new Error('예보 범위 밖');
           }
-          this.dailyCache[dateStr] = day;
-          this.paintPlannerCard(day);
+          this.dailyCache[cacheKey] = day;
+          paint(day);
         } catch (e) {
           iconEl.textContent = '🌫️';
           descEl.textContent = diffDays > 15 ? '예보 범위 밖이에요 (16일 이후)' : '날씨 정보를 찾을 수 없어요';
           tempEl.textContent = '--°';
+          const moodBar = document.getElementById('plannerMoodBar');
+          moodBar.className = 'mood-bar';
+          moodBar.innerHTML = `<span>이 날짜의 날씨 정보는 아직 없어요</span>`;
         }
-      },
-
-      paintPlannerCard(day) {
-        const info = this.codeMap[day.code] || { text: "정보 없음", group: "cloudy", icon: "cloud" };
-        document.getElementById('wcIcon').innerHTML = `<span style="color:var(--accent-deep);">${this.icons[info.icon]}</span>`;
-        document.getElementById('wcTemp').textContent = `${Math.round((day.max + day.min) / 2)}°`;
-        document.getElementById('wcDesc').textContent = info.text;
-        document.getElementById('wcRange').textContent = `최고 ${Math.round(day.max)}° · 최저 ${Math.round(day.min)}°`;
-      },
-
-      renderLocationLabel() {
-        const meta = document.getElementById('wbMetaCal');
-        if (meta) meta.textContent = `${this.location.name} · 불러오는 중`;
-      },
-
-      togglePanel() {
-        document.getElementById('locationPanel').classList.toggle('hidden');
-      },
-
-      async searchLocation() {
-        const q = document.getElementById('locationInput').value.trim();
-        if (!q) return;
-        const resultsBox = document.getElementById('locationResults');
-        resultsBox.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:6px;">검색 중…</div>';
-        try {
-          const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=ko&format=json`;
-          const res = await fetch(url);
-          const data = await res.json();
-          if (!data.results || data.results.length === 0) {
-            resultsBox.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:6px;">검색 결과가 없어요 😢</div>';
-            return;
-          }
-          resultsBox.innerHTML = data.results.map((r, i) => {
-            const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
-            return `<div class="location-result" onclick="app.weather.selectLocation(${r.latitude}, ${r.longitude}, '${r.name.replace(/'/g, "")}')">📍 ${label}</div>`;
-          }).join('');
-        } catch (e) {
-          resultsBox.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:6px;">검색에 실패했어요</div>';
-        }
-      },
-
-      selectLocation(lat, lon, name) {
-        this.location = { lat, lon, name };
-        localStorage.setItem('weatherLocation', JSON.stringify(this.location));
-        this.dailyCache = {};
-        document.getElementById('locationPanel').classList.add('hidden');
-        document.getElementById('locationInput').value = '';
-        document.getElementById('locationResults').innerHTML = '';
-        app.ui.showToast(`📍 ${name}(으)로 지역이 변경되었습니다`);
-        this.fetchCurrent();
       }
     },
 
-    /* ⏳ 타이머 객체 */
+    /* ⏳ 타이머 — 백그라운드/다른 탭에서도 시계 기준으로 계속 흐름 */
     timer: {
+      STORAGE_KEY: 'timerState',
       activeHour: null,
       mode: 'study',
       timeLeft: 40 * 60,
+      endTimestamp: null,
       interval: null,
       isRunning: false,
+      dateStr: null,
 
       init() {
+        this.restore();
         this.renderGrid();
         this.updateDisplay();
+        if (this.isRunning) this.resumeInterval();
+      },
+
+      persist() {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+          activeHour: this.activeHour, mode: this.mode, timeLeft: this.timeLeft,
+          endTimestamp: this.endTimestamp, isRunning: this.isRunning, dateStr: this.dateStr
+        }));
+      },
+
+      restore() {
+        const saved = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || 'null');
+        if (!saved) return;
+        this.activeHour = saved.activeHour;
+        this.mode = saved.mode;
+        this.dateStr = saved.dateStr;
+        this.isRunning = saved.isRunning;
+        this.endTimestamp = saved.endTimestamp;
+        this.timeLeft = saved.timeLeft;
+        if (this.isRunning && this.endTimestamp) this.catchUp();
+      },
+
+      catchUp() {
+        let guard = 0;
+        while (this.isRunning && this.endTimestamp && Date.now() >= this.endTimestamp && guard < 50) {
+          this.completeCycle(true);
+          guard++;
+        }
+        if (this.isRunning && this.endTimestamp) {
+          this.timeLeft = Math.max(0, Math.round((this.endTimestamp - Date.now()) / 1000));
+        }
+      },
+
+      resumeInterval() {
+        if (this.interval) clearInterval(this.interval);
+        this.interval = setInterval(() => this.tick(), 1000);
+      },
+
+      stopInterval() {
+        this.isRunning = false;
+        if (this.interval) clearInterval(this.interval);
+        this.interval = null;
+      },
+
+      tick() {
+        if (!this.isRunning || !this.endTimestamp) return;
+        const remaining = Math.round((this.endTimestamp - Date.now()) / 1000);
+        if (remaining <= 0) this.completeCycle(false);
+        else { this.timeLeft = remaining; this.updateDisplay(); }
       },
 
       renderGrid() {
@@ -718,12 +1269,12 @@
         grid.innerHTML = '';
         const timersData = (app.dailyData[app.selectedDateStr] && app.dailyData[app.selectedDateStr].timers) || {};
 
-        for(let i = 0; i < 24; i++) {
+        for (let i = 0; i < 24; i++) {
           const btn = document.createElement('button');
           btn.className = 'timer-chip';
           btn.textContent = `${i}시`;
 
-          if (this.activeHour === i) btn.classList.add('active');
+          if (this.activeHour === i && this.dateStr === app.selectedDateStr) btn.classList.add('active');
           if (timersData[i] === 'done') btn.classList.add('done');
 
           btn.onclick = () => this.selectHour(i);
@@ -732,85 +1283,102 @@
       },
 
       selectHour(hour) {
-        this.pause();
+        this.stopInterval();
         this.activeHour = hour;
         this.mode = 'study';
         this.timeLeft = 40 * 60;
+        this.endTimestamp = null;
+        this.isRunning = false;
+        this.dateStr = app.selectedDateStr;
+        this.persist();
         this.renderGrid();
         this.updateDisplay();
       },
 
       start() {
-        if(this.activeHour === null) return app.ui.showToast('먼저 위에서 시간대(0~23시)를 선택해주세요! 👆');
-        if(this.isRunning) return;
-
+        if (this.activeHour === null) return app.ui.showToast('먼저 위에서 시간대(0~23시)를 선택해주세요! 👆');
+        if (this.isRunning) return;
         this.isRunning = true;
-        this.interval = setInterval(() => {
-          if(this.timeLeft > 0) {
-            this.timeLeft--;
-            this.updateDisplay();
-          } else {
-            this.switchMode();
-          }
-        }, 1000);
+        this.endTimestamp = Date.now() + this.timeLeft * 1000;
+        this.persist();
+        this.resumeInterval();
+        app.ui.showToast('⏳ 타이머가 시작됐어요. 다른 화면을 보고 있어도 계속 흘러갑니다!');
       },
 
       pause() {
-        this.isRunning = false;
-        clearInterval(this.interval);
-      },
-
-      reset() {
-        if(this.activeHour === null) return;
-        this.pause();
-        this.mode = 'study';
-        this.timeLeft = 40 * 60;
+        if (this.endTimestamp) this.timeLeft = Math.max(0, Math.round((this.endTimestamp - Date.now()) / 1000));
+        this.stopInterval();
+        this.endTimestamp = null;
+        this.persist();
         this.updateDisplay();
       },
 
-      switchMode() {
-        this.pause();
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification(this.mode === 'study' ? "🎉 집중 완료!" : "🔔 휴식 끝!", {
-            body: this.mode === 'study' ? "40분 집중 완료! 20분 휴식을 시작하세요." : "20분 휴식 종료! 한 시간 세션이 완료되었습니다."
-          });
-        }
+      reset() {
+        if (this.activeHour === null) return;
+        this.stopInterval();
+        this.mode = 'study';
+        this.timeLeft = 40 * 60;
+        this.endTimestamp = null;
+        this.persist();
+        this.updateDisplay();
+      },
 
-        if(this.mode === 'study') {
-          app.ui.showToast('🎉 40분 집중 완료! 달콤한 20분 휴식을 시작하세요 ☕');
+      completeCycle(fromCatchUp) {
+        if (this.mode === 'study') {
+          if (!fromCatchUp) {
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification("🎉 집중 완료!", { body: "40분 집중 완료! 20분 휴식을 시작하세요." });
+            }
+            app.ui.showToast('🎉 40분 집중 완료! 달콤한 20분 휴식을 시작하세요 ☕');
+          }
           this.mode = 'rest';
           this.timeLeft = 20 * 60;
-          this.updateDisplay();
+          this.endTimestamp = Date.now() + this.timeLeft * 1000;
         } else {
-          app.ui.showToast('✅ 1시간 세션 완료! 너무 수고하셨습니다 👏');
+          if (!fromCatchUp) {
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification("🔔 휴식 끝!", { body: "20분 휴식 종료! 한 시간 세션이 완료되었습니다." });
+            }
+            app.ui.showToast('✅ 1시간 세션 완료! 너무 수고하셨습니다 👏');
+          }
 
-          if (!app.dailyData[app.selectedDateStr]) app.dailyData[app.selectedDateStr] = { timers: {} };
-          if (!app.dailyData[app.selectedDateStr].timers) app.dailyData[app.selectedDateStr].timers = {};
-
-          app.dailyData[app.selectedDateStr].timers[this.activeHour] = 'done';
-          app.saveDailyData(false);
+          const targetDate = this.dateStr || app.selectedDateStr;
+          if (targetDate) {
+            if (!app.dailyData[targetDate]) app.dailyData[targetDate] = { timers: {} };
+            if (!app.dailyData[targetDate].timers) app.dailyData[targetDate].timers = {};
+            app.dailyData[targetDate].timers[this.activeHour] = 'done';
+            localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
+          }
 
           this.activeHour = null;
-          this.renderGrid();
-          this.updateDisplay();
+          this.mode = 'study';
+          this.timeLeft = 40 * 60;
+          this.endTimestamp = null;
+          this.stopInterval();
         }
+        this.persist();
+        this.renderGrid();
+        this.updateDisplay();
       },
 
       updateDisplay() {
         const titleEl = document.getElementById('timerTitle');
         const timeEl = document.getElementById('timerTime');
 
-        if(this.activeHour === null) {
+        if (this.activeHour === null) {
           titleEl.textContent = '원하는 시간대를 선택해주세요 👆';
           titleEl.style.color = 'var(--ink-soft)';
           timeEl.textContent = '00:00';
           return;
         }
 
+        const dateNote = (this.dateStr && this.dateStr !== app.selectedDateStr)
+          ? `<span style="color:var(--ink-faint); font-weight:500;">[${this.dateStr.slice(5).replace('-', '/')}] </span>` : '';
+
         if (this.mode === 'study') {
-          titleEl.innerHTML = `<span style="color:#e8748f;">[${this.activeHour}시]</span> 🔥 40분 집중 모드`;
+          titleEl.innerHTML = `${dateNote}<span style="color:#e8748f;">[${this.activeHour}시]</span> 🔥 40분 집중 모드`;
         } else {
-          titleEl.innerHTML = `<span style="color:#5b8fd6;">[${this.activeHour}시]</span> ☕ 20분 휴식 모드`;
+          titleEl.innerHTML = `${dateNote}<span style="color:#5b8fd6;">[${this.activeHour}시]</span> ☕ 20분 휴식 모드`;
         }
 
         const m = String(Math.floor(this.timeLeft / 60)).padStart(2, '0');
@@ -835,24 +1403,81 @@
       showPlanner(dateStr) {
         app.selectedDateStr = dateStr;
         document.getElementById('calendarView').classList.add('hidden');
+        document.getElementById('diaryView').classList.add('hidden');
         document.getElementById('plannerView').classList.remove('hidden');
         document.getElementById('plannerTitle').textContent = `📝 ${dateStr.split('-')[1]}월 ${dateStr.split('-')[2]}일 플래너`;
         this.loadPlannerData();
-        app.weather.renderPlannerCard(dateStr);
+        app.weather.renderPlannerWeather(dateStr);
         window.scrollTo(0, 0);
       },
 
       showCalendar() {
-        app.timer.pause();
         document.getElementById('plannerView').classList.add('hidden');
+        document.getElementById('diaryView').classList.add('hidden');
         document.getElementById('calendarView').classList.remove('hidden');
         this.renderCalendar();
+      },
+
+      /* 🗒️ 일기 / 메모 — 캘린더/플래너 어디서든 그날에 맞게 열람 */
+      openDiary(dateStr, fromView) {
+        app.diaryDateStr = dateStr || app.diaryDateStr || app.todayStr();
+        if (fromView) app.diaryFromView = fromView;
+        document.getElementById('calendarView').classList.add('hidden');
+        document.getElementById('plannerView').classList.add('hidden');
+        document.getElementById('diaryView').classList.remove('hidden');
+        this.loadDiaryData();
+        window.scrollTo(0, 0);
+      },
+
+      closeDiary() {
+        this.saveDiary(false);
+        document.getElementById('diaryView').classList.add('hidden');
+        if (app.diaryFromView === 'plannerView' && app.selectedDateStr) {
+          this.showPlanner(app.selectedDateStr);
+        } else {
+          this.showCalendar();
+        }
+      },
+
+      shiftDiaryDate(offset) {
+        this.saveDiary(false);
+        const d = new Date(app.diaryDateStr);
+        d.setDate(d.getDate() + offset);
+        app.diaryDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        this.loadDiaryData();
+      },
+
+      loadDiaryData() {
+        const dateStr = app.diaryDateStr;
+        const d = new Date(dateStr);
+        const isToday = dateStr === app.todayStr();
+        document.getElementById('diaryDateLabel').textContent = `${isToday ? '오늘 · ' : ''}${d.getMonth() + 1}월 ${d.getDate()}일 (${['일', '월', '화', '수', '목', '금', '토'][d.getDay()]}) 일기`;
+        const text = app.diary[dateStr] || '';
+        document.getElementById('diaryTextarea').value = text;
+        document.getElementById('diaryMeta').textContent = text ? `${text.length}자 작성됨` : '아직 작성된 일기가 없어요';
+
+        const quoteIdx = app.dayOfYear(dateStr) % app.quotes.length;
+        document.getElementById('diaryQuote').textContent = `💬 ${app.quotes[quoteIdx]}`;
+      },
+
+      saveDiary(showToast = true) {
+        const dateStr = app.diaryDateStr;
+        if (!dateStr) return;
+        const text = document.getElementById('diaryTextarea').value;
+        if (text.trim() === '') {
+          delete app.diary[dateStr];
+        } else {
+          app.diary[dateStr] = text;
+        }
+        localStorage.setItem('appDiary', JSON.stringify(app.diary));
+        document.getElementById('diaryMeta').textContent = text ? `${text.length}자 작성됨` : '아직 작성된 일기가 없어요';
+        if (showToast) app.ui.showToast('일기가 저장되었습니다. 📓');
       },
 
       updateTimetableRange() {
         const start = parseInt(document.getElementById('timeStart').value);
         const end = parseInt(document.getElementById('timeEnd').value);
-        if(start >= end) return this.showToast("시작 시간이 종료 시간보다 작아야 합니다.");
+        if (start >= end) return this.showToast("시작 시간이 종료 시간보다 작아야 합니다.");
         app.settings.start = start; app.settings.end = end;
         localStorage.setItem('appSettings', JSON.stringify(app.settings));
 
@@ -875,7 +1500,7 @@
       },
 
       loadPlannerData() {
-        const data = app.dailyData[app.selectedDateStr] || { priorities: ["","",""], timetable: {}, finances: [], timers: {}, progress: 0 };
+        const data = app.dailyData[app.selectedDateStr] || { priorities: ["", "", ""], timetable: {}, finances: [], timers: {}, progress: 0 };
 
         document.getElementById('pri1').value = data.priorities[0] || "";
         document.getElementById('pri2').value = data.priorities[1] || "";
@@ -885,7 +1510,7 @@
 
         const tContainer = document.getElementById('timetableContainer');
         tContainer.innerHTML = '';
-        for(let i = app.settings.start; i <= app.settings.end; i++) {
+        for (let i = app.settings.start; i <= app.settings.end; i++) {
           const timeStr = `${String(i).padStart(2, '0')}:00`;
           const task = data.timetable[i] || { text: "", done: false };
           const doneClass = task.done ? "done" : "";
@@ -903,14 +1528,13 @@
 
         const fContainer = document.getElementById('financeList');
         fContainer.innerHTML = '';
-        if(!data.finances || data.finances.length === 0) this.addFinanceRow();
-        else {
-          data.finances.forEach(f => this.addFinanceRow(f.category, f.desc, f.amount));
-        }
+        if (!data.finances || data.finances.length === 0) this.addFinanceRow();
+        else data.finances.forEach(f => this.addFinanceRow(f.category, f.desc, f.amount));
 
         this.calculateExpenditure();
         this.updateGrowthReport();
-        app.timer.init();
+        app.timer.renderGrid();
+        app.timer.updateDisplay();
       },
 
       addFinanceRow(category = "식비", desc = "", amount = "") {
@@ -936,7 +1560,7 @@
         const cats = document.querySelectorAll('.finance-item .cat');
 
         let total = 0;
-        let categorySums = { '식비':0, '교통비':0, '쇼핑':0, '자기계발':0, '기타':0 };
+        let categorySums = { '식비': 0, '교통비': 0, '쇼핑': 0, '자기계발': 0, '기타': 0 };
 
         amounts.forEach((input, index) => {
           const val = Number(input.value) || 0;
@@ -962,7 +1586,7 @@
         const labels = Object.keys(categorySums).filter(k => categorySums[k] > 0);
         const data = labels.map(k => categorySums[k]);
 
-        if(data.length === 0) return;
+        if (data.length === 0) return;
 
         app.financeChartInstance = new Chart(ctx, {
           type: 'doughnut',
@@ -976,7 +1600,7 @@
           },
           options: {
             responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 11} } } }
+            plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } }
           }
         });
       },
@@ -1006,7 +1630,7 @@
         }
 
         const labels = [], dataPts = [];
-        for(let i = 6; i >= 0; i--) {
+        for (let i = 6; i >= 0; i--) {
           const dStr = app.getOffsetDateString(todayStr, i);
           const dObj = new Date(dStr);
           labels.push(`${dObj.getMonth() + 1}/${dObj.getDate()}`);
@@ -1039,20 +1663,34 @@
         const grid = document.getElementById('calendarDays');
         grid.innerHTML = '';
 
-        for(let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
 
         const today = new Date();
-        for(let day = 1; day <= daysInMonth; day++) {
+        const wxData = app.weather.activeData();
+        const wxDaily = wxData && wxData.daily;
+
+        for (let day = 1; day <= daysInMonth; day++) {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const dayOfWeek = new Date(year, month, day).getDay();
 
           let classes = "cal-day";
           let dateStyle = "";
           let extraHtml = "";
+          let wxHtml = "";
 
-          if(dayOfWeek === 0) dateStyle = 'class="sun"';
-          if(dayOfWeek === 6) dateStyle = 'class="sat"';
-          if(year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) classes += " today";
+          if (dayOfWeek === 0) dateStyle = 'class="sun"';
+          if (dayOfWeek === 6) dateStyle = 'class="sat"';
+          if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) classes += " today";
+
+          if (wxDaily) {
+            const idx = wxDaily.time.indexOf(dateStr);
+            if (idx !== -1) {
+              const info = app.weather.groupInfo(wxDaily.weathercode[idx]);
+              classes += " wx-" + info.group;
+              const maxT = Math.round(wxDaily.temperature_2m_max[idx]);
+              wxHtml = `<span class="cal-wx-icon">${app.weather.icons[info.icon]}</span><span class="cal-wx-temp">${maxT}°</span>`;
+            }
+          }
 
           if (app.holidays[year] && app.holidays[year][dateStr]) {
             dateStyle = 'class="sun"';
@@ -1064,10 +1702,14 @@
           });
 
           if (app.dailyData[dateStr] && app.dailyData[dateStr].priorities && app.dailyData[dateStr].priorities[0]) {
-             extraHtml += `<div class="priority-text">📌 ${app.dailyData[dateStr].priorities[0]}</div>`;
+            extraHtml += `<div class="priority-text">📌 ${app.dailyData[dateStr].priorities[0]}</div>`;
           }
 
-          grid.innerHTML += `<div class="${classes}" onclick="app.ui.showPlanner('${dateStr}')"><span ${dateStyle}>${day}</span>${extraHtml}</div>`;
+          if (app.diary[dateStr] && app.diary[dateStr].trim() !== '') {
+            extraHtml += `<div class="diary-indicator" onclick="event.stopPropagation(); app.ui.openDiary('${dateStr}', 'calendarView')">📓 일기 있음</div>`;
+          }
+
+          grid.innerHTML += `<div class="${classes}" onclick="app.ui.showPlanner('${dateStr}')"><span ${dateStyle}>${day}</span>${wxHtml}${extraHtml}</div>`;
         }
       }
     }
@@ -1076,22 +1718,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     app.init();
 
-    document.addEventListener('click', (e) => {
-      const panel = document.getElementById('locationPanel');
-      const badge = document.getElementById('weatherBadgeCal');
-      if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !badge.contains(e.target)) {
-        panel.classList.add('hidden');
-      }
-    });
-
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js')
-        .then(registration => {
-          console.log('ServiceWorker 등록 성공:', registration.scope);
-        })
-        .catch(error => {
-          console.log('ServiceWorker 등록 실패:', error);
-        });
+        .then(registration => console.log('ServiceWorker 등록 성공:', registration.scope))
+        .catch(error => console.log('ServiceWorker 등록 실패:', error));
     }
   });
 </script>
