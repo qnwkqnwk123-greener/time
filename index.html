@@ -19,6 +19,7 @@
     --paper-raised: #ffffff;
     --line:       #ece5f3;
 
+    /* 기본 테마: 라벤더 */
     --accent:      #6e63e0;
     --accent-deep: #564cc4;
     --accent-bg:   #eeecfb;
@@ -39,12 +40,12 @@
     --font-display: 'Gowun Batang', 'Noto Serif KR', serif;
     --font-body: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-    --g-default: linear-gradient(135deg, #7fb8e6 0%, #6e63e0 100%);
-    --g-sunny:   linear-gradient(135deg, #ffcf8a 0%, #ff9a76 55%, #6e63e0 100%);
-    --g-cloudy:  linear-gradient(135deg, #b7c2d6 0%, #8f9dc4 55%, #5d5aa8 100%);
-    --g-rain:    linear-gradient(135deg, #7a94b8 0%, #5b6ea0 55%, #443f8c 100%);
-    --g-snow:    linear-gradient(135deg, #cfe6f5 0%, #a8c7e6 55%, #7d7fd6 100%);
-    --g-fog:     linear-gradient(135deg, #c7c3d6 0%, #a29ec4 55%, #75699d 100%);
+    --g-default: linear-gradient(135deg, #7fb8e6 0%, var(--accent) 100%);
+    --g-sunny:   linear-gradient(135deg, #ffcf8a 0%, #ff9a76 55%, var(--accent) 100%);
+    --g-cloudy:  linear-gradient(135deg, #b7c2d6 0%, #8f9dc4 55%, var(--accent-deep) 100%);
+    --g-rain:    linear-gradient(135deg, #7a94b8 0%, #5b6ea0 55%, var(--accent-deep) 100%);
+    --g-snow:    linear-gradient(135deg, #cfe6f5 0%, #a8c7e6 55%, var(--accent) 100%);
+    --g-fog:     linear-gradient(135deg, #c7c3d6 0%, #a29ec4 55%, var(--accent-deep) 100%);
     --g-storm:   linear-gradient(135deg, #6c6a92 0%, #4c4a80 55%, #322c5e 100%);
     --g-night:   linear-gradient(135deg, #4b5aa8 0%, #362c74 55%, #1f1a4a 100%);
 
@@ -52,18 +53,26 @@
     --tint-snow: #eef7fc; --tint-fog: #efeaf5; --tint-storm: #e6e3f2;
   }
 
+  /* 🌿 민트 테마 */
+  body.theme-mint {
+    --accent: #34d399; --accent-deep: #059669; --accent-bg: #d1fae5;
+  }
+  /* 🍑 피치 테마 */
+  body.theme-peach {
+    --accent: #fb7185; --accent-deep: #e11d48; --accent-bg: #ffe4e6;
+  }
+  /* ☁️ 스카이 테마 */
+  body.theme-sky {
+    --accent: #38bdf8; --accent-deep: #0284c7; --accent-bg: #e0f2fe;
+  }
+
   body.dark {
     --ink:        #eae6f2;
     --ink-soft:   #b3acc4;
     --ink-faint:  #8a8298;
-
     --paper:      #211d2c;
     --paper-raised: #2b2638;
     --line:       #3c3550;
-
-    --accent:      #8b81f0;
-    --accent-deep: #a89cff;
-    --accent-bg:   #352f4d;
 
     --sky-bg:     #29304a;
     --mint-bg:    #1f3a34;
@@ -76,6 +85,13 @@
     --shadow-sm: 0 2px 8px -2px rgba(0,0,0,0.35);
     --shadow-md: 0 12px 28px -12px rgba(0,0,0,0.55);
   }
+  
+  /* 다크모드일 때 각 테마별 약간 어두운 악센트 조절 */
+  body.dark:not(.theme-mint):not(.theme-peach):not(.theme-sky) { --accent: #8b81f0; --accent-deep: #a89cff; --accent-bg: #352f4d; }
+  body.dark.theme-mint { --accent: #10b981; --accent-deep: #34d399; --accent-bg: #064e3b; }
+  body.dark.theme-peach { --accent: #f43f5e; --accent-deep: #fb7185; --accent-bg: #881337; }
+  body.dark.theme-sky { --accent: #0ea5e9; --accent-deep: #38bdf8; --accent-bg: #0c4a6e; }
+
   body.dark { background-image: radial-gradient(circle at 8% 0%, rgba(139,129,240,0.08), transparent 40%), radial-gradient(circle at 100% 10%, rgba(139,129,240,0.06), transparent 45%); }
   body.dark button { color: var(--ink); }
   body.dark .btn-primary { color: white; }
@@ -95,9 +111,7 @@
   }
 
   /* 모바일 줌(Zoom) 방지를 위해 모든 입력 필드 16px 고정 */
-  input[type="text"], input[type="number"], textarea, select {
-    font-size: 16px !important;
-  }
+  input[type="text"], input[type="number"], textarea, select { font-size: 16px !important; }
 
   h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
 
@@ -113,6 +127,12 @@
   .btn-ghost { background: transparent; border: 1px solid var(--line); }
   .btn-danger { background: var(--blush-bg); color: var(--blush); border: 1px solid #f7c9dc; padding: 8px 12px; border-radius: 12px; }
   .hidden { display: none !important; }
+
+  /* ============ 테마 팔레트 ============ */
+  .theme-picker { display: flex; gap: 8px; align-items: center; background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(2px); }
+  .theme-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
+  .theme-dot:hover { transform: scale(1.15); }
+  .theme-dot.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 2px var(--ink-soft); }
 
   /* ============ 히어로 밴드 ============ */
   .hero {
@@ -148,7 +168,6 @@
   .diary-quote { font-size: 12.5px; font-style: italic; color: var(--ink-soft); background: var(--accent-bg); padding: 10px 14px;
     border-radius: 12px; margin-bottom: 14px; border-left: 3px solid var(--accent); }
   
-  /* 일기 제목 입력란 CSS */
   .diary-title-input {
     width: 100%; font-size: 18px !important; font-weight: 700; padding: 10px 18px;
     border: none; border-bottom: 2px dashed var(--line); margin-bottom: 12px;
@@ -314,13 +333,23 @@
   .time-settings { display: flex; gap: 5px; align-items: center; font-size: 11.5px; color: var(--ink-soft); }
   .time-settings input { width: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; text-align: center; font-size: 16px !important;}
 
+  /* 📜 모바일 최적화 타임테이블 스크롤 영역 */
+  .timetable-wrapper {
+    max-height: 50vh; /* 화면의 절반만 차지하도록 스크롤바 생성 */
+    overflow-y: auto;
+    padding-right: 5px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .timetable-wrapper::-webkit-scrollbar { width: 6px; }
+  .timetable-wrapper::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .timetable-wrapper::-webkit-scrollbar-track { background: transparent; }
+
   .time-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f4f1fa; gap: 8px; transition: background 0.15s; }
   .drag-handle { cursor: grab; color: var(--ink-faint); font-size: 16px; padding: 4px; touch-action: none; user-select: none; flex-shrink: 0; }
   .time-row.dragging { opacity: 0.5; }
   .time-row.drag-over { background: var(--accent-bg); border-radius: 10px; box-shadow: inset 0 0 0 2px var(--accent); }
   .time-label { width: 55px; font-size: 12.5px; font-weight: 700; color: var(--accent-deep); text-align: center; flex-shrink: 0; }
   
-  /* 모바일에서 입력하기 편하도록 시간 입력칸 여백 및 폰트 개선 */
   .time-input { flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: 12px; outline: none; transition: all 0.18s; font-size: 16px !important; min-width: 0; background: var(--paper); }
   .time-input:focus { border-color: var(--accent); background: white; }
   .time-input.done-input { background: var(--blush-bg); color: #b391a0; text-decoration: line-through; border-color: #f6d3e2; }
@@ -353,6 +382,20 @@
     opacity: 0; transition: opacity 0.3s, visibility 0.3s; font-size: 13.5px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);
   }
   #toastContainer.show { visibility: visible; opacity: 1; }
+
+  /* 📱 추가 모바일 미세조정 */
+  @media (max-width: 600px) {
+    .hero { padding: 18px 16px; margin-bottom: 16px; border-radius: 20px; }
+    .hero-title { font-size: 19px; }
+    .box-panel { padding: 15px; }
+    .cal-day { padding: 8px 2px; min-height: 75px; font-size: 12px; gap: 2px; }
+    .cal-wx-icon { width: 13px; height: 13px; }
+    .time-label { width: 45px; font-size: 11.5px; }
+    .time-input { padding: 10px; font-size: 16px !important; }
+    .status-btn { width: 62px; padding: 10px 0; font-size: 11px; }
+    .priority-item input, .finance-item select, .finance-item input { padding: 10px; }
+    .timetable-wrapper { max-height: 45vh; }
+  }
 </style>
 </head>
 <body>
@@ -381,8 +424,18 @@
         <button onclick="app.ui.changeMonth(-1)">◀</button>
         <span id="currentMonthStr"></span>
         <button onclick="app.ui.changeMonth(1)">▶</button>
-        <button onclick="app.ui.openDiary(app.todayStr(), 'calendarView')" style="margin-left:auto;">🗒️ 오늘의 일기</button>
+        
+        <div class="theme-picker" id="themePicker" style="margin-left:auto;">
+           <div class="theme-dot" data-theme="default" style="background: #6e63e0;" onclick="app.ui.setTheme('default')" title="라벤더"></div>
+           <div class="theme-dot" data-theme="mint" style="background: #34d399;" onclick="app.ui.setTheme('mint')" title="민트"></div>
+           <div class="theme-dot" data-theme="peach" style="background: #fb7185;" onclick="app.ui.setTheme('peach')" title="피치"></div>
+           <div class="theme-dot" data-theme="sky" style="background: #38bdf8;" onclick="app.ui.setTheme('sky')" title="스카이"></div>
+        </div>
+        
         <button id="darkModeToggleBtn" onclick="app.ui.toggleDarkMode()">🌙</button>
+      </div>
+      <div class="hero-nav" style="margin-top:10px; flex-wrap: wrap;">
+        <button onclick="app.ui.openDiary(app.todayStr(), 'calendarView')">🗒️ 오늘의 일기</button>
         <button onclick="app.exportBackup()">⬇️ 백업</button>
         <button onclick="document.getElementById('restoreFileInput').click()">⬆️ 복원</button>
         <input type="file" id="restoreFileInput" accept="application/json" style="display:none;" onchange="app.importBackup(event)">
@@ -476,7 +529,7 @@
               <button onclick="app.ui.updateTimetableRange()" style="padding:6px 10px;">적용</button>
             </div>
           </div>
-          <div id="timetableContainer"></div>
+          <div class="timetable-wrapper" id="timetableContainer"></div>
         </div>
       </div>
 
@@ -704,6 +757,7 @@
 
     init() {
       this.ui.applyDarkModePreference();
+      this.ui.applyThemePreference();
 
       this.fetchHolidays(this.currentDate.getFullYear()).then(() => {
         this.ui.renderCalendar();
@@ -844,7 +898,7 @@
       this.ui.showToast('데이터가 CSV로 다운로드 되었습니다! 📥');
     },
 
-    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appDiary', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode'],
+    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appDiary', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme'],
 
     exportBackup() {
       const payload = { exportedAt: new Date().toISOString(), version: 1, data: {} };
@@ -1628,6 +1682,29 @@
         if (this.alarmToastTimer) { clearTimeout(this.alarmToastTimer); this.alarmToastTimer = null; }
       },
 
+      /* 🎨 테마 및 다크모드 적용 */
+      applyThemePreference() {
+        const theme = localStorage.getItem('appTheme') || 'default';
+        this.setTheme(theme);
+      },
+
+      setTheme(themeName) {
+        document.body.classList.remove('theme-mint', 'theme-peach', 'theme-sky');
+        if (themeName !== 'default') {
+          document.body.classList.add('theme-' + themeName);
+        }
+        localStorage.setItem('appTheme', themeName);
+        
+        // 닷(Dot) 활성화 상태 변경
+        document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+        const activeDot = document.querySelector(`.theme-dot[data-theme="${themeName}"]`);
+        if(activeDot) activeDot.classList.add('active');
+        
+        // 기존 컴포넌트 강제 리렌더링(색상 반영)
+        this.calculateExpenditure();
+        this.updateGrowthReport();
+      },
+
       applyDarkModePreference() {
         const on = localStorage.getItem('darkMode') === 'true';
         document.body.classList.toggle('dark', on);
@@ -1971,7 +2048,6 @@
           const doneInputClass = task.done ? "done-input" : "";
           const btnText = task.done ? "💖 달성" : "🤍 대기";
 
-          // 타임테이블에서 Enter 키를 누르면 다음 입력창으로 넘어가도록 onkeydown 추가
           tContainer.innerHTML += `
             <div class="time-row" data-hour="${i}">
               <span class="drag-handle" title="꾹 눌러 다른 시간대로 옮기기">⠿</span>
@@ -2053,13 +2129,19 @@
 
         if (data.length === 0) return;
 
+        // 테마별 색상 추출
+        const computedStyle = getComputedStyle(document.body);
+        const cAccent = computedStyle.getPropertyValue('--accent').trim() || '#6e63e0';
+        const cDeep = computedStyle.getPropertyValue('--accent-deep').trim() || '#564cc4';
+        const colors = [cAccent, cDeep, '#e8ab4c', '#58c9a3', '#ef8fb3'];
+
         app.financeChartInstance = new Chart(ctx, {
           type: 'doughnut',
           data: {
             labels: labels,
             datasets: [{
               data: data,
-              backgroundColor: ['#ef8fb3', '#7fb8e6', '#e8ab4c', '#58c9a3', '#c3a6e6'],
+              backgroundColor: colors,
               borderWidth: 0
             }]
           },
@@ -2105,17 +2187,17 @@
         const ctx = document.getElementById('growthChart').getContext('2d');
         if (app.growthChartInstance) app.growthChartInstance.destroy();
 
-        if (typeof Chart === 'undefined') {
-          console.warn('Chart.js를 불러오지 못해 성장 그래프를 건너뜁니다.');
-          return;
-        }
+        if (typeof Chart === 'undefined') { return; }
+
+        const computedStyle = getComputedStyle(document.body);
+        const cAccent = computedStyle.getPropertyValue('--accent').trim() || '#6e63e0';
 
         app.growthChartInstance = new Chart(ctx, {
           type: 'line',
           data: {
             labels: labels,
             datasets: [{
-              label: '일일 달성률 (%)', data: dataPts, borderColor: '#6e63e0', backgroundColor: 'rgba(110, 99, 224, 0.15)',
+              label: '일일 달성률 (%)', data: dataPts, borderColor: cAccent, backgroundColor: cAccent + '26',
               borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#ef8fb3', pointRadius: 5, pointBorderColor: '#fff', pointBorderWidth: 2
             }]
           },
@@ -2181,7 +2263,6 @@
           const diaryHasPhotos = diaryEntry.photos && diaryEntry.photos.length > 0;
           
           if (diaryHasTitle || diaryHasText || diaryHasPhotos) {
-            // 제목이 있으면 제목을 띄우고, 없으면 본문 첫 줄을 띄웁니다.
             let preview = diaryHasTitle ? diaryEntry.title.trim() : (diaryHasText ? diaryEntry.text.trim().split('\n')[0] : '');
             if (preview.length > 16) preview = preview.slice(0, 16) + '…';
             if (!preview) preview = `사진 ${diaryEntry.photos.length}장`;
