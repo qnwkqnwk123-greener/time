@@ -52,7 +52,6 @@
     --tint-snow: #eef7fc; --tint-fog: #efeaf5; --tint-storm: #e6e3f2;
   }
 
-  /* 🌙 다크 모드 — 파스텔 톤은 유지하되 눈부심을 줄인 저채도 다크 팔레트 */
   body.dark {
     --ink:        #eae6f2;
     --ink-soft:   #b3acc4;
@@ -82,6 +81,7 @@
   body.dark .btn-primary { color: white; }
   body.dark .time-input, body.dark .priority-item input, body.dark .finance-item select, body.dark .finance-item input { color: var(--ink); }
   body.dark ::placeholder { color: var(--ink-faint); opacity: 1; }
+  body.dark .diary-title-input { color: var(--ink); border-bottom-color: var(--line); }
 
   * { box-sizing: border-box; font-family: var(--font-body); }
   html { scroll-behavior: smooth; }
@@ -92,6 +92,11 @@
       radial-gradient(circle at 8% 0%, rgba(127,184,230,0.10), transparent 40%),
       radial-gradient(circle at 100% 10%, rgba(255,185,154,0.12), transparent 45%);
     transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* 모바일 줌(Zoom) 방지를 위해 모든 입력 필드 16px 고정 */
+  input[type="text"], input[type="number"], textarea, select {
+    font-size: 16px !important;
   }
 
   h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
@@ -132,7 +137,7 @@
   .hero-sub { margin: 4px 0 0; font-size: 12.5px; opacity: 0.85; font-weight: 500; }
   .hero-quote { margin: 10px 0 0; font-size: 12.5px; font-style: italic; opacity: 0.95; background: rgba(255,255,255,0.16);
     padding: 9px 13px; border-radius: 12px; border-left: 3px solid rgba(255,255,255,0.65); position: relative; z-index: 1; max-width: 480px; }
-  .hero-nav { display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; }
+  .hero-nav { display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; flex-wrap: wrap; }
   .hero-nav button { background: rgba(255,255,255,0.18); color: white; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(2px); }
   .hero-nav button:hover { background: rgba(255,255,255,0.3); }
 
@@ -142,11 +147,21 @@
   .diary-date-nav { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--accent-deep); }
   .diary-quote { font-size: 12.5px; font-style: italic; color: var(--ink-soft); background: var(--accent-bg); padding: 10px 14px;
     border-radius: 12px; margin-bottom: 14px; border-left: 3px solid var(--accent); }
-  .diary-textarea { width: 100%; min-height: 320px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius-md);
-    font-size: 14px; line-height: 1.7; background: var(--paper-raised); resize: vertical; outline: none; font-family: var(--font-body); }
+  
+  /* 일기 제목 입력란 CSS */
+  .diary-title-input {
+    width: 100%; font-size: 18px !important; font-weight: 700; padding: 10px 18px;
+    border: none; border-bottom: 2px dashed var(--line); margin-bottom: 12px;
+    background: transparent; color: var(--ink); font-family: var(--font-display);
+    outline: none; transition: border-color 0.2s;
+  }
+  .diary-title-input:focus { border-bottom-color: var(--accent); }
+
+  .diary-textarea { width: 100%; min-height: 280px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius-md);
+    font-size: 16px !important; line-height: 1.7; background: var(--paper-raised); resize: vertical; outline: none; font-family: var(--font-body); }
   .diary-textarea:focus { border-color: var(--accent); }
   .diary-meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 8px; text-align: right; }
-  .diary-indicator { color: #b8792a; font-size: 9.5px; background: var(--amber-bg); padding: 2px 5px; border-radius: 5px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .diary-indicator { color: #b8792a; font-size: 11px; background: var(--amber-bg); padding: 3px 6px; border-radius: 6px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-weight: 600;}
   .diary-photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
   .diary-photo-item { position: relative; width: 92px; height: 92px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
   .diary-photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -154,7 +169,6 @@
     width: 20px; height: 20px; border-radius: 50%; font-size: 11px; padding: 0; line-height: 1; cursor: pointer; }
   .diary-photo-add { width: 92px; height: 92px; border-radius: 14px; border: 1.5px dashed var(--line); display: flex; align-items: center;
     justify-content: center; flex-direction: column; gap: 4px; font-size: 11px; color: var(--ink-soft); cursor: pointer; background: var(--paper); }
-  .backup-btn-row { display: flex; gap: 6px; }
   #currentMonthStr { font-weight: 800; font-size: 17px; min-width: 108px; text-align: center; display: inline-block; }
 
   .city-chips { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
@@ -197,7 +211,7 @@
 
   .wx-settings-block { margin-bottom: 16px; }
   .wx-settings-label { font-size: 12.5px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
-  .wx-settings-block input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 13px; margin-bottom: 8px; }
+  .wx-settings-block input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 16px !important; margin-bottom: 8px; }
   .location-result { padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--ink-soft); }
   .location-result:hover { background: var(--accent-bg); color: var(--accent-deep); }
 
@@ -281,10 +295,10 @@
   .timer-controls { display: flex; gap: 8px; justify-content: center; }
   .timer-note { font-size: 10.8px; color: var(--ink-faint); margin-top: 12px; line-height: 1.5; }
   .timer-settings-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 11.5px; color: var(--ink-soft); flex-wrap: wrap; }
-  .timer-settings-row input { width: 46px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; text-align: center; font-size: 12.5px; background: var(--paper-raised); }
+  .timer-settings-row input { width: 46px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; text-align: center; font-size: 16px !important; background: var(--paper-raised); }
   .timer-settings-row button { padding: 6px 10px; font-size: 11px; }
 
-  /* 🔔 커스텀 알람 토스트 — OS 알림 대신 앱 톤에 맞춘 인앱 알림 */
+  /* 🔔 커스텀 알람 토스트 */
   .alarm-toast {
     position: fixed; top: 18px; left: 50%; transform: translateX(-50%) translateY(-140%);
     display: flex; align-items: flex-start; gap: 12px; background: var(--paper-raised); border-left: 5px solid var(--accent);
@@ -296,26 +310,26 @@
   .alarm-toast-title { font-weight: 800; font-size: 13.5px; color: var(--ink); margin-bottom: 2px; }
   .alarm-toast-body { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
   .alarm-toast-close { background: none; border: none; padding: 2px; color: var(--ink-faint); font-size: 12px; cursor: pointer; margin-left: auto; flex-shrink: 0; }
-  .alarm-toast-close:hover { background: none; color: var(--ink); transform: none; box-shadow: none; }
 
   .time-settings { display: flex; gap: 5px; align-items: center; font-size: 11.5px; color: var(--ink-soft); }
-  .time-settings input { width: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; text-align: center; }
+  .time-settings input { width: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; text-align: center; font-size: 16px !important;}
 
   .time-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f4f1fa; gap: 8px; transition: background 0.15s; }
   .drag-handle { cursor: grab; color: var(--ink-faint); font-size: 16px; padding: 4px; touch-action: none; user-select: none; flex-shrink: 0; }
-  .drag-handle:active { cursor: grabbing; }
   .time-row.dragging { opacity: 0.5; }
   .time-row.drag-over { background: var(--accent-bg); border-radius: 10px; box-shadow: inset 0 0 0 2px var(--accent); }
   .time-label { width: 55px; font-size: 12.5px; font-weight: 700; color: var(--accent-deep); text-align: center; flex-shrink: 0; }
-  .time-input { flex: 1; padding: 11px; border: 1px solid var(--line); border-radius: 12px; outline: none; transition: all 0.18s; font-size: 13.5px; min-width: 0; background: var(--paper); }
+  
+  /* 모바일에서 입력하기 편하도록 시간 입력칸 여백 및 폰트 개선 */
+  .time-input { flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: 12px; outline: none; transition: all 0.18s; font-size: 16px !important; min-width: 0; background: var(--paper); }
   .time-input:focus { border-color: var(--accent); background: white; }
   .time-input.done-input { background: var(--blush-bg); color: #b391a0; text-decoration: line-through; border-color: #f6d3e2; }
 
-  .status-btn { width: 74px; padding: 9px 0; font-size: 11.5px; border-radius: 20px; background: #f4f1fa; color: var(--ink-soft); flex-shrink: 0; border: none; }
+  .status-btn { width: 74px; padding: 12px 0; font-size: 11.5px; border-radius: 20px; background: #f4f1fa; color: var(--ink-soft); flex-shrink: 0; border: none; font-weight: 700;}
   .status-btn.done { background: var(--blush); color: white; box-shadow: 0 4px 6px rgba(239, 143, 179, 0.35); }
 
   .priority-list, .finance-list { display: flex; flex-direction: column; gap: 10px; }
-  .priority-item input, .finance-item select, .finance-item input { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 12px; box-sizing: border-box; font-size: 13.5px; background: var(--paper); }
+  .priority-item input, .finance-item select, .finance-item input { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 12px; box-sizing: border-box; font-size: 16px !important; background: var(--paper); }
   .priority-item input:focus, .finance-item select:focus, .finance-item input:focus { outline: none; border-color: var(--accent); background: white; }
 
   .finance-item { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -507,7 +521,6 @@
     </div>
   </div>
 
-  <!-- 🗒️ 일기 / 메모 페이지: 어느 화면에서든 그날에 맞게 열람 -->
   <div id="diaryView" class="hidden">
     <div style="margin-bottom: 15px;">
       <button class="btn-ghost" onclick="app.ui.closeDiary()">◀ 돌아가기</button>
@@ -522,6 +535,9 @@
     </div>
     <div class="box-panel">
       <div class="diary-quote" id="diaryQuote"></div>
+      
+      <input type="text" id="diaryTitle" class="diary-title-input" placeholder="오늘 일기의 제목을 적어보세요 ✍️" onchange="app.ui.saveDiary(false)">
+      
       <textarea class="diary-textarea" id="diaryTextarea" placeholder="오늘 하루는 어땠나요? 자유롭게 적어보세요 ✍️" onchange="app.ui.saveDiary(false)"></textarea>
 
       <h3 class="box-title" style="margin-top:18px; margin-bottom:10px; padding-bottom:8px;">📷 오늘의 사진</h3>
@@ -535,7 +551,6 @@
     </div>
   </div>
 
-  <!-- 날씨 상세 모달: 시간별 / 주간 / 지역설정 -->
   <div id="weatherPanelOverlay" class="hidden" onclick="if(event.target===this) app.weather.closePanel()">
     <div class="weather-panel">
       <div class="weather-panel-header">
@@ -586,7 +601,6 @@
 
   <div id="toastContainer">저장되었습니다.</div>
 
-  <!-- 🔔 커스텀 알람 토스트 (OS 시스템 알림 대체) -->
   <div id="alarmToast" class="alarm-toast">
     <span class="alarm-toast-icon" id="alarmToastIcon">🎉</span>
     <div>
@@ -598,10 +612,6 @@
 
 <script>
   const app = {
-    /* 💾 로컬 스토리지 접근 헬퍼 — 앞으로 서버/클라우드 API로 데이터 계층을 옮길 때
-       이 모듈(app.store)의 구현부만 fetch 호출로 바꾸면 되도록 접근을 한 곳으로 모음.
-       (기존 코드는 여전히 localStorage를 직접 쓰는 곳이 많아 100% 적용된 상태는 아니고,
-       새로 추가되는 기능부터 이 방식을 쓰고 있어요 — 전체 전환은 별도 리팩터링이 필요합니다) */
     store: {
       get(key, fallback = null) {
         try {
@@ -637,8 +647,6 @@
     diaryFromView: "calendarView",
     diaryPhotosDraft: [],
 
-    /* 💬 매일 새로운 조언 생성기 — 고정된 문구를 반복하는 대신, 날짜를 시드로
-       문장 조각들을 조합해 사실상 겹치지 않는 새로운 조언을 매일 만들어냄 */
     adviceBanks: {
       openers: ["오늘은", "지금 이 순간", "이 하루는", "잠깐 멈춰서 보면", "돌아보면", "가만히 보면", "문득", "곰곰이 생각해보면"],
       subjects: ["당신의 노력", "작은 습관", "지금의 선택", "당신의 속도", "오늘 흘린 땀", "잠깐의 휴식", "당신의 마음", "작은 시도", "느린 걸음", "오늘의 시작", "작은 용기", "지금까지의 여정"],
@@ -666,7 +674,6 @@
       return Math.floor((d - start) / 86400000);
     },
 
-    // 날짜 문자열을 시드로 0~1 사이 의사난수를 여러 개 뽑아내는 결정적 해시
     seededPick(seedStr, salt, arrLen) {
       let h = 0;
       const str = seedStr + '|' + salt;
@@ -837,7 +844,6 @@
       this.ui.showToast('데이터가 CSV로 다운로드 되었습니다! 📥');
     },
 
-    /* ⬇️⬆️ 전체 데이터 백업 / 복원 (기기 변경, 캐시 삭제 대비) */
     BACKUP_KEYS: ['appEvents', 'appDailyData', 'appDiary', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode'],
 
     exportBackup() {
@@ -902,9 +908,6 @@
       return Math.round((target - today) / 86400000);
     },
 
-    /* ==================================================================
-       🌤️ 날씨 모듈 — Open-Meteo (무료 / API 키 불필요)
-       ================================================================== */
     weather: {
       cities: { home: null, compare: null },
       active: 'home',
@@ -971,7 +974,6 @@
         if (savedHome || legacy) {
           this.cities.home = savedHome || legacy;
         } else {
-          // 처음 사용하는 경우 IP 기반으로 대략적인 현재 지역을 자동 추정 (실패 시 서울로 대체)
           this.cities.home = { lat: 37.5665, lon: 126.9780, name: "서울" };
           try {
             const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
@@ -996,7 +998,6 @@
           jobs.push(this.fetchCity('compare'), this.fetchAirQuality('compare'));
         }
         await Promise.all(jobs);
-        // 비교 도시 로딩에 실패했는데 현재 활성 도시로 설정돼있다면 홈으로 되돌림
         if (this.active === 'compare' && this.cities.compare && !this.data.compare) {
           this.active = 'home';
           localStorage.setItem('weatherActive', 'home');
@@ -1059,7 +1060,6 @@
         if (badgeEl) badgeEl.innerHTML = `<span class="aq-dot" style="display:inline-block; background:${aq.color};"></span> ${aq.label} · PM10 ${Math.round(d.pm10)}`;
         if (cardEl) cardEl.innerHTML = `<span class="aq-dot" style="display:inline-block; background:${aq.color};"></span> ${text}`;
         if (barEl) barEl.innerHTML = `<span class="aq-dot" style="background:${aq.color};"></span> <span>${this.activeLoc().name} 미세먼지: <b style="color:${aq.color};">${aq.label}</b> · PM10 ${Math.round(d.pm10)}㎍/㎥ · PM2.5 ${Math.round(d.pm2_5)}㎍/㎥</span>`;
-        // 미세먼지 상태에 따라 날씨 배지 테두리 색을 바꿔서 한눈에 대기질을 알 수 있도록
         if (badgeBoxEl) { badgeBoxEl.style.borderColor = aq.color; badgeBoxEl.style.borderWidth = '2px'; }
       },
 
@@ -1296,7 +1296,6 @@
         document.getElementById(target === 'home' ? 'locationResultsHome' : 'locationResultsCompare').innerHTML = '';
         app.ui.showToast(`📍 ${name}(으)로 설정되었습니다`);
         this.dailyCache = {};
-        // 방금 설정/추가한 도시로 바로 전환해서 변경 사항이 눈에 바로 보이도록 함
         this.active = target;
         localStorage.setItem('weatherActive', target);
         await Promise.all([this.fetchCity(target), this.fetchAirQuality(target)]);
@@ -1372,7 +1371,6 @@
       }
     },
 
-    /* ⏳ 타이머 — 백그라운드/다른 탭에서도 시계 기준으로 계속 흐름 */
     timer: {
       STORAGE_KEY: 'timerState',
       DURATIONS_KEY: 'timerDurations',
@@ -1424,7 +1422,6 @@
         this.syncDurationInputs();
 
         if (!this.isRunning && this.activeHour !== null) {
-          // 진행 중이 아니면 즉시 새 길이로 반영
           this.timeLeft = (this.mode === 'study' ? this.studyMinutes : this.restMinutes) * 60;
           this.persist();
           this.updateDisplay();
@@ -1566,7 +1563,6 @@
             if (!app.dailyData[targetDate].timers) app.dailyData[targetDate].timers = {};
             app.dailyData[targetDate].timers[completedHour] = 'done';
             localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
-            // 타임테이블에도 같은 시간대를 '완료'로 동기화
             app.ui.markTimetableDone(targetDate, completedHour);
           }
 
@@ -1617,7 +1613,6 @@
         setTimeout(() => toast.classList.remove("show"), 3000);
       },
 
-      /* 🔔 커스텀 알람 토스트 — 타이머 완료/일정 알림에 쓰는, 앱 디자인에 맞춘 알림 배너 */
       alarmToastTimer: null,
       showAlarmToast(icon, title, body) {
         const el = document.getElementById('alarmToast');
@@ -1661,7 +1656,6 @@
         document.getElementById('plannerView').classList.remove('hidden');
         document.getElementById('plannerTitle').textContent = `📝 ${dateStr.split('-')[1]}월 ${dateStr.split('-')[2]}일 플래너`;
 
-        // 날씨/타이머는 다른 위젯(차트 등)에서 오류가 나더라도 항상 먼저·독립적으로 그려지도록 분리
         app.weather.renderPlannerWeather(dateStr);
         try {
           this.loadPlannerData();
@@ -1681,7 +1675,6 @@
         this.renderCalendar();
       },
 
-      /* 🗒️ 일기 / 메모 — 캘린더/플래너 어디서든 그날에 맞게 열람 */
       openDiary(dateStr, fromView) {
         app.diaryDateStr = dateStr || app.diaryDateStr || app.todayStr();
         if (fromView) app.diaryFromView = fromView;
@@ -1712,9 +1705,9 @@
 
       getDiaryEntry(dateStr) {
         const raw = app.diary[dateStr];
-        if (!raw) return { text: '', photos: [] };
-        if (typeof raw === 'string') return { text: raw, photos: [] };
-        return { text: raw.text || '', photos: raw.photos || [] };
+        if (!raw) return { title: '', text: '', photos: [] };
+        if (typeof raw === 'string') return { title: '', text: raw, photos: [] };
+        return { title: raw.title || '', text: raw.text || '', photos: raw.photos || [] };
       },
 
       escapeHtml(str) {
@@ -1730,6 +1723,7 @@
         document.getElementById('diaryDateLabel').textContent = `${isToday ? '오늘 · ' : ''}${d.getMonth() + 1}월 ${d.getDate()}일 (${['일', '월', '화', '수', '목', '금', '토'][d.getDay()]}) 일기`;
 
         const entry = this.getDiaryEntry(dateStr);
+        document.getElementById('diaryTitle').value = entry.title; 
         document.getElementById('diaryTextarea').value = entry.text;
         app.diaryPhotosDraft = entry.photos.slice();
         this.renderDiaryPhotoGrid();
@@ -1802,13 +1796,16 @@
       saveDiary(showToast = true) {
         const dateStr = app.diaryDateStr;
         if (!dateStr) return;
+        const title = document.getElementById('diaryTitle').value;
         const text = document.getElementById('diaryTextarea').value;
         const photos = app.diaryPhotosDraft || [];
-        if (text.trim() === '' && photos.length === 0) {
+        
+        if (title.trim() === '' && text.trim() === '' && photos.length === 0) {
           delete app.diary[dateStr];
         } else {
-          app.diary[dateStr] = { text, photos };
+          app.diary[dateStr] = { title, text, photos };
         }
+        
         try {
           localStorage.setItem('appDiary', JSON.stringify(app.diary));
         } catch (e) {
@@ -1844,7 +1841,6 @@
         app.saveDailyData(false);
       },
 
-      // ⏳ 타이머가 완료된 시간대를 타임테이블의 '달성' 상태와 동기화
       markTimetableDone(dateStr, hour) {
         if (!app.dailyData[dateStr]) app.dailyData[dateStr] = { priorities: ["", "", ""], timetable: {}, finances: [], timers: {}, progress: 0 };
         if (!app.dailyData[dateStr].timetable) app.dailyData[dateStr].timetable = {};
@@ -1860,7 +1856,6 @@
 
         localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
 
-        // 지금 보고 있는 날짜라면 화면도 바로 갱신
         if (dateStr === app.selectedDateStr) {
           const row = document.querySelector(`.time-row[data-hour="${hour}"]`);
           if (row) {
@@ -1947,12 +1942,10 @@
         };
 
         if (toText.trim() === '') {
-          // 빈 시간대로 이동: 원래 자리는 비움
           applyState(toInput, toBtn, fromText, fromDone);
           applyState(fromInput, fromBtn, '', false);
           app.ui.showToast(`⏱️ ${fromHour}시 일정을 ${toHour}시로 옮겼어요`);
         } else {
-          // 이미 일정이 있는 시간대: 서로 맞바꿈
           applyState(toInput, toBtn, fromText, fromDone);
           applyState(fromInput, fromBtn, toText, toDone);
           app.ui.showToast(`🔄 ${fromHour}시와 ${toHour}시 일정을 맞바꿨어요`);
@@ -1978,11 +1971,19 @@
           const doneInputClass = task.done ? "done-input" : "";
           const btnText = task.done ? "💖 달성" : "🤍 대기";
 
+          // 타임테이블에서 Enter 키를 누르면 다음 입력창으로 넘어가도록 onkeydown 추가
           tContainer.innerHTML += `
             <div class="time-row" data-hour="${i}">
               <span class="drag-handle" title="꾹 눌러 다른 시간대로 옮기기">⠿</span>
               <div class="time-label">${timeStr}</div>
-              <input type="text" class="time-input ${doneInputClass}" value="${task.text}" placeholder="어떤 일정이 있나요? ✍️" onchange="app.saveDailyData()">
+              <input type="text" class="time-input ${doneInputClass}" value="${task.text}" placeholder="어떤 일정이 있나요? ✍️" 
+                onchange="app.saveDailyData()"
+                onkeydown="if(event.key === 'Enter') {
+                  event.preventDefault();
+                  const inputs = Array.from(document.querySelectorAll('.time-input'));
+                  const idx = inputs.indexOf(this);
+                  if(idx > -1 && idx < inputs.length - 1) inputs[idx+1].focus();
+                }">
               <button class="status-btn ${doneClass}" onclick="app.ui.toggleTimeStatus(this)">${btnText}</button>
             </div>
           `;
@@ -2175,10 +2176,13 @@
           }
 
           const diaryEntry = this.getDiaryEntry(dateStr);
+          const diaryHasTitle = diaryEntry.title && diaryEntry.title.trim() !== '';
           const diaryHasText = diaryEntry.text && diaryEntry.text.trim() !== '';
           const diaryHasPhotos = diaryEntry.photos && diaryEntry.photos.length > 0;
-          if (diaryHasText || diaryHasPhotos) {
-            let preview = diaryHasText ? diaryEntry.text.trim().split('\n')[0] : '';
+          
+          if (diaryHasTitle || diaryHasText || diaryHasPhotos) {
+            // 제목이 있으면 제목을 띄우고, 없으면 본문 첫 줄을 띄웁니다.
+            let preview = diaryHasTitle ? diaryEntry.title.trim() : (diaryHasText ? diaryEntry.text.trim().split('\n')[0] : '');
             if (preview.length > 16) preview = preview.slice(0, 16) + '…';
             if (!preview) preview = `사진 ${diaryEntry.photos.length}장`;
             extraHtml += `<div class="diary-indicator" onclick="event.stopPropagation(); app.ui.openDiary('${dateStr}', 'calendarView')">📓 ${this.escapeHtml(preview)}</div>`;
