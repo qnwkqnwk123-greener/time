@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
 <style>
   :root {
@@ -86,7 +87,6 @@
     --shadow-md: 0 12px 28px -12px rgba(0,0,0,0.55);
   }
   
-  /* 다크모드일 때 각 테마별 약간 어두운 악센트 조절 */
   body.dark:not(.theme-mint):not(.theme-peach):not(.theme-sky) { --accent: #8b81f0; --accent-deep: #a89cff; --accent-bg: #352f4d; }
   body.dark.theme-mint { --accent: #10b981; --accent-deep: #34d399; --accent-bg: #064e3b; }
   body.dark.theme-peach { --accent: #f43f5e; --accent-deep: #fb7185; --accent-bg: #881337; }
@@ -202,8 +202,8 @@
   .weather-badge .wb-temp { font-size: 20px; font-weight: 800; line-height: 1; }
   .weather-badge .wb-meta { font-size: 11px; opacity: 0.9; line-height: 1.3; }
 
-  /* ============ 날씨 상세 패널 (모달) ============ */
-  #weatherPanelOverlay { position: fixed; inset: 0; background: rgba(47,42,61,0.38); z-index: 200; display: flex;
+  /* ============ 모달 (날씨 / 검색) ============ */
+  #weatherPanelOverlay, #searchModalOverlay { position: fixed; inset: 0; background: rgba(47,42,61,0.38); z-index: 200; display: flex;
     align-items: flex-start; justify-content: center; padding: 64px 16px 16px; }
   .weather-panel { background: var(--paper-raised); width: 100%; max-width: 420px; border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md); padding: 20px; max-height: 78vh; overflow-y: auto; }
@@ -231,8 +231,8 @@
   .wx-settings-block { margin-bottom: 16px; }
   .wx-settings-label { font-size: 12.5px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
   .wx-settings-block input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 16px !important; margin-bottom: 8px; }
-  .location-result { padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--ink-soft); }
-  .location-result:hover { background: var(--accent-bg); color: var(--accent-deep); }
+  .location-result { padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--ink-soft); transition: all 0.18s; }
+  .location-result:hover { background: var(--accent-bg); color: var(--accent-deep); transform: translateY(-1px); }
 
   /* ============ 캘린더 ============ */
   .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
@@ -335,7 +335,7 @@
 
   /* 📜 모바일 최적화 타임테이블 스크롤 영역 */
   .timetable-wrapper {
-    max-height: 50vh; /* 화면의 절반만 차지하도록 스크롤바 생성 */
+    max-height: 50vh;
     overflow-y: auto;
     padding-right: 5px;
     -webkit-overflow-scrolling: touch;
@@ -346,7 +346,6 @@
 
   .time-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f4f1fa; gap: 8px; transition: background 0.15s; }
   .drag-handle { cursor: grab; color: var(--ink-faint); font-size: 16px; padding: 4px; touch-action: none; user-select: none; flex-shrink: 0; }
-  .time-row.dragging { opacity: 0.5; }
   .time-row.drag-over { background: var(--accent-bg); border-radius: 10px; box-shadow: inset 0 0 0 2px var(--accent); }
   .time-label { width: 55px; font-size: 12.5px; font-weight: 700; color: var(--accent-deep); text-align: center; flex-shrink: 0; }
   
@@ -354,7 +353,11 @@
   .time-input:focus { border-color: var(--accent); background: white; }
   .time-input.done-input { background: var(--blush-bg); color: #b391a0; text-decoration: line-through; border-color: #f6d3e2; }
 
-  .status-btn { width: 74px; padding: 12px 0; font-size: 11.5px; border-radius: 20px; background: #f4f1fa; color: var(--ink-soft); flex-shrink: 0; border: none; font-weight: 700;}
+  /* 🔄 반복 버튼 스타일 */
+  .repeat-btn { width: 36px; padding: 10px 0; font-size: 13px; border-radius: 12px; background: #f4f1fa; border: 1px solid var(--line); cursor: pointer; flex-shrink: 0; transition: all 0.18s; }
+  .repeat-btn.active { background: var(--mint-bg); border-color: var(--mint); box-shadow: inset 0 0 0 1px var(--mint); color: var(--mint); }
+
+  .status-btn { width: 70px; padding: 12px 0; font-size: 11.5px; border-radius: 20px; background: #f4f1fa; color: var(--ink-soft); flex-shrink: 0; border: none; font-weight: 700;}
   .status-btn.done { background: var(--blush); color: white; box-shadow: 0 4px 6px rgba(239, 143, 179, 0.35); }
 
   .priority-list, .finance-list { display: flex; flex-direction: column; gap: 10px; }
@@ -392,7 +395,8 @@
     .cal-wx-icon { width: 13px; height: 13px; }
     .time-label { width: 45px; font-size: 11.5px; }
     .time-input { padding: 10px; font-size: 16px !important; }
-    .status-btn { width: 62px; padding: 10px 0; font-size: 11px; }
+    .status-btn { width: 56px; padding: 10px 0; font-size: 11px; }
+    .repeat-btn { width: 32px; padding: 10px 0; }
     .priority-item input, .finance-item select, .finance-item input { padding: 10px; }
     .timetable-wrapper { max-height: 45vh; }
   }
@@ -436,6 +440,7 @@
       </div>
       <div class="hero-nav" style="margin-top:10px; flex-wrap: wrap;">
         <button onclick="app.ui.openDiary(app.todayStr(), 'calendarView')">🗒️ 오늘의 일기</button>
+        <button onclick="app.ui.openSearchModal()">🔍 기록 검색</button>
         <button onclick="app.exportBackup()">⬇️ 백업</button>
         <button onclick="document.getElementById('restoreFileInput').click()">⬆️ 복원</button>
         <input type="file" id="restoreFileInput" accept="application/json" style="display:none;" onchange="app.importBackup(event)">
@@ -522,7 +527,7 @@
 
         <div class="box-panel">
           <div class="box-title">
-            <span>🕒 유연한 타임테이블</span>
+            <span>🕒 유연한 타임테이블 <span style="font-size:11px; color:var(--mint); font-weight:500;">(🔄 매일 반복 지원)</span></span>
             <div class="time-settings">
               시작 <input type="number" id="timeStart" value="6" min="0" max="23">
               종료 <input type="number" id="timeEnd" value="24" min="1" max="24">
@@ -652,6 +657,19 @@
     </div>
   </div>
 
+  <div id="searchModalOverlay" class="hidden" onclick="if(event.target===this) app.ui.closeSearchModal()">
+    <div class="weather-panel" style="max-width: 500px;">
+      <div class="weather-panel-header">
+        <h3>🔍 지난 기록 통합 검색</h3>
+        <button class="btn-ghost" style="padding:6px 10px;" onclick="app.ui.closeSearchModal()">✕</button>
+      </div>
+      <input type="text" id="searchInput" placeholder="일기 제목, 내용, 일정 키워드를 검색해보세요..." style="width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; margin-bottom:12px; outline:none;" oninput="app.ui.performSearch(this.value)">
+      <div id="searchResults" style="max-height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size:12.5px; color:var(--ink-soft); text-align:center; padding:24px 10px;">찾고 싶은 기억의 조각을 키워드로 입력해보세요! ✨</div>
+      </div>
+    </div>
+  </div>
+
   <div id="toastContainer">저장되었습니다.</div>
 
   <div id="alarmToast" class="alarm-toast">
@@ -691,6 +709,7 @@
     events: JSON.parse(localStorage.getItem('appEvents')) || [],
     dailyData: JSON.parse(localStorage.getItem('appDailyData')) || {},
     diary: JSON.parse(localStorage.getItem('appDiary')) || {},
+    recurringTasks: JSON.parse(localStorage.getItem('appRecurringTasks')) || {},
     settings: JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24 },
     holidays: {},
     growthChartInstance: null,
@@ -898,7 +917,7 @@
       this.ui.showToast('데이터가 CSV로 다운로드 되었습니다! 📥');
     },
 
-    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appDiary', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme'],
+    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme'],
 
     exportBackup() {
       const payload = { exportedAt: new Date().toISOString(), version: 1, data: {} };
@@ -1682,6 +1701,97 @@
         if (this.alarmToastTimer) { clearTimeout(this.alarmToastTimer); this.alarmToastTimer = null; }
       },
 
+      /* 🔍 검색 모달 제어 로직 */
+      openSearchModal() {
+        document.getElementById('searchModalOverlay').classList.remove('hidden');
+        const input = document.getElementById('searchInput');
+        input.value = '';
+        this.performSearch('');
+        setTimeout(() => input.focus(), 100);
+      },
+      closeSearchModal() {
+        document.getElementById('searchModalOverlay').classList.add('hidden');
+      },
+      performSearch(keyword) {
+        const box = document.getElementById('searchResults');
+        keyword = keyword.trim().toLowerCase();
+        if (!keyword) {
+          box.innerHTML = '<div style="font-size:12.5px; color:var(--ink-soft); text-align:center; padding:24px 10px;">찾고 싶은 기억의 조각을 키워드로 입력해보세요! ✨</div>';
+          return;
+        }
+
+        const results = [];
+
+        // 📓 일기 검색
+        Object.keys(app.diary).forEach(date => {
+          const d = app.diary[date];
+          const title = (d.title || '').toLowerCase();
+          const text = (d.text || '').toLowerCase();
+          if (title.includes(keyword) || text.includes(keyword)) {
+            results.push({
+              date: date,
+              type: '📓 일기 기록',
+              preview: d.title || d.text.slice(0, 32) + '...',
+              action: () => { app.ui.closeSearchModal(); app.ui.openDiary(date, 'calendarView'); }
+            });
+          }
+        });
+
+        // ⏰ 시간표 & 📌 우선순위 검색
+        Object.keys(app.dailyData).forEach(date => {
+          const d = app.dailyData[date];
+          if (d.priorities) {
+            d.priorities.forEach((p, idx) => {
+              if (p && p.toLowerCase().includes(keyword)) {
+                results.push({
+                  date: date,
+                  type: `📌 ${idx+1}순위 핵심 목표`,
+                  preview: p,
+                  action: () => { app.ui.closeSearchModal(); app.ui.showPlanner(date); }
+                });
+              }
+            });
+          }
+          if (d.timetable) {
+            Object.keys(d.timetable).forEach(hour => {
+              const t = d.timetable[hour];
+              if (t && t.text && t.text.toLowerCase().includes(keyword)) {
+                results.push({
+                  date: date,
+                  type: `⏰ ${hour}시 타임테이블`,
+                  preview: t.text,
+                  action: () => { app.ui.closeSearchModal(); app.ui.showPlanner(date); }
+                });
+              }
+            });
+          }
+        });
+
+        if (results.length === 0) {
+          box.innerHTML = '<div style="font-size:12.5px; color:var(--ink-soft); text-align:center; padding:24px 10px;">일치하는 기록이 전혀 없어요 😢</div>';
+          return;
+        }
+
+        results.sort((a, b) => b.date.localeCompare(a.date));
+
+        box.innerHTML = results.map((r, i) => `
+          <div class="location-result" style="padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:var(--paper); display:flex; justify-content:space-between; align-items:center;" onclick="app.ui.searchResultsAction(${i})">
+            <div style="min-width:0; flex:1; padding-right:8px;">
+              <div style="font-size:11px; color:var(--accent-deep); font-weight:700;">${r.date} · ${r.type}</div>
+              <div style="font-size:13.5px; font-weight:600; color:var(--ink); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${app.ui.escapeHtml(r.preview)}</div>
+            </div>
+            <span style="font-size:12px; color:var(--ink-faint); font-weight:700;">이동 ❯</span>
+          </div>
+        `).join('');
+
+        this._currentSearchResults = results;
+      },
+      searchResultsAction(idx) {
+        if (this._currentSearchResults && this._currentSearchResults[idx]) {
+          this._currentSearchResults[idx].action();
+        }
+      },
+
       /* 🎨 테마 및 다크모드 적용 */
       applyThemePreference() {
         const theme = localStorage.getItem('appTheme') || 'default';
@@ -1695,12 +1805,10 @@
         }
         localStorage.setItem('appTheme', themeName);
         
-        // 닷(Dot) 활성화 상태 변경
         document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
         const activeDot = document.querySelector(`.theme-dot[data-theme="${themeName}"]`);
         if(activeDot) activeDot.classList.add('active');
         
-        // 기존 컴포넌트 강제 리렌더링(색상 반영)
         this.calculateExpenditure();
         this.updateGrowthReport();
       },
@@ -1918,6 +2026,26 @@
         app.saveDailyData(false);
       },
 
+      /* 🔄 매일 반복 일정 제어 로직 */
+      toggleRepeat(hour, btn) {
+        const row = document.querySelector(`.time-row[data-hour="${hour}"]`);
+        const input = row ? row.querySelector('.time-input') : null;
+        if (!input || !input.value.trim()) return this.showToast('반복할 일정을 먼저 입력해주세요! ✍️');
+
+        if (!app.recurringTasks) app.recurringTasks = {};
+
+        if (app.recurringTasks[hour] && app.recurringTasks[hour].text === input.value) {
+          delete app.recurringTasks[hour];
+          btn.classList.remove('active');
+          this.showToast(`⏹️ ${hour}시 매일 반복 설정을 해제했어요.`);
+        } else {
+          app.recurringTasks[hour] = { text: input.value };
+          btn.classList.add('active');
+          this.showToast(`🔄 ${hour}시 일정을 매일 반복으로 설정했어요!`);
+        }
+        localStorage.setItem('appRecurringTasks', JSON.stringify(app.recurringTasks));
+      },
+
       markTimetableDone(dateStr, hour) {
         if (!app.dailyData[dateStr]) app.dailyData[dateStr] = { priorities: ["", "", ""], timetable: {}, finances: [], timers: {}, progress: 0 };
         if (!app.dailyData[dateStr].timetable) app.dailyData[dateStr].timetable = {};
@@ -1949,85 +2077,51 @@
         }
       },
 
+      /* 👆 SortableJS 모바일 터치 최적화 및 자동 스크롤 드래그 기능 */
       enableTimetableDrag() {
         const container = document.getElementById('timetableContainer');
-        if (!container) return;
-        let dragRow = null;
-        let currentOver = null;
+        if (!container || typeof Sortable === 'undefined') return;
 
-        const clearOver = () => { if (currentOver) { currentOver.classList.remove('drag-over'); currentOver = null; } };
-
-        container.querySelectorAll('.drag-handle').forEach(handle => {
-          handle.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            dragRow = handle.closest('.time-row');
-            if (!dragRow) return;
-            dragRow.classList.add('dragging');
-            handle.setPointerCapture(e.pointerId);
-
-            const onMove = (ev) => {
-              if (!dragRow) return;
-              const el = document.elementFromPoint(ev.clientX, ev.clientY);
-              const overRow = el && el.closest ? el.closest('.time-row') : null;
-              if (overRow !== currentOver) {
-                clearOver();
-                if (overRow && overRow !== dragRow) {
-                  overRow.classList.add('drag-over');
-                  currentOver = overRow;
-                }
-              }
-            };
-
-            const onUp = () => {
-              document.removeEventListener('pointermove', onMove);
-              document.removeEventListener('pointerup', onUp);
-              if (dragRow) dragRow.classList.remove('dragging');
-              if (currentOver && dragRow) {
-                this.moveTimetableTask(parseInt(dragRow.dataset.hour), parseInt(currentOver.dataset.hour));
-              }
-              clearOver();
-              dragRow = null;
-            };
-
-            document.addEventListener('pointermove', onMove);
-            document.addEventListener('pointerup', onUp);
-          });
-        });
-      },
-
-      moveTimetableTask(fromHour, toHour) {
-        if (fromHour === toHour) return;
-        const fromRow = document.querySelector(`.time-row[data-hour="${fromHour}"]`);
-        const toRow = document.querySelector(`.time-row[data-hour="${toHour}"]`);
-        if (!fromRow || !toRow) return;
-
-        const fromInput = fromRow.querySelector('.time-input');
-        const fromBtn = fromRow.querySelector('.status-btn');
-        const toInput = toRow.querySelector('.time-input');
-        const toBtn = toRow.querySelector('.status-btn');
-
-        const fromText = fromInput.value;
-        const fromDone = fromBtn.classList.contains('done');
-        const toText = toInput.value;
-        const toDone = toBtn.classList.contains('done');
-
-        const applyState = (input, btn, text, done) => {
-          input.value = text;
-          btn.classList.toggle('done', done);
-          btn.textContent = done ? '💖 달성' : '🤍 대기';
-          input.classList.toggle('done-input', done && text.trim() !== '');
-        };
-
-        if (toText.trim() === '') {
-          applyState(toInput, toBtn, fromText, fromDone);
-          applyState(fromInput, fromBtn, '', false);
-          app.ui.showToast(`⏱️ ${fromHour}시 일정을 ${toHour}시로 옮겼어요`);
-        } else {
-          applyState(toInput, toBtn, fromText, fromDone);
-          applyState(fromInput, fromBtn, toText, toDone);
-          app.ui.showToast(`🔄 ${fromHour}시와 ${toHour}시 일정을 맞바꿨어요`);
+        if (this.sortableInstance) {
+          this.sortableInstance.destroy();
         }
-        app.saveDailyData(false);
+
+        this.sortableInstance = new Sortable(container, {
+          handle: '.drag-handle',
+          animation: 180,
+          ghostClass: 'drag-over',
+          onEnd: (evt) => {
+            if (evt.oldIndex === evt.newIndex) return;
+
+            const rows = Array.from(container.querySelectorAll('.time-row'));
+            const newTimetable = {};
+            let currentHour = app.settings.start;
+
+            rows.forEach(row => {
+              const input = row.querySelector('.time-input');
+              const btn = row.querySelector('.status-btn');
+              const repeatBtn = row.querySelector('.repeat-btn');
+
+              row.dataset.hour = currentHour;
+              row.querySelector('.time-label').textContent = `${String(currentHour).padStart(2, '0')}:00`;
+
+              newTimetable[currentHour] = {
+                text: input.value,
+                done: btn.classList.contains('done')
+              };
+
+              if (repeatBtn) {
+                repeatBtn.setAttribute('onclick', `app.ui.toggleRepeat(${currentHour}, this)`);
+              }
+              currentHour++;
+            });
+
+            app.dailyData[app.selectedDateStr].timetable = newTimetable;
+            localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
+            app.saveDailyData(false);
+            app.ui.showToast('⏱️ 일정이 새로운 시간대로 정렬되었습니다.');
+          }
+        });
       },
 
       loadPlannerData() {
@@ -2043,7 +2137,20 @@
         tContainer.innerHTML = '';
         for (let i = app.settings.start; i <= app.settings.end; i++) {
           const timeStr = `${String(i).padStart(2, '0')}:00`;
-          const task = data.timetable[i] || { text: "", done: false };
+          let task = data.timetable[i];
+
+          /* 🔄 매일 반복 일정이 존재하고 현재 일정이 비어있다면 자동 연동 */
+          if (!task || (!task.text && !task.done)) {
+            if (app.recurringTasks && app.recurringTasks[i] && app.recurringTasks[i].text) {
+              task = { text: app.recurringTasks[i].text, done: false };
+              if (!data.timetable) data.timetable = {};
+              data.timetable[i] = task;
+            } else {
+              task = { text: "", done: false };
+            }
+          }
+
+          const isRecurring = app.recurringTasks && app.recurringTasks[i] && app.recurringTasks[i].text === task.text && task.text.trim() !== "";
           const doneClass = task.done ? "done" : "";
           const doneInputClass = task.done ? "done-input" : "";
           const btnText = task.done ? "💖 달성" : "🤍 대기";
@@ -2060,6 +2167,7 @@
                   const idx = inputs.indexOf(this);
                   if(idx > -1 && idx < inputs.length - 1) inputs[idx+1].focus();
                 }">
+              <button class="repeat-btn ${isRecurring ? 'active' : ''}" onclick="app.ui.toggleRepeat(${i}, this)" title="매일 반복">🔄</button>
               <button class="status-btn ${doneClass}" onclick="app.ui.toggleTimeStatus(this)">${btnText}</button>
             </div>
           `;
@@ -2129,7 +2237,6 @@
 
         if (data.length === 0) return;
 
-        // 테마별 색상 추출
         const computedStyle = getComputedStyle(document.body);
         const cAccent = computedStyle.getPropertyValue('--accent').trim() || '#6e63e0';
         const cDeep = computedStyle.getPropertyValue('--accent-deep').trim() || '#564cc4';
@@ -2287,3 +2394,5 @@
 </script>
 </body>
 </html>
+
+```
