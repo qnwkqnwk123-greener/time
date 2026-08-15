@@ -3,12 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>서재, 하늘 플래너 ✨</title>
+<title>리멤버 ✨</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<!-- 🔐 로그인 + 클라우드 동기화용 Firebase SDK (무료 티어) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
 <style>
   :root {
@@ -389,15 +393,133 @@
     .priority-item input, .finance-item select, .finance-item input { padding: 10px; }
     .timetable-wrapper { max-height: 45vh; }
   }
+  /* 🚪 로그인 게이트 */
+  .login-gate {
+    position: fixed; inset: 0; z-index: 900;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--g-default);
+    padding: 24px;
+    opacity: 1; visibility: visible;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+  }
+  .login-gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .login-gate-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .login-gate-bg::before, .login-gate-bg::after {
+    content: ""; position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,0.16); filter: blur(1px);
+    animation: loginGateFloat 9s ease-in-out infinite;
+  }
+  .login-gate-bg::before { width: 280px; height: 280px; top: -80px; left: -70px; }
+  .login-gate-bg::after  { width: 200px; height: 200px; bottom: -60px; right: -40px; background: rgba(255,255,255,0.12); animation-delay: -4s; }
+  @keyframes loginGateFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-14px) scale(1.04); }
+  }
+
+  .login-gate-card {
+    position: relative; z-index: 1; width: 100%; max-width: 380px;
+    background: var(--paper-raised); border-radius: 28px;
+    padding: 38px 30px 30px; text-align: center;
+    box-shadow: 0 28px 64px -20px rgba(30, 20, 60, 0.45);
+    animation: loginGateIn 0.5s cubic-bezier(.34,1.4,.64,1);
+  }
+  @keyframes loginGateIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    to   { opacity: 1; transform: none; }
+  }
+  .login-gate-icon { margin-bottom: 6px; }
+  .login-gate-logo {
+    width: 72px; height: 72px; margin: 0 auto; border-radius: 22px;
+    background: var(--g-default);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; box-shadow: 0 16px 32px -12px rgba(86,76,196,0.5);
+  }
+  .login-gate-title {
+    font-family: var(--font-display); font-size: 28px; font-weight: 700; margin: 14px 0 6px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent-deep), var(--accent) 55%, #8fb8e6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .login-gate-sub { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 28px; }
+
+  .login-gate-loading { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 0 8px; color: var(--ink-soft); font-size: 12.5px; }
+  .login-gate-loading.hidden { display: none; }
+  .login-gate-spinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 3px solid var(--accent-bg); border-top-color: var(--accent);
+    animation: loginGateSpin 0.8s linear infinite;
+  }
+  @keyframes loginGateSpin { to { transform: rotate(360deg); } }
+
+  .login-gate-form.hidden { display: none; }
+  .login-gate-google {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 13px; border-radius: 14px; border: 1px solid var(--line); background: white; color: var(--ink);
+    font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.18s;
+  }
+  .login-gate-google:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+
+  .login-gate-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0 16px; font-size: 11px; color: var(--ink-faint); }
+  .login-gate-divider::before, .login-gate-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .login-gate-form input {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px;
+    margin-bottom: 10px; font-size: 16px !important; box-sizing: border-box; background: var(--paper);
+  }
+  .login-gate-form input:focus { outline: none; border-color: var(--accent); background: white; }
+  .login-gate-row { display: flex; gap: 8px; margin-top: 2px; }
+  .login-gate-row button { flex: 1; padding: 12px; border-radius: 14px; font-weight: 700; }
+  .login-gate-error { font-size: 11.5px; color: var(--blush); margin-top: 10px; min-height: 14px; }
+  .login-gate-skip {
+    margin-top: 22px; background: none; border: none; color: var(--ink-faint);
+    font-size: 12px; text-decoration: underline; cursor: pointer; padding: 6px;
+  }
+  .login-gate-skip:hover { color: var(--ink-soft); background: none; transform: none; box-shadow: none; }
 </style>
 </head>
 <body>
+
+  <!-- 🚪 첫 화면 로그인 게이트 -->
+  <div id="loginGateView" class="login-gate hidden">
+    <div class="login-gate-bg"></div>
+    <div class="login-gate-card">
+      <div class="login-gate-icon"><div class="login-gate-logo">🕊️</div></div>
+      <h1 class="login-gate-title">리멤버</h1>
+      <p class="login-gate-sub">오늘의 하늘을 살피며 하루를 그려보세요</p>
+
+      <div id="loginGateLoading" class="login-gate-loading">
+        <div class="login-gate-spinner"></div>
+        <span>불러오는 중…</span>
+      </div>
+
+      <div id="loginGateForm" class="login-gate-form hidden">
+        <button class="login-gate-google" onclick="app.cloud.signInGoogle('gate')">
+          <svg viewBox="0 0 48 48" width="19" height="19"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.4 29.4 35.5 24 35.5c-6.9 0-12.5-5.6-12.5-12.5S17.1 10.5 24 10.5c3.2 0 6 1.2 8.2 3.1l5.7-5.7C34.6 4.8 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.8 18.9 13 24 13c3.2 0 6 1.2 8.2 3.1l5.7-5.7C34.6 6.8 29.6 5 24 5c-7.7 0-14.3 4.3-17.7 10.7z"/><path fill="#4CAF50" d="M24 43c5.4 0 10.3-1.8 14.1-4.9l-6.5-5.5C29.5 34.4 26.9 35.5 24 35.5c-5.3 0-9.8-3.5-11.4-8.3l-6.6 5.1C9.6 38.6 16.2 43 24 43z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.9 2.5-2.5 4.6-4.6 6.1l6.5 5.5C40.4 37.1 43 31 43 24c0-1.2-.1-2.3-.4-3.5z"/></svg>
+          Google로 계속하기
+        </button>
+
+        <div class="login-gate-divider"><span>또는 이메일로</span></div>
+
+        <input type="text" id="gateEmailInput" placeholder="이메일">
+        <input type="password" id="gatePasswordInput" placeholder="비밀번호 (6자 이상)">
+        <div class="login-gate-row">
+          <button class="btn-primary" onclick="app.cloud.signInEmail('gate')">로그인</button>
+          <button class="btn-ghost" onclick="app.cloud.signUpEmail('gate')">회원가입</button>
+        </div>
+        <div id="gateErrorMsg" class="login-gate-error"></div>
+
+        <button class="login-gate-skip" onclick="app.ui.skipLogin()">로그인 없이 둘러보기 →</button>
+      </div>
+    </div>
+  </div>
+
 
   <div id="calendarView">
     <div class="hero" id="calHero">
       <div class="hero-top">
         <div>
-          <h1 class="hero-title">🕊️ 서재, 하늘 플래너</h1>
+          <h1 class="hero-title">🕊️ 리멤버</h1>
           <p class="hero-sub" id="heroSub">오늘의 하늘을 살피며 하루를 그려보세요</p>
           <p class="hero-quote" id="heroQuote">💬 오늘의 한마디를 불러오는 중…</p>
         </div>
@@ -426,6 +548,7 @@
         </div>
         
         <button id="darkModeToggleBtn" onclick="app.ui.toggleDarkMode()">🌙</button>
+        <button id="cloudAuthBtn" onclick="app.cloud.openAuthModal()">☁️ 로그인</button>
       </div>
       <div class="hero-nav" style="margin-top:10px; flex-wrap: wrap;">
         <button onclick="app.ui.openDiary(app.todayStr(), 'calendarView')">🗒️ 오늘의 일기</button>
@@ -660,6 +783,32 @@
     </div>
   </div>
 
+  <div id="authModalOverlay" class="hidden" onclick="if(event.target===this) app.cloud.closeAuthModal()">
+    <div class="weather-panel" style="max-width:380px;">
+      <div class="weather-panel-header">
+        <h3>☁️ 로그인해서 기기 간 동기화</h3>
+        <button class="btn-ghost" style="padding:6px 10px;" onclick="app.cloud.closeAuthModal()">✕</button>
+      </div>
+      <div id="authLoggedOutBox">
+        <p style="font-size:12.5px; color:var(--ink-soft); margin-bottom:14px; line-height:1.5;">로그인하면 이 계정으로 컴퓨터·폰 어디서든 같은 일정·일기가 보여요.</p>
+        <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="app.cloud.signInGoogle()">🔵 Google로 로그인</button>
+        <div style="text-align:center; font-size:11px; color:var(--ink-faint); margin:10px 0;">또는 이메일로</div>
+        <input type="text" id="authEmailInput" placeholder="이메일" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:12px; margin-bottom:8px;">
+        <input type="password" id="authPasswordInput" placeholder="비밀번호 (6자 이상)" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:12px; margin-bottom:10px;">
+        <div style="display:flex; gap:6px;">
+          <button class="btn-primary" style="flex:1;" onclick="app.cloud.signInEmail()">로그인</button>
+          <button class="btn-ghost" style="flex:1;" onclick="app.cloud.signUpEmail()">회원가입</button>
+        </div>
+        <div id="authErrorMsg" style="font-size:11.5px; color:var(--blush); margin-top:10px; text-align:center;"></div>
+      </div>
+      <div id="authLoggedInBox" class="hidden">
+        <p style="font-size:13px; font-weight:700; margin-bottom:6px;">✅ <span id="authUserEmail"></span> 로 로그인됨</p>
+        <p style="font-size:11.5px; color:var(--ink-soft); margin-bottom:14px;" id="authSyncStatus">클라우드와 동기화 중…</p>
+        <button class="btn-danger" style="width:100%;" onclick="app.cloud.signOut()">로그아웃</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toastContainer">저장되었습니다.</div>
 
   <div id="alarmToast" class="alarm-toast">
@@ -672,6 +821,16 @@
   </div>
 
 <script>
+  /* 🔧 여기에 본인의 Firebase 프로젝트 설정값을 붙여넣으세요 (Firebase 콘솔 > 프로젝트 설정 > 일반 > SDK 설정) */
+  window.firebaseConfig = {
+    apiKey: "AIzaSyDGhc13JE1i8HruNSMnRKmXyGtxYnD0kSY",
+    authDomain: "dailyplanner-29760.firebaseapp.com",
+    projectId: "dailyplanner-29760",
+    storageBucket: "dailyplanner-29760.firebasestorage.app",
+    messagingSenderId: "408411266604",
+    appId: "1:408411266604:web:31d2f99b5704abb582fb89"
+  };
+
   const app = {
     store: {
       get(key, fallback = null) {
@@ -771,17 +930,16 @@
     /* 🌐 네트워크 안정성: 타임아웃 + 1회 재시도가 포함된 공용 fetch 래퍼 */
     networkWarned: false,
     async fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const res = await fetch(url, { ...options, signal: controller.signal });
-        clearTimeout(id);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res;
-      } catch (e) {
-        clearTimeout(id);
-        throw e;
-      }
+      // ⚠️ AbortController의 signal은 일부 샌드박스/미리보기 환경(예: claudeusercontent.com)에서
+      // postMessage로 fetch를 프록시하다가 "DataCloneError"를 내기 때문에 signal을 아예 쓰지 않고
+      // Promise.race로 타임아웃만 구현합니다 (더 넓은 환경 호환).
+      const fetchPromise = fetch(url, options);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('요청 시간 초과 (timeout)')), timeoutMs);
+      });
+      const res = await Promise.race([fetchPromise, timeoutPromise]);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
     },
     async fetchWithRetry(url, options = {}, retries = 1, timeoutMs = 8000) {
       let lastErr;
@@ -831,6 +989,7 @@
       if (badges.includes(key)) return;
       badges.push(key);
       this.store.set('streakBadges', badges);
+      app.cloud.queuePush();
       this.ui.showAlarmToast('🏅', `연속 ${streak}일 달성!`, '꾸준함이 진짜 실력이 돼요. 정말 멋져요!');
       this.haptic([30, 50, 30, 50, 60]);
     },
@@ -857,6 +1016,7 @@
     init() {
       this.ui.applyDarkModePreference();
       this.ui.applyThemePreference();
+      this.cloud.init();
 
       this.fetchHolidays(this.currentDate.getFullYear()).then(() => {
         this.ui.renderCalendar();
@@ -919,6 +1079,7 @@
 
       this.events.push({ date: this.selectedDateStr, title: title });
       localStorage.setItem('appEvents', JSON.stringify(this.events));
+      app.cloud.queuePush();
       document.getElementById('eventTitle').value = '';
       this.ui.showToast('기념일이 귀엽게 추가되었습니다! 🎉');
       this.ui.renderCalendar();
@@ -969,6 +1130,7 @@
         })()
       };
       localStorage.setItem('appDailyData', JSON.stringify(this.dailyData));
+      app.cloud.queuePush();
 
       this.ui.calculateExpenditure();
       this.ui.updateGrowthReport();
@@ -997,7 +1159,7 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "sky_planner_backup.csv");
+      link.setAttribute("download", "remember_backup.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1017,7 +1179,7 @@
       const link = document.createElement('a');
       link.href = url;
       const d = new Date();
-      link.download = `sky_planner_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`;
+      link.download = `remember_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1727,6 +1889,7 @@
             if (!app.dailyData[targetDate].timers) app.dailyData[targetDate].timers = {};
             app.dailyData[targetDate].timers[completedHour] = 'done';
             localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
+            app.cloud.queuePush();
             app.ui.markTimetableDone(targetDate, completedHour);
           }
 
@@ -1769,7 +1932,239 @@
       }
     },
 
+    /* ☁️ 로그인 + 클라우드 동기화 (Firebase Auth + Firestore) */
+    cloud: {
+      SYNC_KEYS: ['appEvents', 'appDailyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'streakBadges'],
+      user: null,
+      ready: false,
+      pushTimer: null,
+      unsubscribeSnapshot: null,
+      authResolved: false,
+
+      init() {
+        if (!window.firebaseConfig || !window.firebaseConfig.apiKey || window.firebaseConfig.apiKey === 'YOUR_API_KEY') {
+          console.warn('☁️ Firebase 설정이 비어있어 로그인 기능이 꺼져있어요. 상단 firebaseConfig를 채워주세요.');
+          app.ui.hideLoginGate();
+          return;
+        }
+        const skipped = localStorage.getItem('loginGateSkipped') === 'true';
+        if (!skipped) app.ui.showLoginGate();
+        try {
+          firebase.initializeApp(window.firebaseConfig);
+          this.auth = firebase.auth();
+          this.db = firebase.firestore();
+          this.ready = true;
+          this.auth.onAuthStateChanged(user => {
+            this.authResolved = true;
+            this.onAuthChanged(user);
+          });
+          if (!skipped) {
+            setTimeout(() => { if (!this.authResolved) app.ui.showLoginGateForm(); }, 4000);
+          }
+        } catch (e) {
+          console.error('Firebase 초기화 실패', e);
+          app.ui.hideLoginGate();
+        }
+      },
+
+      requireReady() {
+        if (this.ready) return true;
+        app.ui.showToast('☁️ 클라우드 로그인이 아직 설정되지 않았어요. 관리자에게 문의해주세요.');
+        return false;
+      },
+
+      openAuthModal() {
+        document.getElementById('authModalOverlay').classList.remove('hidden');
+        document.getElementById('authErrorMsg').textContent = '';
+      },
+      closeAuthModal() {
+        document.getElementById('authModalOverlay').classList.add('hidden');
+      },
+
+      async signInGoogle(context) {
+        if (!this.requireReady()) return;
+        try {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          await this.auth.signInWithPopup(provider);
+          if (context === 'modal') this.closeAuthModal();
+        } catch (e) {
+          const msg = this.errorMessage(e);
+          if (context === 'gate') this.setFieldError('gateErrorMsg', msg);
+          else app.ui.showToast(msg);
+        }
+      },
+      async signInEmail(context) {
+        if (!this.requireReady()) return;
+        const emailId = context === 'gate' ? 'gateEmailInput' : 'authEmailInput';
+        const pwId = context === 'gate' ? 'gatePasswordInput' : 'authPasswordInput';
+        const errId = context === 'gate' ? 'gateErrorMsg' : 'authErrorMsg';
+        const email = document.getElementById(emailId).value.trim();
+        const pw = document.getElementById(pwId).value;
+        if (!email || !pw) return this.setFieldError(errId, '이메일과 비밀번호를 입력해주세요.');
+        try {
+          await this.auth.signInWithEmailAndPassword(email, pw);
+          if (context === 'modal') this.closeAuthModal();
+        } catch (e) { this.setFieldError(errId, this.errorMessage(e)); }
+      },
+      async signUpEmail(context) {
+        if (!this.requireReady()) return;
+        const emailId = context === 'gate' ? 'gateEmailInput' : 'authEmailInput';
+        const pwId = context === 'gate' ? 'gatePasswordInput' : 'authPasswordInput';
+        const errId = context === 'gate' ? 'gateErrorMsg' : 'authErrorMsg';
+        const email = document.getElementById(emailId).value.trim();
+        const pw = document.getElementById(pwId).value;
+        if (!email || !pw) return this.setFieldError(errId, '이메일과 비밀번호를 입력해주세요.');
+        try {
+          await this.auth.createUserWithEmailAndPassword(email, pw);
+          if (context === 'modal') this.closeAuthModal();
+          app.ui.showToast('🎉 가입 완료! 자동으로 로그인됐어요.');
+        } catch (e) { this.setFieldError(errId, this.errorMessage(e)); }
+      },
+      async signOut() {
+        if (!this.requireReady()) return;
+        if (this.unsubscribeSnapshot) { this.unsubscribeSnapshot(); this.unsubscribeSnapshot = null; }
+        await this.auth.signOut();
+        app.ui.showToast('로그아웃했어요. 이 기기에는 로컬 데이터가 그대로 남아있어요.');
+      },
+
+      errorMessage(e) {
+        const map = {
+          'auth/wrong-password': '비밀번호가 올바르지 않아요.',
+          'auth/user-not-found': '가입되지 않은 이메일이에요. 회원가입을 눌러주세요.',
+          'auth/email-already-in-use': '이미 가입된 이메일이에요. 로그인을 눌러주세요.',
+          'auth/weak-password': '비밀번호는 6자 이상이어야 해요.',
+          'auth/invalid-email': '이메일 형식이 올바르지 않아요.',
+        };
+        return map[e.code] || e.message || '로그인에 실패했어요.';
+      },
+      setFieldError(elId, msg) {
+        const el = document.getElementById(elId);
+        if (el) el.textContent = msg;
+      },
+
+      async onAuthChanged(user) {
+        this.user = user;
+        const btn = document.getElementById('cloudAuthBtn');
+        const loggedOutBox = document.getElementById('authLoggedOutBox');
+        const loggedInBox = document.getElementById('authLoggedInBox');
+
+        app.ui.resolveLoginGate(user);
+
+        if (user) {
+          localStorage.removeItem('loginGateSkipped');
+          if (btn) btn.textContent = '☁️ ' + (user.email ? user.email.split('@')[0] : '로그인됨');
+          if (loggedOutBox) loggedOutBox.classList.add('hidden');
+          if (loggedInBox) loggedInBox.classList.remove('hidden');
+          const emailEl = document.getElementById('authUserEmail');
+          if (emailEl) emailEl.textContent = user.email || '사용자';
+          await this.pullThenListen();
+        } else {
+          if (btn) btn.textContent = '☁️ 로그인';
+          if (loggedOutBox) loggedOutBox.classList.remove('hidden');
+          if (loggedInBox) loggedInBox.classList.add('hidden');
+          if (this.unsubscribeSnapshot) { this.unsubscribeSnapshot(); this.unsubscribeSnapshot = null; }
+        }
+      },
+
+      docRef() {
+        return this.db.collection('plannerUsers').doc(this.user.uid);
+      },
+
+      /* 로그인 시 클라우드에 데이터가 있으면 자동으로 불러오고, 없으면 지금 기기 데이터를 클라우드로 올림 */
+      async pullThenListen() {
+        const statusEl = document.getElementById('authSyncStatus');
+        try {
+          const snap = await this.docRef().get();
+          if (snap.exists) {
+            this.applyRemoteData(snap.data());
+            app.ui.showToast('☁️ 저장된 데이터를 자동으로 불러왔어요');
+          } else {
+            await this.pushToCloud();
+          }
+        } catch (e) {
+          console.error('클라우드 초기 동기화 실패', e);
+        }
+        if (statusEl) statusEl.textContent = '✅ 동기화 완료 · 이후 자동으로 저장돼요';
+        this.startRealtimeSync();
+      },
+
+      startRealtimeSync() {
+        if (this.unsubscribeSnapshot) this.unsubscribeSnapshot();
+        this.unsubscribeSnapshot = this.docRef().onSnapshot(snap => {
+          if (!snap.exists) return;
+          if (snap.metadata.hasPendingWrites) return; // 방금 내가 쓴 로컬 반영본은 무시(이미 로컬은 최신)
+          this.applyRemoteData(snap.data());
+          app.ui.showToast('☁️ 다른 기기의 최신 내용으로 업데이트했어요');
+        }, err => console.error('실시간 동기화 오류', err));
+      },
+
+      applyRemoteData(data) {
+        this.SYNC_KEYS.forEach(key => {
+          if (!(key in data)) return;
+          localStorage.setItem(key, JSON.stringify(data[key]));
+        });
+        app.events = JSON.parse(localStorage.getItem('appEvents')) || [];
+        app.dailyData = JSON.parse(localStorage.getItem('appDailyData')) || {};
+        app.diary = JSON.parse(localStorage.getItem('appDiary')) || {};
+        app.recurringTasks = JSON.parse(localStorage.getItem('appRecurringTasks')) || {};
+        app.settings = JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24 };
+
+        app.ui.renderCalendar();
+        if (app.selectedDateStr && !document.getElementById('plannerView').classList.contains('hidden')) {
+          app.ui.loadPlannerData();
+        }
+      },
+
+      queuePush() {
+        if (!this.ready || !this.user) return; // 로그인 안 했으면 클라우드 저장 안 함(로컬만)
+        if (this.pushTimer) clearTimeout(this.pushTimer);
+        this.pushTimer = setTimeout(() => this.pushToCloud(), 1200);
+      },
+
+      async pushToCloud() {
+        if (!this.ready || !this.user) return;
+        const payload = {};
+        this.SYNC_KEYS.forEach(key => {
+          try { payload[key] = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { payload[key] = null; }
+        });
+        payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+        try {
+          await this.docRef().set(payload, { merge: true });
+        } catch (e) {
+          console.error('클라우드 저장 실패', e);
+        }
+      }
+    },
+
     ui: {
+      /* 🚪 첫 화면 로그인 게이트 */
+      showLoginGate() {
+        const gate = document.getElementById('loginGateView');
+        if (!gate) return;
+        gate.classList.remove('hidden');
+        document.getElementById('loginGateLoading').classList.remove('hidden');
+        document.getElementById('loginGateForm').classList.add('hidden');
+      },
+      showLoginGateForm() {
+        const loading = document.getElementById('loginGateLoading');
+        const form = document.getElementById('loginGateForm');
+        if (loading) loading.classList.add('hidden');
+        if (form) form.classList.remove('hidden');
+      },
+      hideLoginGate() {
+        const gate = document.getElementById('loginGateView');
+        if (gate) gate.classList.add('hidden');
+      },
+      resolveLoginGate(user) {
+        if (user) { this.hideLoginGate(); return; }
+        const gate = document.getElementById('loginGateView');
+        if (gate && !gate.classList.contains('hidden')) this.showLoginGateForm();
+      },
+      skipLogin() {
+        localStorage.setItem('loginGateSkipped', 'true');
+        this.hideLoginGate();
+      },
+
       updateStreakUI(streak) {
         const el = document.getElementById('kpiStreak');
         if (el) el.textContent = `${streak}일`;
@@ -2111,6 +2506,7 @@
         
         try {
           localStorage.setItem('appDiary', JSON.stringify(app.diary));
+          app.cloud.queuePush();
         } catch (e) {
           app.ui.showToast('저장 공간이 부족해요. 사진 크기가 너무 크거나 많을 수 있어요 🙏');
           return;
@@ -2125,6 +2521,7 @@
         if (start >= end) return this.showToast("시작 시간이 종료 시간보다 작아야 합니다.");
         app.settings.start = start; app.settings.end = end;
         localStorage.setItem('appSettings', JSON.stringify(app.settings));
+        app.cloud.queuePush();
 
         app.saveDailyData(false);
         this.loadPlannerData();
@@ -2163,6 +2560,7 @@
           this.showToast(`🔄 ${hour}시 일정을 매일 반복으로 설정했어요!`);
         }
         localStorage.setItem('appRecurringTasks', JSON.stringify(app.recurringTasks));
+        app.cloud.queuePush();
       },
 
       markTimetableDone(dateStr, hour) {
@@ -2179,6 +2577,7 @@
         app.dailyData[dateStr].progress = plannedTasks.length > 0 ? Math.round((completedTasks.length / plannedTasks.length) * 100) : 0;
 
         localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
+        app.cloud.queuePush();
 
         if (dateStr === app.selectedDateStr) {
           const row = document.querySelector(`.time-row[data-hour="${hour}"]`);
@@ -2236,6 +2635,7 @@
 
             app.dailyData[app.selectedDateStr].timetable = newTimetable;
             localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
+            app.cloud.queuePush();
             app.saveDailyData(false);
             app.ui.showToast('⏱️ 일정이 새로운 시간대로 정렬되었습니다.');
           }
@@ -2506,10 +2906,13 @@
   document.addEventListener('DOMContentLoaded', () => {
     app.init();
 
-    if ('serviceWorker' in navigator) {
+    // ⚠️ claudeusercontent.com 같은 미리보기/샌드박스 도메인엔 sw.js가 없어서 항상 404가 나므로 등록을 건너뜁니다.
+    // 실제 배포 도메인(직접 호스팅한 곳)에서는 정상적으로 서비스 워커가 등록됩니다.
+    const isSandboxPreview = /claudeusercontent\.com$/.test(location.hostname);
+    if ('serviceWorker' in navigator && location.protocol !== 'file:' && !isSandboxPreview) {
       navigator.serviceWorker.register('./sw.js')
         .then(registration => console.log('ServiceWorker 등록 성공:', registration.scope))
-        .catch(error => console.log('ServiceWorker 등록 실패:', error));
+        .catch(error => console.log('ServiceWorker 등록 실패(무시 가능):', error));
     }
   });
 </script>
