@@ -716,7 +716,7 @@ body.dark input:focus, body.dark textarea:focus {
           </div>
 
           <h3 class="box-title">
-            <span>⏳ 24시간 집중 타이머 <span id="timerModeLabel" style="font-size: 11.5px; font-weight: 500; color: var(--ink-soft);">(40분 집중/20분 휴식)</span></span>
+            <span>⏳ 집중 타이머 <span id="timerModeLabel" style="font-size: 11.5px; font-weight: 500; color: var(--ink-soft);">(40분 집중/20분 휴식)</span></span>
           </h3>
           <div class="timer-grid" id="timerGrid"></div>
           <div class="timer-display" id="timerDisplayBox">
@@ -1928,7 +1928,11 @@ body.dark input:focus, body.dark textarea:focus {
         grid.innerHTML = '';
         const timersData = (app.dailyData[app.selectedDateStr] && app.dailyData[app.selectedDateStr].timers) || {};
 
-        for (let i = 0; i < 24; i++) {
+        // ⏰ 24시간 전체가 아니라, 위 "타임테이블" 설정 범위(기본 6시~24시)에 맞춰서만 표시 → 모바일에서 한눈에 보이게
+        const start = app.settings.start;
+        const end = Math.min(app.settings.end, 23);
+
+        for (let i = start; i <= end; i++) {
           const btn = document.createElement('button');
           btn.className = 'timer-chip';
           btn.textContent = `${i}시`;
