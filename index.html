@@ -1150,12 +1150,23 @@ body.dark input:focus, body.dark textarea:focus {
         if (!document.hidden) {
           this.timer.catchUp();
           this.timer.updateDisplay();
-          if (this.timer.isRunning) this.timer.resumeInterval();
+          if (this.timer.isRunning) {
+            this.timer.resumeInterval();
+            this.timer.requestWakeLock(); // 화면 꺼짐 방지는 탭이 보일 때만 재요청 가능해서 여기서 다시 잡아줌
+          }
         }
       });
       window.addEventListener('focus', () => {
         this.timer.catchUp();
         this.timer.updateDisplay();
+      });
+
+      // ⚠️ 타이머 진행 중에 실수로 탭을 닫으려 하면 한 번 경고 (완전한 방지는 아니지만 실수 예방용)
+      window.addEventListener('beforeunload', (e) => {
+        if (this.timer.isRunning) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
       });
     },
 
@@ -1825,6 +1836,21 @@ body.dark input:focus, body.dark textarea:focus {
       interval: null,
       isRunning: false,
       dateStr: null,
+      wakeLock: null,
+
+      /* 📵 화면이 꺼져서 탭이 완전히 정지되는 걸 막아주는 화면 잠금 방지 (지원 브라우저에서만) */
+      async requestWakeLock() {
+        if (!('wakeLock' in navigator)) return;
+        try {
+          this.wakeLock = await navigator.wakeLock.request('screen');
+          this.wakeLock.addEventListener('release', () => { this.wakeLock = null; });
+        } catch (e) {
+          // 절전모드 등으로 거부될 수 있음 - 조용히 무시 (타임스탬프 기반 catchUp이 그래도 보정해줌)
+        }
+      },
+      releaseWakeLock() {
+        if (this.wakeLock) { this.wakeLock.release().catch(() => {}); this.wakeLock = null; }
+      },
 
       init() {
         this.loadDurations();
@@ -1928,6 +1954,7 @@ body.dark input:focus, body.dark textarea:focus {
         app.haptic(15);
         this.persist();
         this.resumeInterval();
+        this.requestWakeLock();
         this.updateDisplay();
         app.ui.showToast('⏳ 타이머가 시작됐어요. 목표를 달성하면 지금 시각 기준으로 타임테이블이 자동 완료돼요!');
       },
@@ -1935,6 +1962,7 @@ body.dark input:focus, body.dark textarea:focus {
       pause() {
         if (this.endTimestamp) this.timeLeft = Math.max(0, Math.round((this.endTimestamp - Date.now()) / 1000));
         this.stopInterval();
+        this.releaseWakeLock();
         this.endTimestamp = null;
         this.persist();
         this.updateDisplay();
@@ -1942,6 +1970,7 @@ body.dark input:focus, body.dark textarea:focus {
 
       reset() {
         this.stopInterval();
+        this.releaseWakeLock();
         this.mode = 'study';
         this.timeLeft = this.studyMinutes * 60;
         this.endTimestamp = null;
@@ -1983,6 +2012,7 @@ body.dark input:focus, body.dark textarea:focus {
           this.endTimestamp = null;
           this.dateStr = null;
           this.stopInterval();
+          this.releaseWakeLock();
         }
         this.persist();
         this.updateDisplay();
