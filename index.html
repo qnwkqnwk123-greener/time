@@ -2198,10 +2198,24 @@ body.dark input:focus, body.dark textarea:focus {
         if (this.unsubscribeSnapshot) this.unsubscribeSnapshot();
         this.unsubscribeSnapshot = this.docRef().onSnapshot(snap => {
           if (!snap.exists) return;
-          if (snap.metadata.hasPendingWrites) return; // 방금 내가 쓴 로컬 반영본은 무시(이미 로컬은 최신)
-          this.applyRemoteData(snap.data());
+          if (snap.metadata.hasPendingWrites) return; // 방금 내가 쓴 로컬 반영본(1차 에코)은 무시
+          const data = snap.data();
+          if (data.deviceId && data.deviceId === this.deviceId) return; // ✅ 서버 확인본(2차 에코)도 "내가 방금 보낸 것"이면 무시 → 타이핑 중 커서 튐 방지
+          if (this.isEditingNow()) {
+            // 지금 사용자가 뭔가 입력 중이면 화면을 갈아엎지 않고, 입력이 끝난 뒤 반영되도록 대기
+            this.pendingRemoteData = data;
+            return;
+          }
+          this.applyRemoteData(data);
           app.ui.showToast('☁️ 다른 기기의 최신 내용으로 업데이트했어요');
         }, err => console.error('실시간 동기화 오류', err));
+      },
+
+      isEditingNow() {
+        const el = document.activeElement;
+        if (!el) return false;
+        const tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
       },
 
       applyRemoteData(data) {
@@ -2229,13 +2243,22 @@ body.dark input:focus, body.dark textarea:focus {
 
       async pushToCloud() {
         if (!this.ready || !this.user) return;
-        const payload = {};
+        if (!this.deviceId) {
+          this.deviceId = app.store.get('cloudDeviceId', null) || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+          app.store.set('cloudDeviceId', this.deviceId);
+        }
+        const payload = { deviceId: this.deviceId };
         this.SYNC_KEYS.forEach(key => {
           try { payload[key] = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { payload[key] = null; }
         });
         payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
         try {
           await this.docRef().set(payload, { merge: true });
+          // ✏️ 입력 중이던 걸 미뤄뒀다면(다른 기기 업데이트), 이제 내 저장이 끝났으니 조용히 반영
+          if (this.pendingRemoteData && !this.isEditingNow()) {
+            this.applyRemoteData(this.pendingRemoteData);
+            this.pendingRemoteData = null;
+          }
         } catch (e) {
           console.error('클라우드 저장 실패', e);
         }
