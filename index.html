@@ -104,10 +104,13 @@
   body.dark .diary-title-input { color: var(--ink); border-bottom-color: var(--line); }
 
   * { box-sizing: border-box; font-family: var(--font-body); }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100%; }
+  html, body { width: 100%; }
+  * { min-width: 0; }
   body {
     color: var(--ink); background: var(--paper); margin: 0; line-height: 1.5;
     padding: 16px; padding-bottom: 56px;
+    overflow-x: hidden; box-sizing: border-box;
     background-image:
       radial-gradient(circle at 8% 0%, rgba(127,184,230,0.10), transparent 40%),
       radial-gradient(circle at 100% 10%, rgba(255,185,154,0.12), transparent 45%);
@@ -303,11 +306,7 @@
   .weather-card .wc-range { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
   .weather-card .wc-loc { margin-left: auto; font-size: 11px; color: var(--accent-deep); background: rgba(255,255,255,0.6); padding: 4px 10px; border-radius: 999px; font-weight: 700; }
 
-  .timer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 15px; }
-  @media (max-width: 500px) { .timer-grid { grid-template-columns: repeat(4, 1fr); } }
-  .timer-chip { padding: 7px 0; font-size: 12.5px; border-radius: 10px; background: #f4f1fa; color: var(--ink-soft); border: 1px solid var(--line); text-align: center; transition: all 0.18s; }
-  .timer-chip.active { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: white; border-color: transparent; box-shadow: var(--shadow-sm); transform: scale(1.05); }
-  .timer-chip.done { background: var(--mint-bg); color: var(--mint); text-decoration: line-through; border-color: #bdeade; }
+  /* (구 시간대 선택 칩 UI는 목표시간 기반 타이머로 대체되어 제거됨) */
 
   .timer-display { text-align: center; background: var(--paper); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--line); transition: background 0.4s ease; }
   .timer-display.running { animation: timerPulse 7s ease-in-out infinite; }
@@ -718,9 +717,8 @@ body.dark input:focus, body.dark textarea:focus {
           <h3 class="box-title">
             <span>⏳ 집중 타이머 <span id="timerModeLabel" style="font-size: 11.5px; font-weight: 500; color: var(--ink-soft);">(40분 집중/20분 휴식)</span></span>
           </h3>
-          <div class="timer-grid" id="timerGrid"></div>
           <div class="timer-display" id="timerDisplayBox">
-            <div class="timer-title" id="timerTitle">원하는 시간대를 선택해주세요 👆</div>
+            <div class="timer-title" id="timerTitle">🎯 목표: 40분 집중 · 20분 휴식</div>
             <div class="timer-time" id="timerTime">00:00</div>
             <div class="timer-controls">
               <button class="btn-primary" onclick="app.timer.start()">▶ 시작</button>
@@ -1152,7 +1150,6 @@ body.dark input:focus, body.dark textarea:focus {
         if (!document.hidden) {
           this.timer.catchUp();
           this.timer.updateDisplay();
-          this.timer.renderGrid();
           if (this.timer.isRunning) this.timer.resumeInterval();
         }
       });
@@ -1820,7 +1817,6 @@ body.dark input:focus, body.dark textarea:focus {
     timer: {
       STORAGE_KEY: 'timerState',
       DURATIONS_KEY: 'timerDurations',
-      activeHour: null,
       mode: 'study',
       studyMinutes: 40,
       restMinutes: 20,
@@ -1833,7 +1829,6 @@ body.dark input:focus, body.dark textarea:focus {
       init() {
         this.loadDurations();
         this.restore();
-        this.renderGrid();
         this.updateDisplay();
         this.syncDurationInputs();
         if (this.isRunning) this.resumeInterval();
@@ -1867,17 +1862,17 @@ body.dark input:focus, body.dark textarea:focus {
         app.store.set(this.DURATIONS_KEY, { study: sVal, rest: rVal });
         this.syncDurationInputs();
 
-        if (!this.isRunning && this.activeHour !== null) {
+        if (!this.isRunning) {
           this.timeLeft = (this.mode === 'study' ? this.studyMinutes : this.restMinutes) * 60;
           this.persist();
           this.updateDisplay();
         }
-        app.ui.showToast(this.isRunning ? '✅ 저장했어요. 다음 세션부터 적용돼요' : '✅ 나만의 집중 패턴으로 설정했어요');
+        app.ui.showToast(this.isRunning ? '✅ 저장했어요. 다음 세션부터 적용돼요' : '✅ 목표 시간을 설정했어요');
       },
 
       persist() {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-          activeHour: this.activeHour, mode: this.mode, timeLeft: this.timeLeft,
+          mode: this.mode, timeLeft: this.timeLeft,
           endTimestamp: this.endTimestamp, isRunning: this.isRunning, dateStr: this.dateStr
         }));
       },
@@ -1885,12 +1880,11 @@ body.dark input:focus, body.dark textarea:focus {
       restore() {
         const saved = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || 'null');
         if (!saved) return;
-        this.activeHour = saved.activeHour;
-        this.mode = saved.mode;
+        this.mode = saved.mode || 'study';
         this.dateStr = saved.dateStr;
         this.isRunning = saved.isRunning;
         this.endTimestamp = saved.endTimestamp;
-        this.timeLeft = saved.timeLeft;
+        this.timeLeft = saved.timeLeft || this.studyMinutes * 60;
         if (this.isRunning && this.endTimestamp) this.catchUp();
       },
 
@@ -1923,54 +1917,19 @@ body.dark input:focus, body.dark textarea:focus {
         else { this.timeLeft = remaining; this.updateDisplay(); }
       },
 
-      renderGrid() {
-        const grid = document.getElementById('timerGrid');
-        grid.innerHTML = '';
-        const timersData = (app.dailyData[app.selectedDateStr] && app.dailyData[app.selectedDateStr].timers) || {};
-
-        // ⏰ 24시간 전체가 아니라, 위 "타임테이블" 설정 범위(기본 6시~24시)에 맞춰서만 표시 → 모바일에서 한눈에 보이게
-        const start = app.settings.start;
-        const end = Math.min(app.settings.end, 23);
-
-        for (let i = start; i <= end; i++) {
-          const btn = document.createElement('button');
-          btn.className = 'timer-chip';
-          btn.textContent = `${i}시`;
-
-          if (this.activeHour === i && this.dateStr === app.selectedDateStr) btn.classList.add('active');
-          if (timersData[i] === 'done') btn.classList.add('done');
-
-          btn.onclick = () => this.selectHour(i);
-          grid.appendChild(btn);
-        }
-      },
-
-      selectHour(hour) {
-        this.stopInterval();
-        this.activeHour = hour;
-        this.mode = 'study';
-        this.timeLeft = this.studyMinutes * 60;
-        this.endTimestamp = null;
-        this.isRunning = false;
-        this.dateStr = app.selectedDateStr;
-        this.persist();
-        this.renderGrid();
-        this.updateDisplay();
-      },
-
       start() {
         if ("Notification" in window && Notification.permission === "default") {
           Notification.requestPermission();
         }
-        if (this.activeHour === null) return app.ui.showToast('먼저 위에서 시간대(0~23시)를 선택해주세요! 👆');
         if (this.isRunning) return;
+        if (!this.dateStr) this.dateStr = app.selectedDateStr;
         this.isRunning = true;
         this.endTimestamp = Date.now() + this.timeLeft * 1000;
         app.haptic(15);
         this.persist();
         this.resumeInterval();
         this.updateDisplay();
-        app.ui.showToast('⏳ 타이머가 시작됐어요. 다른 화면을 보고 있어도 계속 흘러갑니다!');
+        app.ui.showToast('⏳ 타이머가 시작됐어요. 목표를 달성하면 지금 시각 기준으로 타임테이블이 자동 완료돼요!');
       },
 
       pause() {
@@ -1982,11 +1941,11 @@ body.dark input:focus, body.dark textarea:focus {
       },
 
       reset() {
-        if (this.activeHour === null) return;
         this.stopInterval();
         this.mode = 'study';
         this.timeLeft = this.studyMinutes * 60;
         this.endTimestamp = null;
+        this.dateStr = null;
         this.persist();
         this.updateDisplay();
       },
@@ -1995,8 +1954,21 @@ body.dark input:focus, body.dark textarea:focus {
         if (this.mode === 'study') {
           if (!fromCatchUp) {
             app.haptic([40,60,40]);
-            app.ui.showAlarmToast('🎉', '집중 완료!', `${this.studyMinutes}분 집중을 마쳤어요. ${this.restMinutes}분 휴식을 시작하세요 ☕`);
+            app.ui.showAlarmToast('🎉', '집중 완료!', `${this.studyMinutes}분 집중 목표를 달성했어요! ${this.restMinutes}분 휴식을 시작하세요 ☕`);
           }
+
+          // ✅ 목표 달성 → 지금 실제 시각을 기준으로 그 시간대 타임테이블을 자동 완료 처리
+          const targetDate = this.dateStr || app.selectedDateStr;
+          const currentHour = new Date().getHours();
+          if (targetDate) {
+            if (!app.dailyData[targetDate]) app.dailyData[targetDate] = { timers: {} };
+            if (!app.dailyData[targetDate].timers) app.dailyData[targetDate].timers = {};
+            app.dailyData[targetDate].timers[currentHour] = 'done';
+            localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
+            app.cloud.queuePush();
+            app.ui.markTimetableDone(targetDate, currentHour);
+          }
+
           this.mode = 'rest';
           this.timeLeft = this.restMinutes * 60;
           this.endTimestamp = Date.now() + this.timeLeft * 1000;
@@ -2006,25 +1978,13 @@ body.dark input:focus, body.dark textarea:focus {
             app.ui.showAlarmToast('✅', '한 세션 완료!', `${this.studyMinutes}분 집중 + ${this.restMinutes}분 휴식, 정말 수고하셨어요 👏`);
           }
 
-          const targetDate = this.dateStr || app.selectedDateStr;
-          const completedHour = this.activeHour;
-          if (targetDate && completedHour !== null) {
-            if (!app.dailyData[targetDate]) app.dailyData[targetDate] = { timers: {} };
-            if (!app.dailyData[targetDate].timers) app.dailyData[targetDate].timers = {};
-            app.dailyData[targetDate].timers[completedHour] = 'done';
-            localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
-            app.cloud.queuePush();
-            app.ui.markTimetableDone(targetDate, completedHour);
-          }
-
-          this.activeHour = null;
           this.mode = 'study';
           this.timeLeft = this.studyMinutes * 60;
           this.endTimestamp = null;
+          this.dateStr = null;
           this.stopInterval();
         }
         this.persist();
-        this.renderGrid();
         this.updateDisplay();
       },
 
@@ -2034,20 +1994,12 @@ body.dark input:focus, body.dark textarea:focus {
         const boxEl = document.getElementById('timerDisplayBox');
         if (boxEl) boxEl.classList.toggle('running', this.isRunning);
 
-        if (this.activeHour === null) {
-          titleEl.textContent = '원하는 시간대를 선택해주세요 👆';
-          titleEl.style.color = 'var(--ink-soft)';
-          timeEl.textContent = '00:00';
-          return;
-        }
-
-        const dateNote = (this.dateStr && this.dateStr !== app.selectedDateStr)
-          ? `<span style="color:var(--ink-faint); font-weight:500;">[${this.dateStr.slice(5).replace('-', '/')}] </span>` : '';
-
         if (this.mode === 'study') {
-          titleEl.innerHTML = `${dateNote}<span style="color:#e8748f;">[${this.activeHour}시]</span> 🔥 ${this.studyMinutes}분 집중 모드`;
+          titleEl.innerHTML = this.isRunning
+            ? `<span style="color:#e8748f;">🔥 ${this.studyMinutes}분 집중 중…</span>`
+            : `🎯 목표: ${this.studyMinutes}분 집중 · ${this.restMinutes}분 휴식`;
         } else {
-          titleEl.innerHTML = `${dateNote}<span style="color:#5b8fd6;">[${this.activeHour}시]</span> ☕ ${this.restMinutes}분 휴식 모드`;
+          titleEl.innerHTML = `<span style="color:#5b8fd6;">☕ ${this.restMinutes}분 휴식 중…</span>`;
         }
 
         const m = String(Math.floor(this.timeLeft / 60)).padStart(2, '0');
@@ -2519,7 +2471,6 @@ body.dark input:focus, body.dark textarea:focus {
           this.loadPlannerData();
         } catch (e) {
           console.error('플래너 데이터 로딩 중 오류가 발생했어요:', e);
-          app.timer.renderGrid();
           app.timer.updateDisplay();
           this.showToast('일부 위젯을 불러오는 중 문제가 있었어요. 새로고침해보세요 🙏');
         }
@@ -2860,7 +2811,6 @@ body.dark input:focus, body.dark textarea:focus {
         this.updateGrowthReport();
         this.updateStreakUI(app.calculateStreak());
         this.updatePanelSummaries();
-        app.timer.renderGrid();
         app.timer.updateDisplay();
       },
 
