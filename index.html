@@ -349,6 +349,12 @@
   .timetable-wrapper::-webkit-scrollbar-track { background: transparent; }
 
   .time-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid #f4f1fa; gap: 8px; transition: background 0.15s; }
+  .time-row.just-completed { border-radius: 12px; animation: rowCompletedFlash 1.6s ease; }
+  @keyframes rowCompletedFlash {
+    0%   { background: var(--mint-bg); box-shadow: 0 0 0 3px var(--mint); }
+    70%  { background: var(--mint-bg); box-shadow: 0 0 0 3px var(--mint); }
+    100% { background: transparent; box-shadow: none; }
+  }
   .drag-handle { cursor: grab; color: var(--ink-faint); font-size: 16px; padding: 4px; touch-action: none; user-select: none; flex-shrink: 0; }
   .time-row.drag-over { background: var(--accent-bg); border-radius: 10px; box-shadow: inset 0 0 0 2px var(--accent); }
   .time-label { width: 55px; font-size: 12.5px; font-weight: 700; color: var(--accent-deep); text-align: center; flex-shrink: 0; }
@@ -2753,6 +2759,10 @@ body.dark input:focus, body.dark textarea:focus {
               btn.textContent = '💖 달성';
               if (input.value.trim() !== '') input.classList.add('done-input');
             }
+            // 📍 스크롤해서 보여주고 잠깐 반짝여서 "여기가 자동 완료됐어요" 알려주기
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('just-completed');
+            setTimeout(() => row.classList.remove('just-completed'), 1600);
           }
           this.calculateExpenditure();
           this.updateGrowthReport();
