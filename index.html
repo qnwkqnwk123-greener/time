@@ -626,6 +626,7 @@ body.dark input:focus, body.dark textarea:focus {
           <h1 class="hero-title">🕊️ 리멤버</h1>
           <p class="hero-sub" id="heroSub">오늘의 하늘을 살피며 하루를 그려보세요</p>
           <p class="hero-quote" id="heroQuote">💬 오늘의 한마디를 불러오는 중…</p>
+          <p style="margin:8px 0 0; font-size:11px; opacity:0.75;">⌨️ 아무 화면에서나 <b>T</b>키를 누르면 오늘 할 일로 바로 이동해요</p>
         </div>
         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
           <div class="city-chips" id="cityChips"></div>
@@ -1172,6 +1173,23 @@ body.dark input:focus, body.dark textarea:focus {
         if (this.timer.isRunning) {
           e.preventDefault();
           e.returnValue = '';
+        }
+      });
+
+      // ⌨️ 어디서든 T키를 누르면 "오늘 할 일"로 즉시 이동 (입력 중일 땐 방해되지 않게 무시)
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return;
+        if (document.activeElement && document.activeElement.isContentEditable) return;
+        const anyModalOpen = ['weatherPanelOverlay', 'searchModalOverlay', 'loginModalOverlay', 'authModalOverlay']
+          .some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
+        if (anyModalOpen) return;
+
+        if (e.key.toLowerCase() === 't') {
+          e.preventDefault();
+          this.ui.showPlanner(this.todayStr());
+          this.ui.showToast('📅 T키로 오늘 할 일을 불러왔어요!');
         }
       });
     },
