@@ -762,9 +762,9 @@ body.dark input:focus, body.dark textarea:focus {
           </h3>
           <div class="collapsible-body">
             <div class="priority-list">
-              <div class="priority-item"><input type="text" id="pri1" placeholder="🥇 1순위 목표" onchange="app.saveDailyData()" oninput="app.ui.updatePanelSummaries()"></div>
-              <div class="priority-item"><input type="text" id="pri2" placeholder="🥈 2순위 목표" onchange="app.saveDailyData()" oninput="app.ui.updatePanelSummaries()"></div>
-              <div class="priority-item"><input type="text" id="pri3" placeholder="🥉 3순위 목표" onchange="app.saveDailyData()" oninput="app.ui.updatePanelSummaries()"></div>
+              <div class="priority-item"><input type="text" id="pri1" placeholder="🥇 1순위 목표" onchange="app.savePriorities()" oninput="app.ui.updatePanelSummaries()"></div>
+              <div class="priority-item"><input type="text" id="pri2" placeholder="🥈 2순위 목표" onchange="app.savePriorities()" oninput="app.ui.updatePanelSummaries()"></div>
+              <div class="priority-item"><input type="text" id="pri3" placeholder="🥉 3순위 목표" onchange="app.savePriorities()" oninput="app.ui.updatePanelSummaries()"></div>
             </div>
           </div>
         </div>
@@ -793,6 +793,16 @@ body.dark input:focus, body.dark textarea:focus {
             </div>
             <div class="finance-list" id="financeList"></div>
             <div class="finance-chart-container"><canvas id="financeChart"></canvas></div>
+
+            <div style="margin-top:18px; padding-top:16px; border-top:1px dashed var(--line);">
+              <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:10px;">📊 지난달과 비교</div>
+              <div class="growth-stats">
+                <div class="growth-stat-item"><div class="label">지난달 📅</div><div class="val" id="lastMonthExpense">₩0</div></div>
+                <div class="growth-stat-item"><div class="label">이번달 💳</div><div class="val" id="thisMonthExpense" style="color: var(--accent-deep);">₩0</div></div>
+              </div>
+              <div class="chart-container"><canvas id="expenseCompareChart"></canvas></div>
+              <div id="expenseCompareFeedback" class="feedback-message"></div>
+            </div>
           </div>
         </div>
 
@@ -977,6 +987,51 @@ body.dark input:focus, body.dark textarea:focus {
       }
     },
 
+    /* 🗄️ 일기 사진 원본을 저장하는 IndexedDB — localStorage 용량 한도(5~10MB)를 피하기 위함.
+       localStorage/클라우드에는 작은 썸네일만 두고, 실제 원본 이미지는 여기 Blob으로 저장해요. */
+    idb: {
+      db: null,
+      init() {
+        if (this.db) return Promise.resolve(this.db);
+        if (!('indexedDB' in window)) return Promise.reject(new Error('이 브라우저는 IndexedDB를 지원하지 않아요'));
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open('rememberPhotosDB', 1);
+          req.onupgradeneeded = () => {
+            if (!req.result.objectStoreNames.contains('photos')) req.result.createObjectStore('photos');
+          };
+          req.onsuccess = () => { this.db = req.result; resolve(this.db); };
+          req.onerror = () => reject(req.error);
+        });
+      },
+      async put(id, blob) {
+        const db = await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('photos', 'readwrite');
+          tx.objectStore('photos').put(blob, id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      },
+      async get(id) {
+        const db = await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('photos', 'readonly');
+          const req = tx.objectStore('photos').get(id);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+      },
+      async delete(id) {
+        const db = await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('photos', 'readwrite');
+          tx.objectStore('photos').delete(id);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+    },
+
     currentDate: new Date(),
     selectedDateStr: "",
     events: JSON.parse(localStorage.getItem('appEvents')) || [],
@@ -988,6 +1043,7 @@ body.dark input:focus, body.dark textarea:focus {
     holidays: {},
     growthChartInstance: null,
     financeChartInstance: null,
+    expenseCompareChartInstance: null,
     alarmTriggered: {},
     diaryDateStr: "",
     diaryFromView: "calendarView",
@@ -1031,6 +1087,16 @@ body.dark input:focus, body.dark textarea:focus {
       Object.assign(bucket, patch);
       localStorage.setItem('appMonthlyData', JSON.stringify(this.monthlyData));
       this.cloud.queuePush();
+    },
+    prevMonthKey(monthKey) {
+      const [y, m] = monthKey.split('-').map(Number);
+      const d = new Date(y, m - 2, 1); // m은 1~12이므로 m-2가 "전달"의 0-index 월
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    },
+    monthTotal(monthKey) {
+      const bucket = this.monthlyData[monthKey];
+      if (!bucket || !bucket.finances) return 0;
+      return bucket.finances.reduce((sum, f) => sum + (f.amount || 0), 0);
     },
 
     dayOfYear(dateStr) {
@@ -1257,11 +1323,28 @@ body.dark input:focus, body.dark textarea:focus {
       this.ui.updatePanelSummaries();
     },
 
-    saveDailyData(showToast = true) {
+    /* 🎯 우선순위는 이번 달 단위로 저장 — 우선순위 칸이 바뀔 때만 호출 (다른 편집이 이걸 덮어쓰지 않게 분리) */
+    savePriorities() {
       const p1 = document.getElementById('pri1').value;
       const p2 = document.getElementById('pri2').value;
       const p3 = document.getElementById('pri3').value;
+      this.saveMonthlyBucket(this.selectedDateStr, { priorities: [p1, p2, p3] });
+      this.ui.updatePanelSummaries();
+    },
 
+    /* 💰 지출내역도 이번 달 단위로 저장 — 지출 항목이 바뀔 때만 호출 (다른 편집이 이걸 덮어쓰지 않게 분리) */
+    saveFinances() {
+      const finances = Array.from(document.querySelectorAll('.finance-item')).map(row => ({
+        category: row.querySelector('.cat').value,
+        desc: row.querySelector('.desc').value,
+        amount: Number(row.querySelector('.amt').value) || 0
+      }));
+      this.saveMonthlyBucket(this.selectedDateStr, { finances });
+      this.ui.calculateExpenditure();
+      this.ui.updatePanelSummaries();
+    },
+
+    saveDailyData(showToast = true) {
       const timetableData = {};
       document.querySelectorAll('.time-row').forEach(row => {
         const hour = parseInt(row.dataset.hour);
@@ -1270,17 +1353,6 @@ body.dark input:focus, body.dark textarea:focus {
           done: row.querySelector('.status-btn').classList.contains('done')
         };
       });
-
-      const finances = Array.from(document.querySelectorAll('.finance-item')).map(row => {
-        return {
-          category: row.querySelector('.cat').value,
-          desc: row.querySelector('.desc').value,
-          amount: Number(row.querySelector('.amt').value) || 0
-        };
-      });
-
-      // 🎯 우선순위 · 💰 지출내역은 "이번 달" 단위로 저장돼요 — 같은 달의 다른 날짜에서도 계속 유지되다가 달이 바뀌면 초기화돼요
-      this.saveMonthlyBucket(this.selectedDateStr, { priorities: [p1, p2, p3], finances: finances });
 
       const plannedTasks = Object.values(timetableData).filter(t => t.text.trim() !== "");
       const completedTasks = plannedTasks.filter(t => t.done);
@@ -2622,7 +2694,9 @@ body.dark input:focus, body.dark textarea:focus {
         const raw = app.diary[dateStr];
         if (!raw) return { title: '', text: '', photos: [] };
         if (typeof raw === 'string') return { title: '', text: raw, photos: [] };
-        return { title: raw.title || '', text: raw.text || '', photos: raw.photos || [] };
+        // 예전 버전 데이터(사진이 그냥 data URL 문자열)도 깨지지 않게 자동 변환
+        const photos = (raw.photos || []).map(p => (typeof p === 'string' ? { id: null, thumb: p } : p));
+        return { title: raw.title || '', text: raw.text || '', photos };
       },
 
       escapeHtml(str) {
@@ -2659,17 +2733,40 @@ body.dark input:focus, body.dark textarea:focus {
         const grid = document.getElementById('diaryPhotoGrid');
         if (!grid) return;
         const photos = app.diaryPhotosDraft || [];
-        let html = photos.map((src, idx) => `
+        let html = photos.map((p, idx) => `
           <div class="diary-photo-item">
-            <img src="${src}" alt="일기 사진">
-            <button class="diary-photo-remove" onclick="app.ui.removeDiaryPhoto(${idx})">✕</button>
+            <img src="${p.thumb}" alt="일기 사진" style="cursor:zoom-in;" onclick="app.ui.viewDiaryPhoto(${idx})">
+            <button class="diary-photo-remove" onclick="event.stopPropagation(); app.ui.removeDiaryPhoto(${idx})">✕</button>
           </div>
         `).join('');
         html += `<div class="diary-photo-add" onclick="document.getElementById('diaryPhotoInput').click()"><span style="font-size:20px;">📷</span><span>추가</span></div>`;
         grid.innerHTML = html;
       },
 
+      /* 🔍 썸네일 탭하면 IndexedDB에서 원본 화질을 불러와 크게 보여줌 */
+      async viewDiaryPhoto(idx) {
+        const photo = (app.diaryPhotosDraft || [])[idx];
+        if (!photo) return;
+        let src = photo.thumb;
+        let objectUrl = null;
+        if (photo.id) {
+          try {
+            const blob = await app.idb.get(photo.id);
+            if (blob) { objectUrl = URL.createObjectURL(blob); src = objectUrl; }
+          } catch (e) {
+            console.error('사진 원본을 불러오지 못했어요', e);
+          }
+        }
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,16,30,0.88);z-index:2000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out;';
+        overlay.innerHTML = `<img src="${src}" style="max-width:100%;max-height:100%;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">`;
+        overlay.onclick = () => { overlay.remove(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
+        document.body.appendChild(overlay);
+      },
+
       removeDiaryPhoto(idx) {
+        const photo = app.diaryPhotosDraft[idx];
+        if (photo && photo.id) app.idb.delete(photo.id).catch(e => console.error('원본 사진 삭제 실패', e));
         app.diaryPhotosDraft.splice(idx, 1);
         this.renderDiaryPhotoGrid();
         this.updateDiaryMeta(document.getElementById('diaryTextarea').value);
@@ -2686,21 +2783,41 @@ body.dark input:focus, body.dark textarea:focus {
           reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
-              const maxW = 900;
-              const scale = Math.min(1, maxW / img.width);
-              const canvas = document.createElement('canvas');
-              canvas.width = img.width * scale;
-              canvas.height = img.height * scale;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
-              app.diaryPhotosDraft.push(dataUrl);
-              remaining--;
-              if (remaining === 0) {
-                this.renderDiaryPhotoGrid();
-                this.updateDiaryMeta(document.getElementById('diaryTextarea').value);
-                this.saveDiary(false);
-              }
+              // 1) 작은 썸네일 — localStorage/클라우드에 저장 (용량 문제 없게 아주 가볍게)
+              const thumbScale = Math.min(1, 260 / img.width);
+              const tCanvas = document.createElement('canvas');
+              tCanvas.width = img.width * thumbScale;
+              tCanvas.height = img.height * thumbScale;
+              tCanvas.getContext('2d').drawImage(img, 0, 0, tCanvas.width, tCanvas.height);
+              const thumbDataUrl = tCanvas.toDataURL('image/jpeg', 0.55);
+
+              // 2) 화질 좋은 원본 — IndexedDB에 Blob으로 저장 (localStorage 용량 한도 회피)
+              const fullScale = Math.min(1, 1600 / img.width);
+              const fCanvas = document.createElement('canvas');
+              fCanvas.width = img.width * fullScale;
+              fCanvas.height = img.height * fullScale;
+              fCanvas.getContext('2d').drawImage(img, 0, 0, fCanvas.width, fCanvas.height);
+
+              const photoId = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+              fCanvas.toBlob((blob) => {
+                const finish = () => {
+                  app.diaryPhotosDraft.push({ id: blob ? photoId : null, thumb: thumbDataUrl });
+                  remaining--;
+                  if (remaining === 0) {
+                    this.renderDiaryPhotoGrid();
+                    this.updateDiaryMeta(document.getElementById('diaryTextarea').value);
+                    this.saveDiary(false);
+                  }
+                };
+                if (blob) {
+                  app.idb.put(photoId, blob).then(finish).catch(err => {
+                    console.error('사진 원본 저장 실패, 썸네일만 저장돼요', err);
+                    finish();
+                  });
+                } else {
+                  finish();
+                }
+              }, 'image/jpeg', 0.82);
             };
             img.src = e.target.result;
           };
@@ -2935,10 +3052,10 @@ body.dark input:focus, body.dark textarea:focus {
         ).join('');
 
         div.innerHTML = `
-          <select class="cat" onchange="app.saveDailyData()">${options}</select>
-          <input type="text" class="desc" placeholder="내용" value="${desc}" onchange="app.saveDailyData()">
-          <input type="number" class="amt" placeholder="금액" value="${amount}" oninput="app.ui.calculateExpenditure()" onchange="app.saveDailyData()">
-          <button class="btn-danger" onclick="this.parentElement.remove(); app.ui.calculateExpenditure(); app.saveDailyData();">❌</button>
+          <select class="cat" onchange="app.saveFinances()">${options}</select>
+          <input type="text" class="desc" placeholder="내용" value="${desc}" onchange="app.saveFinances()">
+          <input type="number" class="amt" placeholder="금액" value="${amount}" oninput="app.ui.calculateExpenditure()" onchange="app.saveFinances()">
+          <button class="btn-danger" onclick="this.parentElement.remove(); app.saveFinances();">❌</button>
         `;
         fContainer.appendChild(div);
       },
@@ -2967,6 +3084,72 @@ body.dark input:focus, body.dark textarea:focus {
         document.getElementById('kpiScore').textContent = (progress === 0 ? 0 : score) + '점';
 
         this.updateFinanceChart(categorySums);
+        this.updateExpenseComparison();
+      },
+
+      updateExpenseComparison() {
+        const thisKey = app.monthKey(app.selectedDateStr);
+        const lastKey = app.prevMonthKey(thisKey);
+        const thisTotal = app.monthTotal(thisKey);
+        const lastTotal = app.monthTotal(lastKey);
+
+        const lastEl = document.getElementById('lastMonthExpense');
+        const thisEl = document.getElementById('thisMonthExpense');
+        if (lastEl) lastEl.textContent = `₩${lastTotal.toLocaleString()}`;
+        if (thisEl) thisEl.textContent = `₩${thisTotal.toLocaleString()}`;
+
+        const fb = document.getElementById('expenseCompareFeedback');
+        if (fb) {
+          if (lastTotal === 0) {
+            fb.innerHTML = thisTotal === 0 ? "아직 비교할 지출 기록이 없어요" : "지난달 기록이 없어서 비교할 수 없어요";
+            fb.style.color = "var(--ink-soft)"; fb.style.backgroundColor = "#f4f1fa";
+          } else {
+            const diff = thisTotal - lastTotal;
+            const pct = Math.round(Math.abs(diff) / lastTotal * 100);
+            if (diff < 0) {
+              fb.innerHTML = `지난달보다 <b>₩${Math.abs(diff).toLocaleString()} (${pct}%)</b> 덜 썼어요! 잘하고 있어요 🎉`;
+              fb.style.color = "#2f9d78"; fb.style.backgroundColor = "var(--mint-bg)";
+            } else if (diff > 0) {
+              fb.innerHTML = `지난달보다 <b>₩${diff.toLocaleString()} (${pct}%)</b> 더 썼어요`;
+              fb.style.color = "#b8792a"; fb.style.backgroundColor = "var(--amber-bg)";
+            } else {
+              fb.innerHTML = `지난달과 지출이 똑같아요`;
+              fb.style.color = "#3d6fae"; fb.style.backgroundColor = "var(--sky-bg)";
+            }
+          }
+        }
+
+        const canvasEl = document.getElementById('expenseCompareChart');
+        if (!canvasEl || typeof Chart === 'undefined') return;
+        const ctx = canvasEl.getContext('2d');
+        if (app.expenseCompareChartInstance) app.expenseCompareChartInstance.destroy();
+
+        const computedStyle = getComputedStyle(document.body);
+        const cMint = computedStyle.getPropertyValue('--mint').trim() || '#58c9a3';
+        const cBlush = computedStyle.getPropertyValue('--blush').trim() || '#ef8fb3';
+        const cFaint = computedStyle.getPropertyValue('--ink-faint').trim() || '#ada6bd';
+        const barColor = lastTotal === 0 ? cFaint : (thisTotal > lastTotal ? cBlush : cMint);
+
+        app.expenseCompareChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['지난달', '이번달'],
+            datasets: [{
+              data: [lastTotal, thisTotal],
+              backgroundColor: [cFaint, barColor],
+              borderRadius: 10,
+              maxBarThickness: 56
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { callback: v => '₩' + Number(v).toLocaleString() }, grid: { borderDash: [5, 5] } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
       },
 
       updateFinanceChart(categorySums) {
