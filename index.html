@@ -359,7 +359,7 @@
   .time-row.drag-over { background: var(--accent-bg); border-radius: 10px; box-shadow: inset 0 0 0 2px var(--accent); }
   .time-label { width: 55px; font-size: 12.5px; font-weight: 700; color: var(--accent-deep); text-align: center; flex-shrink: 0; }
   
-  .time-input { flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: 12px; outline: none; transition: all 0.18s; font-size: 16px !important; min-width: 0; background: var(--paper); }
+  .time-input { flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: 12px; outline: none; transition: all 0.18s; font-size: 16px !important; min-width: 0; background: var(--paper); resize: none; overflow: hidden; font-family: inherit; line-height: 1.4; min-height: 44px; }
   .time-input:focus { border-color: var(--accent); background: white; }
   .time-input.done-input { background: var(--blush-bg); color: #b391a0; text-decoration: line-through; border-color: #f6d3e2; }
 
@@ -378,6 +378,8 @@
   .finance-item select { flex: 1; min-width: 70px; }
   .finance-item input.desc { flex: 2; min-width: 100px; }
   .finance-item input.amt { flex: 1.5; text-align: right; min-width: 80px; }
+  .finance-item input.installment-months { flex: 0 0 46px; width: 46px; text-align: center; padding: 12px 4px; }
+  .installment-badge { flex: 0 0 auto; align-self: center; font-size: 10.5px; font-weight: 700; color: var(--accent-deep); background: var(--accent-bg); padding: 4px 8px; border-radius: 8px; white-space: nowrap; }
 
   .chart-container, .finance-chart-container { position: relative; height: 180px; width: 100%; margin: 15px 0; }
 
@@ -788,7 +790,8 @@ body.dark input:focus, body.dark textarea:focus {
             <span class="collapsible-chevron">▾</span>
           </h3>
           <div class="collapsible-body">
-            <div style="text-align:right; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
+              <span style="font-size:11px; color:var(--ink-faint);">💳 칸 중 "개월" 숫자를 2 이상으로 바꾸면 자동 할부 등록돼요</span>
               <button onclick="event.stopPropagation(); app.ui.addFinanceRow()">➕ 추가</button>
             </div>
             <div class="finance-list" id="financeList"></div>
@@ -1074,15 +1077,16 @@ body.dark input:focus, body.dark textarea:focus {
     monthKey(dateStr) {
       return (dateStr || this.todayStr()).slice(0, 7);
     },
-    getMonthlyBucket(dateStr) {
-      const key = this.monthKey(dateStr);
+    getMonthlyBucketByKey(key) {
       if (!this.monthlyData[key]) this.monthlyData[key] = { priorities: ["", "", ""], finances: [] };
       if (!this.monthlyData[key].priorities) this.monthlyData[key].priorities = ["", "", ""];
       if (!this.monthlyData[key].finances) this.monthlyData[key].finances = [];
       return this.monthlyData[key];
     },
+    getMonthlyBucket(dateStr) {
+      return this.getMonthlyBucketByKey(this.monthKey(dateStr));
+    },
     saveMonthlyBucket(dateStr, patch) {
-      const key = this.monthKey(dateStr);
       const bucket = this.getMonthlyBucket(dateStr);
       Object.assign(bucket, patch);
       localStorage.setItem('appMonthlyData', JSON.stringify(this.monthlyData));
@@ -1091,6 +1095,11 @@ body.dark input:focus, body.dark textarea:focus {
     prevMonthKey(monthKey) {
       const [y, m] = monthKey.split('-').map(Number);
       const d = new Date(y, m - 2, 1); // m은 1~12이므로 m-2가 "전달"의 0-index 월
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    },
+    addMonths(monthKey, n) {
+      const [y, m] = monthKey.split('-').map(Number);
+      const d = new Date(y, m - 1 + n, 1);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     },
     monthTotal(monthKey) {
@@ -1333,12 +1342,39 @@ body.dark input:focus, body.dark textarea:focus {
     },
 
     /* 💰 지출내역도 이번 달 단위로 저장 — 지출 항목이 바뀔 때만 호출 (다른 편집이 이걸 덮어쓰지 않게 분리) */
+    /* 💳 할부 지출: 할부 개월을 처음 설정한 항목은 이번 달부터 그만큼의 미래 달에도 자동으로 나눠서 남아있게 돼요 */
     saveFinances() {
-      const finances = Array.from(document.querySelectorAll('.finance-item')).map(row => ({
-        category: row.querySelector('.cat').value,
-        desc: row.querySelector('.desc').value,
-        amount: Number(row.querySelector('.amt').value) || 0
-      }));
+      const rows = Array.from(document.querySelectorAll('.finance-item'));
+      const finances = rows.map(row => {
+        const category = row.querySelector('.cat').value;
+        const desc = row.querySelector('.desc').value;
+        const amount = Number(row.querySelector('.amt').value) || 0;
+        const monthsInput = row.querySelector('.installment-months');
+        const months = monthsInput ? Math.max(1, Math.min(36, parseInt(monthsInput.value) || 1)) : 1;
+        const existingGroupId = row.dataset.installmentGroup || null;
+
+        const entry = { category, desc, amount };
+        if (existingGroupId) {
+          entry.installment = { groupId: existingGroupId, months, index: parseInt(row.dataset.installmentIndex) || 1 };
+        } else if (months > 1) {
+          // ✨ 새로 할부 개월이 설정됨 → 그룹 생성 + 미래 (months-1)개월에 동일 항목 자동 전개
+          const groupId = 'inst_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+          entry.installment = { groupId, months, index: 1 };
+          row.dataset.installmentGroup = groupId;
+          row.dataset.installmentIndex = '1';
+          row.dataset.installmentMonths = String(months);
+
+          const startMonthKey = app.monthKey(app.selectedDateStr);
+          for (let i = 2; i <= months; i++) {
+            const futureMonthKey = app.addMonths(startMonthKey, i - 1);
+            const bucket = app.getMonthlyBucketByKey(futureMonthKey);
+            bucket.finances.push({ category, desc, amount, installment: { groupId, months, index: i } });
+          }
+          localStorage.setItem('appMonthlyData', JSON.stringify(app.monthlyData));
+          app.ui.showToast(`💳 ${months}개월 할부로 등록했어요! 다음 달부터 자동으로 반영돼요.`);
+        }
+        return entry;
+      });
       this.saveMonthlyBucket(this.selectedDateStr, { finances });
       this.ui.calculateExpenditure();
       this.ui.updatePanelSummaries();
@@ -2705,6 +2741,12 @@ body.dark input:focus, body.dark textarea:focus {
           .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
       },
 
+      /* ✍️ 타임테이블 입력칸이 내용 길이에 맞춰 자동으로 늘어나게 (한 줄 잘림 없이 다 보이게) */
+      autoResizeTextarea(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+      },
+
       loadDiaryData() {
         const dateStr = app.diaryDateStr;
         const d = new Date(dateStr);
@@ -3015,25 +3057,27 @@ body.dark input:focus, body.dark textarea:focus {
             <div class="time-row" data-hour="${i}">
               <span class="drag-handle" title="꾹 눌러 다른 시간대로 옮기기">⠿</span>
               <div class="time-label">${timeStr}</div>
-              <input type="text" class="time-input ${doneInputClass}" value="${task.text}" placeholder="어떤 일정이 있나요? ✍️" 
+              <textarea class="time-input ${doneInputClass}" rows="1" placeholder="어떤 일정이 있나요? ✍️"
                 onchange="app.saveDailyData()"
+                oninput="app.ui.autoResizeTextarea(this)"
                 onkeydown="if(event.key === 'Enter') {
                   event.preventDefault();
                   const inputs = Array.from(document.querySelectorAll('.time-input'));
                   const idx = inputs.indexOf(this);
                   if(idx > -1 && idx < inputs.length - 1) inputs[idx+1].focus();
-                }">
+                }">${this.escapeHtml(task.text)}</textarea>
               <button class="repeat-btn ${isRecurring ? 'active' : ''}" onclick="app.ui.toggleRepeat(${i}, this)" title="매일 반복">🔄</button>
               <button class="status-btn ${doneClass}" onclick="app.ui.toggleTimeStatus(this)">${btnText}</button>
             </div>
           `;
         }
         this.enableTimetableDrag();
+        document.querySelectorAll('.time-input').forEach(el => this.autoResizeTextarea(el));
 
         const fContainer = document.getElementById('financeList');
         fContainer.innerHTML = '';
         if (!monthly.finances || monthly.finances.length === 0) this.addFinanceRow();
-        else monthly.finances.forEach(f => this.addFinanceRow(f.category, f.desc, f.amount));
+        else monthly.finances.forEach(f => this.addFinanceRow(f.category, f.desc, f.amount, f.installment || null));
 
         this.calculateExpenditure();
         this.updateGrowthReport();
@@ -3042,22 +3086,54 @@ body.dark input:focus, body.dark textarea:focus {
         app.timer.updateDisplay();
       },
 
-      addFinanceRow(category = "식비", desc = "", amount = "") {
+      addFinanceRow(category = "식비", desc = "", amount = "", installment = null) {
         const fContainer = document.getElementById('financeList');
         const div = document.createElement('div');
         div.className = 'finance-item';
+        if (installment && installment.groupId) {
+          div.dataset.installmentGroup = installment.groupId;
+          div.dataset.installmentIndex = installment.index;
+          div.dataset.installmentMonths = installment.months;
+        }
 
         const options = ['식비', '교통비', '쇼핑', '자기계발', '기타'].map(opt =>
           `<option value="${opt}" ${category === opt ? 'selected' : ''}>${opt}</option>`
         ).join('');
 
+        const badge = (installment && installment.months > 1)
+          ? `<span class="installment-badge" title="할부 ${installment.months}개월 중 ${installment.index}번째">💳 ${installment.index}/${installment.months}</span>`
+          : '';
+
         div.innerHTML = `
           <select class="cat" onchange="app.saveFinances()">${options}</select>
           <input type="text" class="desc" placeholder="내용" value="${desc}" onchange="app.saveFinances()">
           <input type="number" class="amt" placeholder="금액" value="${amount}" oninput="app.ui.calculateExpenditure()" onchange="app.saveFinances()">
-          <button class="btn-danger" onclick="this.parentElement.remove(); app.saveFinances();">❌</button>
+          <input type="number" class="installment-months" min="1" max="36" value="${installment ? installment.months : 1}" title="할부 개월수 (1이면 일반 지출)" onchange="app.saveFinances()">
+          ${badge}
+          <button class="btn-danger" onclick="app.ui.deleteFinanceRow(this)">❌</button>
         `;
         fContainer.appendChild(div);
+      },
+
+      deleteFinanceRow(btn) {
+        const row = btn.closest('.finance-item');
+        const groupId = row.dataset.installmentGroup;
+        if (groupId) {
+          const months = row.dataset.installmentMonths || '';
+          const cascadeAll = window.confirm(`이 항목은 할부(${months}개월) 지출이에요.\n전체 할부 기록을 다 지울까요?\n(취소하면 이번 달 항목만 삭제돼요)`);
+          if (cascadeAll) {
+            Object.keys(app.monthlyData).forEach(mk => {
+              const bucket = app.monthlyData[mk];
+              if (bucket && bucket.finances) {
+                bucket.finances = bucket.finances.filter(f => !(f.installment && f.installment.groupId === groupId));
+              }
+            });
+            localStorage.setItem('appMonthlyData', JSON.stringify(app.monthlyData));
+            app.cloud.queuePush();
+          }
+        }
+        row.remove();
+        app.saveFinances();
       },
 
       calculateExpenditure() {
