@@ -666,9 +666,15 @@ body.dark input:focus, body.dark textarea:focus {
       </div>
     </div>
 
-    <div class="box-panel" style="padding:16px 18px;">
-      <h3 class="box-title" style="margin-bottom:10px; padding-bottom:8px;">📅 일주일 날씨 <span style="font-size:11px; font-weight:500; color:var(--ink-soft);" id="weeklyStripLoc"></span></h3>
-      <div class="wx-hourly-strip" id="weeklyStripDays"></div>
+    <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+      <div class="box-panel" style="flex:2; min-width:260px; padding:16px 18px; margin-bottom:0;">
+        <h3 class="box-title" style="margin-bottom:10px; padding-bottom:8px;">📅 일주일 날씨 <span style="font-size:11px; font-weight:500; color:var(--ink-soft);" id="weeklyStripLoc"></span></h3>
+        <div class="wx-hourly-strip" id="weeklyStripDays"></div>
+      </div>
+      <div class="box-panel" style="flex:1; min-width:180px; padding:16px 18px; margin-bottom:0; cursor:pointer;" onclick="app.ui.showPlanner(app.todayStr())">
+        <h3 class="box-title" style="margin-bottom:10px; padding-bottom:8px;">🎯 이번 달 목표</h3>
+        <div id="monthGoalText" style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.4;">아직 목표가 없어요</div>
+      </div>
     </div>
 
     <div class="calendar-grid">
@@ -1339,6 +1345,7 @@ body.dark input:focus, body.dark textarea:focus {
       const p3 = document.getElementById('pri3').value;
       this.saveMonthlyBucket(this.selectedDateStr, { priorities: [p1, p2, p3] });
       this.ui.updatePanelSummaries();
+      this.ui.updateMonthGoalBadge();
     },
 
     /* 💰 지출내역도 이번 달 단위로 저장 — 지출 항목이 바뀔 때만 호출 (다른 편집이 이걸 덮어쓰지 않게 분리) */
@@ -2491,6 +2498,15 @@ body.dark input:focus, body.dark textarea:focus {
         if (el) el.textContent = `${streak}일`;
       },
 
+      /* 🎯 캘린더 우측 상단, 날씨 옆에 이번 달(실제 오늘 기준) 핵심 목표 1순위를 보여줌 */
+      updateMonthGoalBadge() {
+        const el = document.getElementById('monthGoalText');
+        if (!el) return;
+        const bucket = app.monthlyData[app.monthKey(app.todayStr())];
+        const goal = bucket && bucket.priorities && bucket.priorities[0];
+        el.textContent = (goal && goal.trim()) ? goal.trim() : '아직 목표가 없어요';
+      },
+
       showToast(msg) {
         const toast = document.getElementById("toastContainer");
         toast.textContent = msg;
@@ -3325,6 +3341,7 @@ body.dark input:focus, body.dark textarea:focus {
       },
 
       renderCalendar() {
+        this.updateMonthGoalBadge();
         const year = app.currentDate.getFullYear();
         const month = app.currentDate.getMonth();
         document.getElementById('currentMonthStr').textContent = `${year}년 ${month + 1}월`;
