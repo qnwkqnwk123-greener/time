@@ -1080,6 +1080,28 @@ body.dark input:focus, body.dark textarea:focus {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     },
 
+    /* 🧹 계정 전환(로그인/로그아웃/다른 계정) 시 이 기기의 로컬 작업 데이터를 깨끗하게 비움
+       — 클라우드에 저장된 내용은 안전하게 남아있고, 이 기기의 "화면"만 초기화돼요 */
+    resetLocalWorkingData() {
+      this.events = [];
+      this.dailyData = {};
+      this.monthlyData = {};
+      this.diary = {};
+      this.recurringTasks = {};
+      this.settings = { start: 6, end: 24 };
+      ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings'].forEach(k => localStorage.removeItem(k));
+      this.store.set('streakBadges', []);
+
+      this.ui.renderCalendar();
+      if (this.selectedDateStr && !document.getElementById('plannerView').classList.contains('hidden')) {
+        this.ui.loadPlannerData();
+      }
+      if (!document.getElementById('diaryView').classList.contains('hidden')) {
+        this.ui.loadDiaryData();
+      }
+      this.ui.updateMonthGoalBadge();
+    },
+
     /* 📆 "YYYY-MM" 월 키 — 우선순위·지출내역은 이 키로 묶여서 한 달 동안 유지되다가 달이 바뀌면 새로 시작돼요 */
     monthKey(dateStr) {
       return (dateStr || this.todayStr()).slice(0, 7);
@@ -2291,7 +2313,7 @@ body.dark input:focus, body.dark textarea:focus {
         if (!this.requireReady()) return;
         if (this.unsubscribeSnapshot) { this.unsubscribeSnapshot(); this.unsubscribeSnapshot = null; }
         await this.auth.signOut();
-        app.ui.showToast('로그아웃했어요. 이 기기에는 로컬 데이터가 그대로 남아있어요.');
+        app.ui.showToast('로그아웃했어요. 화면이 깨끗한 상태로 초기화됐어요 (계정 데이터는 클라우드에 안전하게 남아있어요).');
       },
 
       errorMessage(e) {
@@ -2318,6 +2340,13 @@ body.dark input:focus, body.dark textarea:focus {
         app.ui.resolveLoginGate(user);
 
         if (user) {
+          // 🧹 마지막으로 이 기기에 로그인했던 계정과 다르면(=새 계정/다른 계정으로 전환) 로컬 데이터를 깨끗하게 비워요.
+          // 이렇게 해야 이전 계정 내용이 새 계정 화면에 섞여 보이지 않아요. (같은 계정이면 그대로 유지)
+          const lastUid = localStorage.getItem('lastLoggedInUid');
+          if (lastUid !== user.uid) {
+            app.resetLocalWorkingData();
+          }
+          localStorage.setItem('lastLoggedInUid', user.uid);
           localStorage.removeItem('loginGateSkipped');
           if (btn) btn.textContent = '☁️ ' + (user.email ? user.email.split('@')[0] : '로그인됨');
           if (loggedOutBox) loggedOutBox.classList.add('hidden');
@@ -2326,6 +2355,11 @@ body.dark input:focus, body.dark textarea:focus {
           if (emailEl) emailEl.textContent = user.email || '사용자';
           await this.pullThenListen();
         } else {
+          // 🧹 방금 전까지 로그인 계정이 있었는데 지금은 로그아웃 상태(=게스트로 전환) → 그 계정 데이터가 남아있지 않게 비워요.
+          if (localStorage.getItem('lastLoggedInUid')) {
+            app.resetLocalWorkingData();
+            localStorage.removeItem('lastLoggedInUid');
+          }
           if (btn) btn.textContent = '☁️ 로그인';
           if (loggedOutBox) loggedOutBox.classList.remove('hidden');
           if (loggedInBox) loggedInBox.classList.add('hidden');
