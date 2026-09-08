@@ -156,6 +156,12 @@
   .hero.weather-storm  { background: var(--g-storm); }
   .hero.weather-night  { background: var(--g-night); }
 
+  /* 🌿 다른 달을 보고 있을 땐(오늘이 속한 달이 아니면) 실시간 날씨 대신, 그 달에 어울리는 자연 풍경으로 배경이 바뀌어요 */
+  .hero.season-winter { background: linear-gradient(135deg, #cfe6f5 0%, #8fb8e6 45%, #4b5aa8 100%); }
+  .hero.season-spring { background: linear-gradient(135deg, #ffd9e8 0%, #ffb6d9 40%, #7fc99a 100%); }
+  .hero.season-summer { background: linear-gradient(135deg, #6fe0d0 0%, #2f9dc4 45%, #1a6fa0 100%); }
+  .hero.season-autumn { background: linear-gradient(135deg, #ffcf8a 0%, #e8964a 45%, #a8502a 100%); }
+
   .hero-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 14px; position: relative; z-index: 1; }
   .hero-title { margin: 0; font-size: 22px; font-weight: 700; }
   .hero-sub { margin: 4px 0 0; font-size: 12.5px; opacity: 0.85; font-weight: 500; }
@@ -586,12 +592,130 @@ body.dark input[type="text"], body.dark input[type="number"], body.dark textarea
 body.dark input:focus, body.dark textarea:focus {
   box-shadow: 0 0 0 4px rgba(239, 143, 179, 0.2) !important;
 }
+
+/* 🌦️ 날씨 반응형 전체 화면 분위기 — 사진 + 색감 + 애니메이션 */
+body{position:relative;isolation:isolate;overflow-x:hidden}
+body.login-required{padding:0;overflow:hidden;background:transparent}
+body.login-required > *:not(#loginGateView){display:none !important}
+body.login-required #loginGateView{display:flex !important;z-index:99999}
+body>div:not(#weatherSceneLabel):not(#weatherScenePhoto):not(#weatherSceneOverlay){position:relative;z-index:3}
+#weatherScenePhoto,#weatherSceneOverlay{position:fixed;inset:0;pointer-events:none}
+#weatherScenePhoto{z-index:0;background-position:center;background-size:cover;background-repeat:no-repeat;transform:scale(1.035);opacity:0;filter:saturate(1.05) contrast(.98);transition:opacity 1.15s ease,background-image 1.15s ease,filter 1.15s ease;}
+#weatherSceneOverlay{z-index:1;opacity:0;transition:opacity .9s ease,background .9s ease,filter .9s ease}
+body>div{position:relative;z-index:3}
+body.weather-scene-on #weatherScenePhoto{opacity:.82}
+body.dark #weatherScenePhoto{opacity:.68;filter:saturate(.9) contrast(1.04) brightness(.72)}
+body.weather-scene-on #weatherSceneOverlay{opacity:1}
+
+/* 사진별 색감/영화적 보정 */
+body.weather-sunny #weatherScenePhoto{animation:sceneKenBurns 24s ease-in-out infinite alternate}
+body.weather-cloudy #weatherScenePhoto{filter:saturate(.75) contrast(.96) brightness(.93);animation:sceneCloudMove 30s ease-in-out infinite alternate}
+body.weather-rain #weatherScenePhoto{filter:saturate(.74) contrast(1.05) brightness(.72);animation:sceneRainMove 18s ease-in-out infinite alternate}
+body.weather-snow #weatherScenePhoto{filter:saturate(.75) brightness(1.02) contrast(.98);animation:sceneSnowMove 28s ease-in-out infinite alternate}
+body.weather-fog #weatherScenePhoto{filter:saturate(.55) brightness(1.04) contrast(.87) blur(1.2px);animation:sceneFogMove 32s ease-in-out infinite alternate}
+body.weather-storm #weatherScenePhoto{filter:saturate(.7) brightness(.48) contrast(1.14);animation:sceneStormMove 16s ease-in-out infinite alternate}
+body.weather-night #weatherScenePhoto{filter:saturate(.8) brightness(.42) contrast(1.12);animation:sceneNightMove 32s ease-in-out infinite alternate}
+
+body.weather-sunny #weatherSceneOverlay{background:linear-gradient(180deg,rgba(255,218,139,.16),rgba(255,255,255,.08) 45%,rgba(89,93,160,.05)),radial-gradient(circle at 18% 10%,rgba(255,241,184,.32),transparent 28%)}
+body.weather-cloudy #weatherSceneOverlay{background:linear-gradient(180deg,rgba(147,160,184,.25),rgba(244,246,250,.08) 48%,rgba(91,101,137,.10))}
+body.weather-rain #weatherSceneOverlay{background:linear-gradient(180deg,rgba(55,79,117,.34),rgba(50,65,99,.18) 45%,rgba(30,38,61,.26)),radial-gradient(circle at 75% 15%,rgba(136,167,214,.18),transparent 25%)}
+body.weather-snow #weatherSceneOverlay{background:linear-gradient(180deg,rgba(171,205,232,.16),rgba(255,255,255,.18) 55%,rgba(70,93,131,.10))}
+body.weather-fog #weatherSceneOverlay{background:linear-gradient(180deg,rgba(225,225,236,.34),rgba(246,244,248,.20) 46%,rgba(140,135,160,.10));backdrop-filter:blur(1px)}
+body.weather-storm #weatherSceneOverlay{background:linear-gradient(180deg,rgba(25,29,55,.48),rgba(33,35,68,.38) 48%,rgba(9,12,25,.46)),radial-gradient(circle at 78% 15%,rgba(134,147,210,.15),transparent 24%)}
+body.weather-night #weatherSceneOverlay{background:linear-gradient(180deg,rgba(16,20,58,.34),rgba(31,26,70,.24) 50%,rgba(8,10,27,.40)),radial-gradient(circle at 78% 12%,rgba(150,170,255,.22),transparent 22%)}
+
+/* 기존 날씨별 애니메이션 레이어 유지 */
+body:before,body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .8s ease,background .8s ease,filter .8s ease}
+body:after{background-repeat:repeat}
+body.weather-sunny:before{opacity:1;background:radial-gradient(circle at 18% 10%,rgba(255,239,170,.48),transparent 27%),radial-gradient(circle at 82% 15%,rgba(255,255,255,.28),transparent 25%)}
+body.weather-cloudy:before{opacity:1;background:radial-gradient(ellipse 180px 70px at 15% 10%,rgba(224,230,240,.46),transparent 72%),radial-gradient(ellipse 220px 80px at 82% 17%,rgba(202,212,228,.34),transparent 72%)}
+body.weather-rain:before{opacity:1;background:linear-gradient(180deg,rgba(90,116,160,.16),transparent)}
+body.weather-snow:before{opacity:1;background:radial-gradient(circle at 15% 8%,rgba(255,255,255,.48),transparent 25%),radial-gradient(circle at 85% 12%,rgba(219,239,252,.42),transparent 30%)}
+body.weather-fog:before{opacity:1;background:linear-gradient(180deg,rgba(242,240,247,.40),rgba(240,238,246,.12));filter:blur(1px)}
+body.weather-storm:before{opacity:1;background:linear-gradient(180deg,rgba(70,66,114,.24),rgba(35,31,76,.08))}
+body.weather-night:before{opacity:1;background:radial-gradient(circle at 78% 12%,rgba(140,158,255,.14),transparent 20%),radial-gradient(circle at 14% 22%,rgba(80,94,180,.12),transparent 26%)}
+body.weather-sunny:after{opacity:.55;background-size:220px 220px;background-image:radial-gradient(circle,rgba(255,227,132,.36) 0 2px,transparent 3px);animation:weatherFloat 13s linear infinite}
+body.weather-cloudy:after{opacity:.16;background-size:300px 220px;background-image:radial-gradient(ellipse 90px 35px at 50px 65px,rgba(255,255,255,.55),transparent 70%),radial-gradient(ellipse 110px 40px at 190px 155px,rgba(255,255,255,.38),transparent 70%);animation:cloudDrift 26s linear infinite}
+body.weather-rain:after,body.weather-storm:after{opacity:.30;background-size:70px 110px;background-image:repeating-linear-gradient(105deg,transparent 0 11px,rgba(153,184,224,.18) 12px 13px,transparent 14px 26px);animation:rainFall .75s linear infinite}
+body.weather-snow:after{opacity:.60;background-size:90px 90px,140px 140px;background-image:radial-gradient(circle,rgba(255,255,255,.90) 0 3px,transparent 4px),radial-gradient(circle,rgba(255,255,255,.75) 0 2px,transparent 3px);animation:snowFall 7s linear infinite}
+body.weather-fog:after{opacity:.28;background-size:320px 100%;background-image:linear-gradient(90deg,transparent,rgba(255,255,255,.33),transparent);animation:fogMove 18s ease-in-out infinite}
+body.weather-night:after{opacity:.44;background-size:105px 105px,165px 165px;background-image:radial-gradient(circle,rgba(255,255,255,.95) 0 1px,transparent 2px),radial-gradient(circle,rgba(174,190,255,.75) 0 1px,transparent 2px);animation:starTwinkle 4s ease-in-out infinite alternate}
+
+.weather-scene-label{position:fixed;right:14px;bottom:12px;z-index:40;padding:7px 11px;border-radius:999px;font-size:10px;font-weight:700;color:var(--ink-soft);background:rgba(255,255,255,.48);border:1px solid rgba(255,255,255,.50);backdrop-filter:blur(12px);pointer-events:none;opacity:.82;transition:all .4s ease}
+body.dark .weather-scene-label{background:rgba(25,24,38,.52);border-color:rgba(255,255,255,.10);color:#d5d0e2}
+@keyframes sceneKenBurns{from{transform:scale(1.035) translate3d(0,0,0)}to{transform:scale(1.10) translate3d(-1.2%,-1%,0)}}
+@keyframes sceneCloudMove{from{transform:scale(1.06) translate3d(-1%,0,0)}to{transform:scale(1.10) translate3d(1.5%,-.8%,0)}}
+@keyframes sceneRainMove{from{transform:scale(1.055) translate3d(0,0,0)}to{transform:scale(1.09) translate3d(-1%,-1%,0)}}
+@keyframes sceneSnowMove{from{transform:scale(1.04) translate3d(0,0,0)}to{transform:scale(1.09) translate3d(1%,-1.2%,0)}}
+@keyframes sceneFogMove{from{transform:scale(1.05) translate3d(-1%,0,0)}to{transform:scale(1.09) translate3d(1%,0,0)}}
+@keyframes sceneStormMove{from{transform:scale(1.06) translate3d(0,0,0)}to{transform:scale(1.10) translate3d(-.7%,-.8%,0)}}
+@keyframes sceneNightMove{from{transform:scale(1.04) translate3d(0,0,0)}to{transform:scale(1.09) translate3d(1%,-.8%,0)}}
+@keyframes weatherFloat{from{transform:translateY(0)}to{transform:translateY(-24px) rotate(8deg)}}
+@keyframes cloudDrift{from{transform:translateX(-20px)}to{transform:translateX(26px)}}
+@keyframes rainFall{from{background-position:0 0}to{background-position:40px 110px}}
+@keyframes snowFall{from{background-position:0 -10px,40px -20px}to{background-position:70px 100px,110px 120px}}
+@keyframes fogMove{0%,100%{transform:translateX(-5%)}50%{transform:translateX(8%)}}
+@keyframes starTwinkle{from{opacity:.26}to{opacity:.66}}
+@media (prefers-reduced-motion:reduce){#weatherScenePhoto,body:after{animation:none!important}*{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+
+/* =====================================================
+   📱🖥️ FINAL RESPONSIVE LAYOUT + NOTIFICATION CONTROL
+   ===================================================== */
+html, body { min-height: 100%; }
+body { padding: clamp(8px, 1.2vw, 18px); }
+#calendarView, #plannerView, #diaryView { width:100%; max-width:1680px; margin:0 auto; }
+.hero { width:100%; min-height:clamp(150px,17vw,250px); }
+.calendar-grid { width:100%; grid-template-columns:repeat(7,minmax(0,1fr)); gap:clamp(3px,.55vw,10px); }
+.day-name { min-width:0; font-size:clamp(10px,.85vw,13px); padding-bottom:clamp(3px,.6vw,7px); }
+.cal-day { min-width:0; min-height:clamp(70px,8.2vw,126px); padding:clamp(6px,.8vw,12px) clamp(3px,.55vw,8px); font-size:clamp(11px,.9vw,14px); gap:clamp(2px,.35vw,5px); overflow:hidden; }
+.cal-day > * { max-width:100%; min-width:0; }
+.cal-wx-icon { width:clamp(12px,1.2vw,17px); height:clamp(12px,1.2vw,17px); }
+.cal-wx-temp { font-size:clamp(8px,.62vw,10px); }
+.event-text,.priority-text,.holiday-text,.diary-indicator { max-width:95%; overflow:hidden; text-overflow:ellipsis; }
+@media (min-width:1400px){ body{padding-left:20px;padding-right:20px}.calendar-grid{gap:10px} }
+@media (max-width:900px){ body{padding:10px}.hero{min-height:170px}.planner-body{grid-template-columns:1fr!important}.right-col{width:100%}.weather-badge{padding:7px 10px} }
+@media (max-width:600px){
+  body{padding:6px;padding-bottom:40px}
+  #calendarView,#plannerView,#diaryView{max-width:100%}
+  .hero{min-height:160px;padding:14px 12px!important;border-radius:18px!important}
+  .hero-title{font-size:19px!important}.hero-sub,.hero-quote{font-size:11px!important}
+  .hero-nav{gap:5px!important}.hero-nav button{padding:7px 10px!important;font-size:12px!important}
+  .theme-picker{padding:4px 7px;gap:5px}.theme-dot{width:14px;height:14px}
+  .weather-badge{max-width:150px}
+  .calendar-grid{gap:3px}.day-name{font-size:10px}
+  .cal-day{min-height:76px;padding:6px 2px;border-radius:13px!important;font-size:11px}
+  .cal-day:hover{transform:none}
+  .holiday-text,.event-text,.priority-text,.diary-indicator{max-width:92%;font-size:7.5px!important;padding:1px 3px!important}
+  .cal-wx-icon{width:12px;height:12px}.cal-wx-temp{font-size:8px}
+  .box-panel{padding:12px!important;border-radius:20px!important}.planner-header{padding:12px!important}
+  .planner-header>div{width:100%}.planner-header button{flex:1;min-width:0}
+  .timer-settings-row{line-height:2}.timer-notify-row{flex-direction:column;align-items:stretch!important}.timer-notify-row button{width:100%}
+  .timetable-wrapper{max-height:55vh}.time-row{gap:4px}.time-label{width:42px!important}.status-btn{width:54px!important}.repeat-btn{width:30px!important}
+  .weather-scene-label{right:8px;bottom:8px;max-width:62vw;font-size:9px}
+}
+@media (max-width:380px){.hero-title{font-size:17px!important}.cal-day{min-height:68px}.holiday-text,.event-text,.priority-text,.diary-indicator{font-size:7px!important}}
+
+/* 로그인 화면을 앱과 완전히 분리된 첫 화면으로 유지 */
+body.login-required{min-height:100dvh}
+body.login-required #loginGateView{position:fixed;inset:0;width:100vw;height:100dvh;overflow:auto;padding:20px}
+body.login-required .login-gate-card{width:min(420px,100%);max-height:calc(100dvh - 40px);overflow-y:auto}
+
+/* 알림은 기본 OFF. 브라우저 권한 요청도 사용자가 켤 때만 실행 */
+.timer-notify-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-soft)}
+#notificationToggleBtn{min-width:120px;padding:7px 12px;font-size:12px!important}
+#notificationToggleBtn.is-on{background:var(--mint-bg);color:var(--mint);border-color:var(--mint)}
+
 </style>
 </head>
 <body>
+  <!-- 🌦️ 실제 날씨 배경 이미지 레이어 -->
+  <div id="weatherScenePhoto" aria-hidden="true"></div>
+  <div id="weatherSceneOverlay" aria-hidden="true"></div>
+  <div id="weatherSceneLabel" class="weather-scene-label">🌤️ 날씨에 따라 분위기가 바뀌어요</div>
 
   <!-- 🚪 첫 화면 로그인 게이트 -->
-  <div id="loginGateView" class="login-gate hidden">
+  <div id="loginGateView" class="login-gate hidden" role="dialog" aria-modal="true" aria-label="리멤버 로그인">
     <div class="login-gate-bg"></div>
     <div class="login-gate-card">
       <div class="login-gate-icon"><div class="login-gate-logo">🕊️</div></div>
@@ -619,7 +743,7 @@ body.dark input:focus, body.dark textarea:focus {
         </div>
         <div id="gateErrorMsg" class="login-gate-error"></div>
 
-        <button class="login-gate-skip" onclick="app.ui.skipLogin()">로그인 없이 둘러보기 →</button>
+        <button class="login-gate-skip" onclick="app.ui.skipLogin()">게스트로 시작하기 →</button>
       </div>
     </div>
   </div>
@@ -748,6 +872,10 @@ body.dark input:focus, body.dark textarea:focus {
               ⚙️ 집중 <input type="number" id="studyMinutesInput" min="5" max="180" step="5">분
               · 휴식 <input type="number" id="restMinutesInput" min="1" max="60" step="1">분
               <button onclick="app.timer.updateDurations()">적용</button>
+            </div>
+            <div class="timer-notify-row">
+              <span>🔔 일정·타이머 알림</span>
+              <button id="notificationToggleBtn" class="btn-ghost" onclick="app.ui.toggleNotifications()">🔕 알림 OFF</button>
             </div>
             <div class="timer-note">🔒 이 브라우저 탭이 열려있는 한, 다른 탭이나 앱을 보고 있어도 시간이 계속 흐르고 완료 시 알림이 와요. (탭을 완전히 닫으면 타이머는 멈춰요)</div>
           </div>
@@ -1049,7 +1177,7 @@ body.dark input:focus, body.dark textarea:focus {
     monthlyData: JSON.parse(localStorage.getItem('appMonthlyData')) || {},
     diary: JSON.parse(localStorage.getItem('appDiary')) || {},
     recurringTasks: JSON.parse(localStorage.getItem('appRecurringTasks')) || {},
-    settings: JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24 },
+    settings: JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24, notificationsEnabled: false },
     holidays: {},
     growthChartInstance: null,
     financeChartInstance: null,
@@ -1088,7 +1216,7 @@ body.dark input:focus, body.dark textarea:focus {
       this.monthlyData = {};
       this.diary = {};
       this.recurringTasks = {};
-      this.settings = { start: 6, end: 24 };
+      this.settings = { start: 6, end: 24, notificationsEnabled: false };
       ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings'].forEach(k => localStorage.removeItem(k));
       this.store.set('streakBadges', []);
 
@@ -1230,6 +1358,7 @@ body.dark input:focus, body.dark textarea:focus {
     },
 
     checkStreakBadge(streak) {
+      if (!this.settings.notificationsEnabled) return;
       const milestones = [3, 7, 14, 30, 66, 100];
       if (!milestones.includes(streak)) return;
       const badges = this.store.get('streakBadges', []);
@@ -1262,6 +1391,15 @@ body.dark input:focus, body.dark textarea:focus {
     },
 
     init() {
+      if (!this.settings || typeof this.settings !== 'object') this.settings = { start: 6, end: 24, notificationsEnabled: false };
+
+      // 🔕 알림은 앱 실행 때마다 반드시 OFF에서 시작합니다.
+      // 이전 버전의 appSettings에 true가 남아 있거나, 다른 기기에서 true가 동기화되어도
+      // 사용자가 직접 다시 켜기 전에는 일정/타이머/달성 알림이 절대 표시되지 않습니다.
+      this.settings.notificationsEnabled = false;
+      this.store.set('appSettings', this.settings);
+      localStorage.removeItem('notificationPermissionRequested');
+      
       this.ui.applyDarkModePreference();
       this.ui.applyThemePreference();
       this.cloud.init();
@@ -1274,13 +1412,16 @@ body.dark input:focus, body.dark textarea:focus {
 
       this.weather.init();
       this.timer.init();
+      this.ui.syncNotificationUI();
 
       setInterval(() => this.checkAlarms(), 60000);
+       setInterval(() => this.weather.refreshWeatherNow(), 10 * 60 * 1000);
 
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           this.timer.catchUp();
           this.timer.updateDisplay();
+          this.weather.refreshWeatherNow();
           if (this.timer.isRunning) {
             this.timer.resumeInterval();
             this.timer.requestWakeLock(); // 화면 꺼짐 방지는 탭이 보일 때만 재요청 가능해서 여기서 다시 잡아줌
@@ -1334,6 +1475,7 @@ body.dark input:focus, body.dark textarea:focus {
     },
 
     checkAlarms() {
+      if (!this.settings.notificationsEnabled) return;
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const currentHour = now.getHours();
@@ -1385,9 +1527,15 @@ body.dark input:focus, body.dark textarea:focus {
         if (existingGroupId) {
           entry.installment = { groupId: existingGroupId, months, index: parseInt(row.dataset.installmentIndex) || 1 };
         } else if (months > 1) {
-          // ✨ 새로 할부 개월이 설정됨 → 그룹 생성 + 미래 (months-1)개월에 동일 항목 자동 전개
+          // ✨ 새로 할부 개월이 설정됨 → 입력한 금액을 "총액"으로 보고 개월 수만큼 나눠서 각 달에 분배
+          // (전액이 매달 그대로 반복 청구되던 버그를 고쳐, 실제 할부처럼 금액이 나눠져서 찍히게 함)
           const groupId = 'inst_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-          entry.installment = { groupId, months, index: 1 };
+          const perMonthBase = Math.floor(amount / months);
+          const remainder = amount - perMonthBase * months; // 나머지는 마지막 달에 몰아줘서 총합이 정확히 맞게
+
+          entry.amount = perMonthBase; // 이번 달(1회차) 몫
+          entry.installment = { groupId, months, index: 1, totalAmount: amount };
+          row.querySelector('.amt').value = perMonthBase; // 화면에도 이번 달 몫으로 바로 반영
           row.dataset.installmentGroup = groupId;
           row.dataset.installmentIndex = '1';
           row.dataset.installmentMonths = String(months);
@@ -1396,10 +1544,11 @@ body.dark input:focus, body.dark textarea:focus {
           for (let i = 2; i <= months; i++) {
             const futureMonthKey = app.addMonths(startMonthKey, i - 1);
             const bucket = app.getMonthlyBucketByKey(futureMonthKey);
-            bucket.finances.push({ category, desc, amount, installment: { groupId, months, index: i } });
+            const monthAmount = (i === months) ? perMonthBase + remainder : perMonthBase;
+            bucket.finances.push({ category, desc, amount: monthAmount, installment: { groupId, months, index: i, totalAmount: amount } });
           }
           localStorage.setItem('appMonthlyData', JSON.stringify(app.monthlyData));
-          app.ui.showToast(`💳 ${months}개월 할부로 등록했어요! 다음 달부터 자동으로 반영돼요.`);
+          app.ui.showToast(`💳 총 ₩${amount.toLocaleString()}을 ${months}개월로 나눴어요! (월 약 ₩${perMonthBase.toLocaleString()})`);
         }
         return entry;
       });
@@ -1645,9 +1794,18 @@ body.dark input:focus, body.dark textarea:focus {
         const loc = this.cities[key];
         if (!loc) return;
         try {
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&hourly=temperature_2m,weathercode&timezone=Asia%2FSeoul&forecast_days=16`;
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,weather_code&hourly=temperature_2m,weather_code&timezone=Asia%2FSeoul&forecast_days=16`;
           const res = await app.fetchWithRetry(url);
-          this.data[key] = await res.json();
+          const json = await res.json();
+
+          json.current_weather = {
+            temperature: json.current?.temperature_2m,
+            weathercode: json.current?.weather_code,
+            is_day: json.current?.is_day
+          };
+          if (json.daily) json.daily.weathercode = json.daily.weather_code || [];
+          if (json.hourly) json.hourly.weathercode = json.hourly.weather_code || [];
+          this.data[key] = json;
         } catch (e) {
           console.error('날씨 정보를 불러오지 못했습니다', key, e);
           this.data[key] = null;
@@ -1698,6 +1856,98 @@ body.dark input:focus, body.dark textarea:focus {
         if (cardEl) cardEl.innerHTML = `<span class="aq-dot" style="display:inline-block; background:${aq.color};"></span> ${text}`;
         if (barEl) barEl.innerHTML = `<span class="aq-dot" style="background:${aq.color};"></span> <span>${this.activeLoc().name} 미세먼지: <b style="color:${aq.color};">${aq.label}</b> · PM10 ${Math.round(d.pm10)}㎍/㎥ · PM2.5 ${Math.round(d.pm2_5)}㎍/㎥</span>`;
         if (badgeBoxEl) { badgeBoxEl.style.borderColor = aq.color; badgeBoxEl.style.borderWidth = '2px'; }
+      },
+
+      applyWeatherAtmosphere(info, isNight = false) {
+        const groups = ['sunny','cloudy','rain','snow','fog','storm','night'];
+        document.body.classList.remove(...groups.map(g => 'weather-' + g));
+
+        const group = isNight && (info?.group === 'sunny' || info?.group === 'cloudy') ? 'night' : (info?.group || 'cloudy');
+        document.body.classList.add('weather-' + group, 'weather-scene-on');
+
+        /* 실제 사진 배경 — 네트워크가 막혀도 기존 gradient는 계속 보입니다. */
+        const scenes = {
+          sunny: {
+            label: '☀️ 맑은 하늘 · 산뜻한 분위기',
+            image: 'https://images.unsplash.com/photo-1499346030926-9a72daac6c63?auto=format&fit=crop&w=2000&q=82'
+          },
+          cloudy: {
+            label: '☁️ 구름 낀 하늘 · 포근한 분위기',
+            image: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=2000&q=82'
+          },
+          rain: {
+            label: '🌧️ 비 오는 창가 · 차분한 분위기',
+            image: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=2000&q=82'
+          },
+          snow: {
+            label: '❄️ 눈 오는 밤 · 포근한 분위기',
+            image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?auto=format&fit=crop&w=2000&q=82'
+          },
+          fog: {
+            label: '🌫️ 안개 낀 풍경 · 잔잔한 분위기',
+            image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2000&q=82'
+          },
+          storm: {
+            label: '⛈️ 폭풍우 · 집중 모드',
+            image: 'https://images.unsplash.com/photo-1605727216801-e27ce1a3ee9c?auto=format&fit=crop&w=2000&q=82'
+          },
+          night: {
+            label: '🌙 밤하늘 · 편안한 분위기',
+            image: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=2000&q=82'
+          }
+        };
+
+        const scene = scenes[group] || scenes.cloudy;
+        const photo = document.getElementById('weatherScenePhoto');
+        if (photo && scene.image && photo.dataset.sceneImage !== scene.image) {
+          // URL을 먼저 지정해 브라우저가 즉시 외부 이미지를 요청하도록 합니다.
+          photo.style.backgroundImage = `url("${scene.image}")`;
+          photo.dataset.sceneImage = scene.image;
+
+          const preloader = new Image();
+          preloader.decoding = 'async';
+          preloader.onload = () => {
+            photo.style.backgroundImage = `url("${scene.image}")`;
+            photo.dataset.sceneImage = scene.image;
+          };
+          preloader.onerror = () => {
+            // 외부 이미지가 차단돼도 기존 날씨별 그라데이션은 유지됩니다.
+            photo.style.backgroundImage = 'none';
+            photo.dataset.sceneImage = 'fallback';
+          };
+          preloader.src = scene.image;
+        }
+
+        const el = document.getElementById('weatherSceneLabel');
+        if (el) el.textContent = scene.label;
+
+        // 상단 Hero에도 같은 이미지를 직접 넣어 외부 배경이 확실히 보이게 합니다.
+        const hero = document.getElementById('calHero');
+        if (hero && scene.image) {
+          const heroOverlay = {
+            sunny: 'linear-gradient(135deg, rgba(255,186,88,.56), rgba(255,143,99,.34), rgba(92,91,176,.24))',
+            cloudy: 'linear-gradient(135deg, rgba(108,122,154,.58), rgba(143,157,196,.40), rgba(86,76,146,.28))',
+            rain: 'linear-gradient(135deg, rgba(37,58,92,.66), rgba(57,79,121,.52), rgba(53,48,99,.42))',
+            snow: 'linear-gradient(135deg, rgba(185,216,238,.46), rgba(143,181,219,.38), rgba(91,92,169,.30))',
+            fog: 'linear-gradient(135deg, rgba(169,164,188,.54), rgba(138,141,178,.40), rgba(78,75,122,.28))',
+            storm: 'linear-gradient(135deg, rgba(23,28,53,.74), rgba(45,43,92,.62), rgba(22,21,52,.66))',
+            night: 'linear-gradient(135deg, rgba(22,28,78,.76), rgba(42,33,103,.62), rgba(8,10,31,.72))'
+          }[group] || 'linear-gradient(135deg, rgba(86,76,160,.48), rgba(50,60,120,.30))';
+          hero.style.backgroundImage = `${heroOverlay}, url("${scene.image}")`;
+          hero.style.backgroundPosition = 'center';
+          hero.style.backgroundSize = 'cover';
+        }
+      },
+
+      async refreshWeatherNow() {
+        try {
+          const jobs = [this.fetchCity('home'), this.fetchAirQuality('home')];
+          if (this.cities.compare) jobs.push(this.fetchCity('compare'), this.fetchAirQuality('compare'));
+          await Promise.all(jobs);
+          this.renderAll();
+        } catch (e) {
+          console.warn('주기적 날씨 갱신 실패', e);
+        }
       },
 
       renderAll() {
@@ -1779,7 +2029,10 @@ body.dark input:focus, body.dark textarea:focus {
 
       renderBadge() {
         const d = this.activeData();
-        if (!d || !d.current_weather) return;
+        if (!d || !d.current_weather) {
+          this.applyWeatherAtmosphere({group:'cloudy'}, false);
+          return;
+        }
         const code = d.current_weather.weathercode;
         const info = this.groupInfo(code);
         const isNight = d.current_weather.is_day === 0;
@@ -1792,6 +2045,7 @@ body.dark input:focus, body.dark textarea:focus {
         const hero = document.getElementById('calHero');
         const cls = isNight && (info.group === "sunny" || info.group === "cloudy") ? 'weather-night' : 'weather-' + info.group;
         hero.className = 'hero ' + cls;
+        this.applyWeatherAtmosphere(info, isNight);
 
         const subMsgs = {
           sunny: "볕이 좋은 날, 목표 하나쯤은 산책하듯 가볍게 ☀️",
@@ -1987,7 +2241,7 @@ body.dark input:focus, body.dark textarea:focus {
             day = { code: activeD.daily.weathercode[idx], max: activeD.daily.temperature_2m_max[idx], min: activeD.daily.temperature_2m_min[idx] };
           } else if (diffDays < 0) {
             const { lat, lon } = this.activeLoc();
-            const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${dateStr}&end_date=${dateStr}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Asia%2FSeoul`;
+            const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${dateStr}&end_date=${dateStr}&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia%2FSeoul`;
             const res = await app.fetchWithRetry(url, {}, 1, 6000);
             const data = await res.json();
             if (!data.daily || data.daily.weathercode[0] === null || data.daily.weathercode[0] === undefined) throw new Error('과거 데이터 없음');
@@ -2127,9 +2381,6 @@ body.dark input:focus, body.dark textarea:focus {
       },
 
       start() {
-        if ("Notification" in window && Notification.permission === "default") {
-          Notification.requestPermission();
-        }
         if (this.isRunning) return;
         if (!this.dateStr) this.dateStr = app.selectedDateStr;
         this.isRunning = true;
@@ -2236,8 +2487,9 @@ body.dark input:focus, body.dark textarea:focus {
           app.ui.hideLoginGate();
           return;
         }
-        const skipped = localStorage.getItem('loginGateSkipped') === 'true';
-        if (!skipped) app.ui.showLoginGate();
+        // 별도의 로그인 화면에서 시작하고, 게스트 모드는 현재 세션에서만 유지합니다.
+        const guestSession = sessionStorage.getItem('rememberGuestSession') === 'true';
+        if (!guestSession) app.ui.showLoginGate();
         try {
           firebase.initializeApp(window.firebaseConfig);
           this.auth = firebase.auth();
@@ -2247,7 +2499,7 @@ body.dark input:focus, body.dark textarea:focus {
             this.authResolved = true;
             this.onAuthChanged(user);
           });
-          if (!skipped) {
+          if (!guestSession) {
             setTimeout(() => { if (!this.authResolved) app.ui.showLoginGateForm(); }, 4000);
           }
         } catch (e) {
@@ -2348,6 +2600,7 @@ body.dark input:focus, body.dark textarea:focus {
           }
           localStorage.setItem('lastLoggedInUid', user.uid);
           localStorage.removeItem('loginGateSkipped');
+          sessionStorage.removeItem('rememberGuestSession');
           if (btn) btn.textContent = '☁️ ' + (user.email ? user.email.split('@')[0] : '로그인됨');
           if (loggedOutBox) loggedOutBox.classList.add('hidden');
           if (loggedInBox) loggedInBox.classList.remove('hidden');
@@ -2423,7 +2676,12 @@ body.dark input:focus, body.dark textarea:focus {
         app.monthlyData = JSON.parse(localStorage.getItem('appMonthlyData')) || {};
         app.diary = JSON.parse(localStorage.getItem('appDiary')) || {};
         app.recurringTasks = JSON.parse(localStorage.getItem('appRecurringTasks')) || {};
-        app.settings = JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24 };
+        app.settings = JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24, notificationsEnabled: false };
+        // 🔕 클라우드 동기화로 알림이 다시 켜지는 것도 막습니다. 알림은 이 기기에서 사용자가 직접 켜야 합니다.
+        app.settings.notificationsEnabled = false;
+        app.store.set('appSettings', app.settings);
+        app.ui.hideAlarmToast();
+        app.ui.syncNotificationUI();
 
         app.ui.renderCalendar();
         if (app.selectedDateStr && !document.getElementById('plannerView').classList.contains('hidden')) {
@@ -2466,6 +2724,7 @@ body.dark input:focus, body.dark textarea:focus {
       showLoginGate() {
         const gate = document.getElementById('loginGateView');
         if (!gate) return;
+        document.body.classList.add('login-required');
         gate.classList.remove('hidden');
         document.getElementById('loginGateLoading').classList.remove('hidden');
         document.getElementById('loginGateForm').classList.add('hidden');
@@ -2478,6 +2737,7 @@ body.dark input:focus, body.dark textarea:focus {
       },
       hideLoginGate() {
         const gate = document.getElementById('loginGateView');
+        document.body.classList.remove('login-required');
         if (gate) gate.classList.add('hidden');
       },
       resolveLoginGate(user) {
@@ -2486,8 +2746,9 @@ body.dark input:focus, body.dark textarea:focus {
         if (gate && !gate.classList.contains('hidden')) this.showLoginGateForm();
       },
       skipLogin() {
-        localStorage.setItem('loginGateSkipped', 'true');
+        sessionStorage.setItem('rememberGuestSession', 'true');
         this.hideLoginGate();
+        this.showToast('👀 게스트 모드로 시작했어요. 새로고침하면 다시 로그인 화면이 열려요.');
       },
 
       /* 📱 모바일 한눈에 보기용 아코디언 */
@@ -2550,6 +2811,67 @@ body.dark input:focus, body.dark textarea:focus {
         }).join('');
       },
 
+      /* 🌿 캘린더 배경 — 실제 이번 달을 보고 있으면 실시간 날씨 배경을 쓰고,
+         과거·미래 달을 넘겨보고 있으면 그 달에 어울리는 계절 풍경으로 자동 전환 */
+      /* 🌤️ 캘린더 배경 — 실제 이번 달을 보고 있으면 실시간 날씨, 다른 달을 보고 있으면
+         "오늘과 같은 날짜(예: 27일)"의 실제 날씨 데이터를 가져와서 그걸로 배경을 정해요.
+         (미래는 예보 API, 과거는 기상 기록 API 사용 — 계절 추정이 아니라 진짜 날씨예요) */
+      async applySeasonalHero() {
+        const hero = document.getElementById('calHero');
+        if (!hero) return;
+        const today = new Date();
+        const isCurrentMonth = app.currentDate.getFullYear() === today.getFullYear() && app.currentDate.getMonth() === today.getMonth();
+
+        if (isCurrentMonth) {
+          if (app.weather.activeData()) {
+            app.weather.renderBadge(); // 실시간 날씨 배경 복원
+          } else {
+            hero.className = 'hero';
+          }
+          return;
+        }
+
+        const year = app.currentDate.getFullYear();
+        const month = app.currentDate.getMonth();
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        const day = Math.min(today.getDate(), lastDay); // 오늘과 같은 "일"에 해당하는 날짜 (없으면 그 달 말일)
+        const targetDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const diffDays = app.diffDaysFromToday(targetDateStr);
+        const data = app.weather.activeData();
+
+        let info = null;
+        try {
+          if (diffDays >= 0 && diffDays <= 15 && data && data.daily) {
+            // 미래(예보 범위 내) → 이미 받아온 예보 데이터에서 찾기
+            const idx = data.daily.time.indexOf(targetDateStr);
+            if (idx !== -1) info = app.weather.groupInfo(data.daily.weathercode[idx]);
+          } else if (diffDays < 0) {
+            // 과거 → 기상 기록 API 조회 (캐시해서 재조회 방지)
+            const cacheKey = 'hero:' + app.weather.active + ':' + targetDateStr;
+            if (app.weather.dailyCache[cacheKey]) {
+              info = app.weather.groupInfo(app.weather.dailyCache[cacheKey].code);
+            } else {
+              const { lat, lon } = app.weather.activeLoc();
+              const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${targetDateStr}&end_date=${targetDateStr}&daily=weather_code&timezone=Asia%2FSeoul`;
+              const res = await app.fetchWithRetry(url, {}, 1, 6000);
+              const json = await res.json();
+              if (json.daily && json.daily.weathercode && json.daily.weathercode[0] != null) {
+                app.weather.dailyCache[cacheKey] = { code: json.daily.weathercode[0] };
+                info = app.weather.groupInfo(json.daily.weathercode[0]);
+              }
+            }
+          }
+          // diffDays > 15(예보 범위 밖 먼 미래)는 실제 데이터를 구할 방법이 없어서 기본 배경으로 남겨둬요
+        } catch (e) {
+          console.error('달력 배경용 날씨 조회 실패', e);
+        }
+
+        // 조회하는 동안 사용자가 다른 달로 또 넘어갔으면, 지금 결과는 이미 낡은 것이니 버림
+        if (app.currentDate.getFullYear() !== year || app.currentDate.getMonth() !== month) return;
+
+        hero.className = info ? ('hero weather-' + info.group) : 'hero';
+      },
+
       showToast(msg) {
         const toast = document.getElementById("toastContainer");
         toast.textContent = msg;
@@ -2559,6 +2881,8 @@ body.dark input:focus, body.dark textarea:focus {
 
       alarmToastTimer: null,
       showAlarmToast(icon, title, body, osNotify = true) {
+        // 🔕 앱 알림 OFF 상태에서는 화면 토스트와 OS 알림 모두 차단합니다.
+        if (!app.settings || app.settings.notificationsEnabled !== true) return;
         const el = document.getElementById('alarmToast');
         document.getElementById('alarmToastIcon').textContent = icon;
         document.getElementById('alarmToastTitle').textContent = title;
@@ -2717,6 +3041,45 @@ body.dark input:focus, body.dark textarea:focus {
         }
       },
       
+      syncNotificationUI() {
+        const enabled = app.settings && app.settings.notificationsEnabled === true;
+        const btn = document.getElementById('notificationToggleBtn');
+        if (btn) {
+          btn.textContent = enabled ? '🔔 알림 ON' : '🔕 알림 OFF';
+          btn.classList.toggle('is-on', enabled);
+        }
+      },
+
+      async toggleNotifications() {
+        app.haptic(10);
+        const next = !app.settings.notificationsEnabled;
+        if (next && !("Notification" in window)) return this.showToast('이 브라우저는 알림 기능을 지원하지 않아요.');
+        if (next && Notification.permission === 'denied') {
+          app.settings.notificationsEnabled = false;
+          this.syncNotificationUI();
+          return this.showToast('브라우저에서 알림이 차단되어 있어요. 사이트 권한에서 허용해주세요.');
+        }
+        if (next && Notification.permission === 'default') {
+          try {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+              app.settings.notificationsEnabled = false;
+              this.syncNotificationUI();
+              return this.showToast('알림 권한을 허용하지 않아 OFF로 유지했어요.');
+            }
+          } catch (e) {
+            app.settings.notificationsEnabled = false;
+            this.syncNotificationUI();
+            return this.showToast('알림 권한을 확인하지 못했어요.');
+          }
+        }
+        app.settings.notificationsEnabled = next;
+        app.store.set('appSettings', app.settings);
+        this.syncNotificationUI();
+        app.cloud.queuePush();
+        this.showToast(next ? '🔔 일정·타이머 알림을 켰어요.' : '🔕 일정·타이머 알림을 껐어요.');
+      },
+
       toggleDarkMode() {
         app.haptic(10);
         const on = !document.body.classList.contains('dark');
@@ -2742,6 +3105,7 @@ body.dark input:focus, body.dark textarea:focus {
         app.weather.renderPlannerWeather(dateStr);
         try {
           this.loadPlannerData();
+          this.syncNotificationUI();
         } catch (e) {
           console.error('플래너 데이터 로딩 중 오류가 발생했어요:', e);
           app.timer.updateDisplay();
@@ -3419,6 +3783,7 @@ body.dark input:focus, body.dark textarea:focus {
 
       renderCalendar() {
         this.updateMonthGoalBadge();
+        this.applySeasonalHero();
         const year = app.currentDate.getFullYear();
         const month = app.currentDate.getMonth();
         document.getElementById('currentMonthStr').textContent = `${year}년 ${month + 1}월`;
