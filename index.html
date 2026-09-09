@@ -15,6 +15,60 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
 <style>
+  /* ===== 날씨별 배경색 강화 (오늘/미래) ===== */
+.cal-day.wx-sunny {
+  background: #fff7e6 !important;
+  border-color: #ffd966 !important;
+  box-shadow: 0 0 0 1px #ffd966;
+}
+.cal-day.wx-cloudy {
+  background: #e6e9ef !important;
+  border-color: #b0b8c4 !important;
+  box-shadow: 0 0 0 1px #b0b8c4;
+}
+.cal-day.wx-rain {
+  background: #d6e4f0 !important;
+  border-color: #6b9bc0 !important;
+  box-shadow: 0 0 0 1px #6b9bc0;
+}
+.cal-day.wx-snow {
+  background: #e8f0f8 !important;
+  border-color: #c0d4e8 !important;
+  box-shadow: 0 0 0 1px #c0d4e8;
+}
+.cal-day.wx-fog {
+  background: #e8e4ee !important;
+  border-color: #b8b0c8 !important;
+  box-shadow: 0 0 0 1px #b8b0c8;
+}
+.cal-day.wx-storm {
+  background: #d0cce0 !important;
+  border-color: #8a7a9a !important;
+  box-shadow: 0 0 0 1px #8a7a9a;
+}
+
+/* ===== 성취도 단계별 스타일 (지난 날) ===== */
+.cal-day.progress-high {
+  background: #d4edda !important;
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 2px #28a745;
+}
+.cal-day.progress-mid {
+  background: #fff3cd !important;
+  border-color: #ffc107 !important;
+  box-shadow: 0 0 0 2px #ffc107;
+}
+.cal-day.progress-low {
+  background: #f8d7da !important;
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 2px #dc3545;
+}
+.cal-day.today.progress-high,
+.cal-day.today.progress-mid,
+.cal-day.today.progress-low {
+  /* 오늘은 성취도 표시보다 날씨 우선, 필요시 조정 */
+  box-shadow: 0 0 0 2px var(--accent) !important;
+}
   :root {
     --ink:        #2f2a3d;
     --ink-soft:   #7a7288;
