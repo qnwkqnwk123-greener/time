@@ -1007,6 +1007,201 @@ body.dark .cal-day.today.wx-storm {
 body.dark .cal-day.today > span:first-of-type {
   filter: drop-shadow(0 0 6px rgba(255,255,255,.7));
 }
+/* ===== 🔥 핫이슈 TOP 5 (리디자인) ===== */
+.hot-issue-panel {
+  margin-top: 24px;
+  padding: 22px 24px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #fff5f9 0%, #f4f7ff 55%, #f0fbff 100%);
+  border: 1px solid rgba(110, 99, 224, 0.12);
+  box-shadow: 0 12px 36px -16px rgba(110, 99, 224, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+.hot-issue-panel::before {
+  content: "";
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,122,168,0.14), transparent 70%);
+  pointer-events: none;
+}
+body.dark .hot-issue-panel {
+  background: linear-gradient(135deg, #2a2138 0%, #241f36 55%, #1f2238 100%);
+  border-color: rgba(139, 129, 240, 0.16);
+}
+.hot-issue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+.hot-issue-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.hot-issue-icon {
+  font-size: 22px;
+  filter: drop-shadow(0 0 8px rgba(255, 140, 60, 0.55));
+  animation: hotFlame 1.8s ease-in-out infinite;
+}
+@keyframes hotFlame {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50%      { transform: scale(1.12) rotate(3deg); }
+}
+.hot-issue-date {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: rgba(255,255,255,0.7);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+body.dark .hot-issue-date { background: rgba(255,255,255,0.08); }
+.hot-issue-refresh {
+  padding: 7px 14px;
+  font-size: 12px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(110, 99, 224, 0.18);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hot-issue-refresh:hover {
+  background: white;
+  transform: translateY(-2px) rotate(10deg);
+}
+body.dark .hot-issue-refresh { background: rgba(255,255,255,0.08); color: var(--ink); }
+
+.hot-issue-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+@media (min-width: 700px) {
+  .hot-issue-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hot-issue-grid .hot-issue-item:nth-child(1) {
+    grid-column: 1 / -1;
+  }
+}
+.hot-issue-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(110, 99, 224, 0.10);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+  align-items: flex-start;
+  backdrop-filter: blur(10px);
+}
+.hot-issue-item:hover {
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--accent);
+  box-shadow: 0 12px 24px -8px rgba(110, 99, 224, 0.30);
+}
+body.dark .hot-issue-item {
+  background: rgba(43, 38, 56, 0.7);
+  border-color: rgba(139, 129, 240, 0.14);
+}
+.hot-issue-rank {
+  flex: 0 0 32px;
+  height: 32px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 15px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+  position: relative;
+}
+.hot-issue-rank.rank-1 { background: linear-gradient(135deg,#ff5b8a,#ff7aa8); box-shadow: 0 4px 14px rgba(255,91,138,0.45); }
+.hot-issue-rank.rank-2 { background: linear-gradient(135deg,#ffa726,#ffc04d); box-shadow: 0 4px 14px rgba(255,167,38,0.40); }
+.hot-issue-rank.rank-3 { background: linear-gradient(135deg,#4fa3e8,#7ac8ff); box-shadow: 0 4px 14px rgba(79,163,232,0.40); }
+.hot-issue-rank.rank-4 { background: linear-gradient(135deg,#8b7ee8,#a89cff); box-shadow: 0 4px 14px rgba(139,126,232,0.35); }
+.hot-issue-rank.rank-5 { background: linear-gradient(135deg,#4fc79a,#7ae0b0); box-shadow: 0 4px 14px rgba(79,199,154,0.35); }
+
+.hot-issue-grid .hot-issue-item:nth-child(1) .hot-issue-rank::after {
+  content: "👑";
+  position: absolute;
+  top: -14px;
+  font-size: 14px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+.hot-issue-content { flex: 1; min-width: 0; }
+.hot-issue-keyword {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.4;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hot-issue-grid .hot-issue-item:nth-child(1) .hot-issue-keyword {
+  font-size: 16px;
+}
+.hot-issue-desc {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  margin-bottom: 5px;
+}
+.hot-issue-src {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--accent-deep);
+  background: var(--accent-bg);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+.hot-issue-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 24px 14px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+@media (max-width: 600px) {
+  .hot-issue-panel { padding: 16px; border-radius: 20px; }
+  .hot-issue-title { font-size: 15px; }
+  .hot-issue-icon { font-size: 19px; }
+  .hot-issue-item { padding: 12px 14px; gap: 12px; border-radius: 14px; }
+  .hot-issue-rank { flex: 0 0 28px; height: 28px; font-size: 13px; border-radius: 9px; }
+  .hot-issue-keyword { font-size: 13px; }
+  .hot-issue-grid .hot-issue-item:nth-child(1) .hot-issue-keyword { font-size: 14px; }
+  .hot-issue-desc { font-size: 11px; }
+}
 </style>
 </head>
 <body>
@@ -1111,13 +1306,28 @@ body.dark .cal-day.today > span:first-of-type {
       <div class="day-name">수</div><div class="day-name">목</div><div class="day-name">금</div>
       <div class="day-name sat">토</div>
     </div>
+        
     <div class="calendar-grid" id="calendarDays"></div>
         <div class="cal-legend" aria-label="지난 날 성취도 색상 안내">
       <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#d4edda;"></span>80% 이상</div>
       <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#fff3cd;"></span>40 ~ 79%</div>
       <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#f8d7da;"></span>40% 미만</div>
     </div>
-    <div class="cal-legend-note">🕰️ 지난 날짜는 그날의 달성률 색으로 물들어요 · 오늘·미래는 날씨로 표시돼요</div>
+        <div class="cal-legend-note">🕰️ 지난 날짜는 그날의 달성률 색으로 물들어요 · 오늘·미래는 날씨로 표시돼요</div>
+
+    <div class="hot-issue-panel" id="hotIssuePanel">
+      <div class="hot-issue-header">
+        <div class="hot-issue-title">
+          <span class="hot-issue-icon">🔥</span>
+          <span>오늘의 핫이슈 TOP 5</span>
+          <span class="hot-issue-date" id="hotIssueDateLabel"></span>
+        </div>
+        <button class="hot-issue-refresh" onclick="app.hotIssue.refresh()">🔄 새로고침</button>
+      </div>
+      <div id="hotIssueList" class="hot-issue-grid">
+        <div class="hot-issue-loading">📡 오늘의 뉴스를 불러오는 중이에요…</div>
+      </div>
+    </div>
   </div>
 
   <div id="plannerView" class="hidden">
@@ -1417,6 +1627,7 @@ body.dark .cal-day.today > span:first-of-type {
   };
 
   const app = {
+        NEWS_PROXY_URL: 'https://remember-news.qnwkqnwk123.workers.dev',
     store: {
       get(key, fallback = null) {
         try {
@@ -1603,10 +1814,59 @@ body.dark .cal-day.today > span:first-of-type {
       return template(filled);
     },
 
-    renderDailyQuote() {
+      async renderDailyQuote() {
       const el = document.getElementById('heroQuote');
       if (!el) return;
-      el.textContent = `💬 ${this.generateDailyAdvice(this.todayStr())}`;
+
+      const today = this.todayStr();
+      const CACHE_KEY = 'dailyQuoteCache';
+
+      // 오늘 이미 가져온 명언 있으면 재사용 (하루 1회만 API 호출)
+      const cached = this.store.get(CACHE_KEY, null);
+      if (cached && cached.date === today && cached.text) {
+        el.innerHTML = `<span class="quote-text">💬 ${this.ui.escapeHtml(cached.text)}</span>${cached.author ? `<span class="quote-author">${this.ui.escapeHtml(cached.author)}</span>` : ''}`;
+        return;
+      }
+
+      // 로딩 표시
+      el.innerHTML = `<span class="quote-text" style="opacity:.7;">💬 오늘의 한마디를 불러오는 중…</span>`;
+
+      // 🌐 인터넷 명언 API 시도 (여러 개 중 하나라도 성공하면 사용)
+      const apis = [
+        {
+          url: 'https://korean-advice-open-api.vercel.app/api/advice',
+          parse: (d) => d && d.message ? { text: d.message, author: d.author || null } : null
+        },
+        {
+          url: 'https://api.sobabear.com/happiness/random-quote',
+          parse: (d) => d && d.data && d.data.content ? { text: d.data.content, author: d.data.author || null } : null
+        }
+      ];
+
+      let quote = null;
+      for (const api of apis) {
+        try {
+          const res = await this.fetchWithTimeout(api.url, {}, 5000);
+          const json = await res.json();
+          const parsed = api.parse(json);
+          if (parsed && parsed.text && parsed.text.trim().length > 5) {
+            quote = parsed;
+            break;
+          }
+        } catch (e) {
+          console.warn('명언 API 실패:', api.url, e.message);
+        }
+      }
+
+      // 실패하면 내장 조언으로 폴백
+      if (!quote) {
+        quote = { text: this.generateDailyAdvice(today), author: null };
+      }
+
+      // 하루 동안 캐시
+      this.store.set(CACHE_KEY, { date: today, text: quote.text, author: quote.author });
+
+      el.innerHTML = `<span class="quote-text">💬 ${this.ui.escapeHtml(quote.text)}</span>${quote.author ? `<span class="quote-author">${this.ui.escapeHtml(quote.author)}</span>` : ''}`;
     },
     
     haptic(pattern = 15) {
@@ -1714,7 +1974,8 @@ body.dark .cal-day.today > span:first-of-type {
       });
 
       this.renderDailyQuote();
-
+      this.hotIssue.load();
+      setInterval(() => this.hotIssue.load(), 60 * 60 * 1000);
       this.weather.init();
       this.timer.init();
        setInterval(() => this.weather.refreshWeatherNow(), 10 * 60 * 1000);
@@ -2549,6 +2810,100 @@ body.dark .cal-day.today > span:first-of-type {
           moodBar.className = 'mood-bar';
           moodBar.innerHTML = `<span>이 날짜의 날씨 정보는 아직 없어요</span>`;
         }
+      }
+    },
+    /* 🔥 오늘의 핫이슈 TOP 5 (GNews API 자동 검색) */
+    hotIssue: {
+      cache: { date: null, items: null, fetchedAt: 0 },
+
+      async load() {
+        const today = this.todayStr();
+        const label = document.getElementById('hotIssueDateLabel');
+        if (label) {
+          const d = new Date();
+          label.textContent = `· ${d.getMonth() + 1}월 ${d.getDate()}일 실시간`;
+        }
+        const now = Date.now();
+        if (this.cache.date === today && this.cache.items &&
+            (now - this.cache.fetchedAt) < 60 * 60 * 1000) {
+          this.render(this.cache.items);
+          return;
+        }
+        this.showLoading();
+        let items = await this.fetchFromProxy();
+        if (!items || items.length === 0) {
+          items = this.getFallbackItems();
+          if (label) label.textContent = `· ${new Date().getMonth() + 1}월 ${new Date().getDate()}일 (오프라인)`;
+        }
+        this.cache = { date: today, items, fetchedAt: now };
+        this.render(items);
+      },
+
+      todayStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      },
+
+        showLoading() {
+        const box = document.getElementById('hotIssueList');
+        if (box) box.innerHTML = '<div class="hot-issue-loading">📡 오늘의 뉴스를 불러오는 중이에요…</div>';
+      },
+
+      async fetchFromProxy() {
+        if (!app.NEWS_PROXY_URL || app.NEWS_PROXY_URL.includes('본인')) {
+          console.warn('NEWS_PROXY_URL이 설정되지 않았어요.');
+          return null;
+        }
+        try {
+          const url = `${app.NEWS_PROXY_URL}/?_=${Date.now()}`;
+          const res = await app.fetchWithTimeout(url, {}, 8000);
+          const json = await res.json();
+          if (!json || !json.articles || json.articles.length === 0) return null;
+          return json.articles.slice(0, 5).map(a => ({
+            keyword: a.title || '제목 없음',
+            desc: a.description || '',
+            source: a.source?.name || '',
+            url: a.url || '#'
+          }));
+        } catch (e) {
+          console.warn('뉴스 프록시 호출 실패:', e.message);
+          return null;
+        }
+      },
+
+      getFallbackItems() {
+        return [
+          { keyword: '코스피 6800선 후퇴', desc: '유가·미국 금리 급등에 2%대 약세', source: '뉴스1', url: '#' },
+          { keyword: '이재명 대통령 수석보좌관회의', desc: '지지율 반전책 고심, 대수보 메시지 주목', source: '뉴스1', url: '#' },
+          { keyword: '네팔 긴급구호대 2진 출발', desc: '재건복구팀 8명 포함, 현지 파견', source: '연합뉴스TV', url: '#' },
+          { keyword: '김정관 대미투자협상 방미', desc: '최종 사인 전 협상 진행', source: '연합뉴스', url: '#' },
+          { keyword: '이종섭 호주도피 1심 선고', desc: '특검 관련 윤석열 오늘 1심 선고', source: '연합뉴스', url: '#' }
+        ];
+      },
+
+      render(items) {
+        const box = document.getElementById('hotIssueList');
+        if (!box) return;
+                if (!items || items.length === 0) {
+          box.innerHTML = '<div class="hot-issue-loading">표시할 핫이슈가 없어요</div>';
+          return;
+        }
+        box.innerHTML = items.map((item, i) => `
+          <a class="hot-issue-item" href="${item.url || '#'}" target="_blank" rel="noopener noreferrer">
+            <div class="hot-issue-rank rank-${i + 1}">${i + 1}</div>
+            <div class="hot-issue-content">
+              <div class="hot-issue-keyword">${app.ui.escapeHtml(item.keyword)}</div>
+              ${item.desc ? `<div class="hot-issue-desc">${app.ui.escapeHtml(item.desc)}</div>` : ''}
+              ${item.source ? `<div class="hot-issue-src">📰 ${app.ui.escapeHtml(item.source)}</div>` : ''}
+            </div>
+          </a>
+        `).join('');
+      },
+
+      refresh() {
+        this.cache = { date: null, items: null, fetchedAt: 0 };
+        this.load();
+        app.ui.showToast('🔄 오늘의 뉴스를 새로 불러왔어요');
       }
     },
 
