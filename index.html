@@ -1611,6 +1611,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
 
   const app = {
     NEWS_PROXY_URL: 'https://remember-news.qnwkqnwk123.workers.dev',
+    AI_COACH_URL: 'https://remember-coach.내계정.workers.dev',  // 2단계: Cloudflare Worker 배포 후 실제 URL로 교체
     store: {
       get(key, fallback = null) {
         try { const raw = localStorage.getItem(key); return raw !== null ? JSON.parse(raw) : fallback; }
@@ -1812,6 +1813,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
       this.fetchHolidays(this.currentDate.getFullYear()).then(() => { this.ui.renderCalendar(); });
 
       this.renderDailyQuote();
+      this.coach.refreshAI();          // ← 2단계: AI 코칭 (URL 미설정 시 조용히 무시)
       this.hotIssue.load();
       setInterval(() => this.hotIssue.load(), 60 * 60 * 1000);
       this.weather.init();
@@ -2157,259 +2159,223 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         ]
       },
 
-      areaNames: { A:'실행', B:'집중', C:'회복', D:'판단', E:'공부', F:'커리어', G:'돈', H:'인간관계', I:'멘탈', J:'생활' },
+      areaNames: { A:'실행', B:'집중', C:'회복', D:'판단', E:'공부', F:'커리어', G:'돈', H:'인간관계', I:'멘탈', J:'생활', M:'흐름 유지' },
 
-      /* 영역은 조언 내용에만 사용하고, 영감 문장은 별도의 일일 순환 엔진이 선택한다. */
-      areaQuote: {},
-
-      banks: {
-        A: {
-          core: ["생각을 멈추고 몸을 먼저 움직여라.", "시작은 완벽이 아니라 '일단'이다.", "5분만 해보자. 5분이면 충분하다."],
-          advice: [
-            "머릿속 계획이 아무리 정교해도 실행이 없으면 0이다. 지금 당장 가장 작은 단위로 쪼개서 하나만 시작해라.",
-            "미루는 건 게으름이 아니라 '어디서부터'를 모르기 때문이다. 가장 쉬운 것 하나를 골라 5분만 손대봐라.",
-            "완벽한 타이밍은 오지 않는다. 지금 이 상태로 시작하는 게 유일한 정답이다."
-          ],
-          todo: ["지금 미루고 있는 일 1개를 골라 10분만 해보기", "타임테이블에서 가장 쉬운 항목부터 완료 체크하기", "가장 싫은 일 5분만 손대보기"],
-          drop: ["'완벽하게 준비되면 시작해야지'라는 생각", "'나중에 몰아서 해야지'라는 미루기", "'오늘은 컨디션이 안 좋아서'라는 핑계"]
-        },
-        B: {
-          core: ["한 번에 하나만. 그게 진짜 속도다.", "집중은 시간이 아니라 강도의 문제다.", "딴짓 하나를 지우면 집중력이 두 배가 된다."],
-          advice: [
-            "여러 개를 동시에 하면 뇌가 매번 컨텍스트 스위칭을 하느라 실작업 시간이 절반으로 줄어든다. 오늘 하나만 골라라.",
-            "폰을 다른 방에 두고 25분 타이머를 켜봐라. 알림 하나 없는 25분이 딴짓하는 3시간보다 낫다.",
-            "집중이 안 되는 건 의지 문제가 아니라 환경 문제일 가능성이 크다. 의자를 바꾸지 말고 환경을 바꿔라."
-          ],
-          todo: ["폰을 시야 밖에 두기", "타이머 25분 켜고 한 가지에만 몰입", "브라우저 탭 정리하고 지금 할 것 1개만 열기"],
-          drop: ["'멀티태스킹이 효율적이다'라는 착각", "알림을 계속 확인하는 습관", "SNS 무한 스크롤"]
-        },
-        C: {
-          core: ["잘하고 있으니, 이제 쉬어야 한다.", "회복도 훈련이다. 다음을 위한 투자다.", "멈추는 것도 실력이다."],
-          advice: [
-            "지금 잘하고 있다. 그런데 계속 이 페이스로 달리면 반드시 무너진다. 오늘 하루는 일부러 비워둬라.",
-            "몸이 보내는 신호를 무시하면 다음 주에 더 큰 대가를 치른다. 오늘 한 시간은 아무것도 안 해도 된다.",
-            "쉬는 것도 훈련의 일부다. 운동선수가 회복일을 하루 종일 자는 날로 쓰지 않는 이유가 있다."
-          ],
-          todo: ["오늘 한 시간 아무것도 안 하기", "10분 산책 또는 명상", "평소보다 1시간 일찍 자기"],
-          drop: ["'쉬면 뒤처진다'는 불안", "쉬면서도 머릿속으로 일 걱정하기", "'완벽해야 한다'는 압박"]
-        },
-        I: {
-          core: ["지금 힘든 건 약해서가 아니라 오래 버텼기 때문이다.", "감정은 파도다. 머물지 않는다.", "스스로에게 너무 엄격하지 마라."],
-          advice: [
-            "달성률이 낮다고 자책하지 마라. 기록 자체를 하고 있다는 게 이미 상위 10%의 행동이다.",
-            "지금 상태를 객관적으로 보면, 능력이 아니라 회복이 부족한 것이다. 자기 자신을 몰아붙이지 마라.",
-            "감정 기복은 정상이다. 중요한 건 그 감정에 따라 행동하지 않는 것이다. 오늘은 판단을 미뤄라."
-          ],
-          todo: ["오늘 잘한 것 3가지 적기", "10분 밖에 나가 걷기", "자기 자신에게 친구에게 하듯 말해보기"],
-          drop: ["자기비판", "완벽주의", "SNS 속 남과의 비교"]
-        },
-        J: {
-          core: ["작은 질서가 하루를 바꾼다.", "환경을 정리하면 머리가 정리된다.", "오늘 한 가지만 치워도 달라진다."],
-          advice: [
-            "머릿속이 복잡한 건 대개 주변 환경이 복잡해서다. 책상 하나만 치워도 집중력이 눈에 띄게 올라간다.",
-            "잠들기 전 5분, 내일 입을 옷과 챙길 것만 준비해도 아침이 완전히 달라진다. 오늘 밤 그 5분을 써라.",
-            "생활 리듬이 무너지면 어떤 계획도 지켜지지 않는다. 오늘 잠자는 시간 하나만이라도 고정해라."
-          ],
-          todo: ["책상 위 5가지만 치우기", "내일 챙길 것 미리 세팅", "오늘 잠들 시간 정해두기"],
-          drop: ["'나중에 치워야지' 미루기", "'오늘만 늦게 자자'는 생각", "정리 안 된 채로 시작하는 습관"]
-        }
-      },
-
-      // 👤 개인 코치 프로필 — 사용자의 실제 성향과 현재 목표를 반영
-      profile: {
-        traits: [
-          '겉으로는 차분하지만 속으로는 의지가 강한 편',
-          '남의 말보다 스스로 납득한 판단을 중요하게 생각함',
-          '핵심을 빠르게 파악하지만 의미 없는 반복에는 쉽게 지침',
-          '눈에 보이는 결과가 있을 때 동기와 집중력이 크게 올라감',
-          '기출·실전형 학습에서 기억이 더 잘 남는 편',
-          '목표가 분명하지 않으면 실행력이 떨어지기 쉬움'
-        ],
-        goals: [
-          '2026 해양경찰 3차 필기시험 최종합격',
-          '안정적인 본업 + AI 광고·콘텐츠 사이드 사업 구축',
-          '장기적으로 AI 기반 1인 사업과 월 순소득 1,000만원 달성'
-        ],
-        coachingRules: [
-          '막연한 위로나 칭찬보다 현실적인 판단을 우선한다.',
-          '공부는 기출→오답→취약점 보완→재시험 순으로 제시한다.',
-          '실행 단위는 작게 만들되 목표 수준은 낮추지 않는다.',
-          '반복보다 결과가 보이는 행동을 우선한다.',
-          '사용자가 이미 알고 있는 내용을 장황하게 설명하지 않는다.'
-        ]
-      },
-
+      /* ===========================================================
+         1단계: 로컬 분석 엔진
+         - 어제·그제·최근 7일을 실제로 읽고, 반복 일정은 밀림 집계에서 제외
+         - 일기는 app.diary에서 정확히 읽음
+         =========================================================== */
       analyze() {
         const today = app.todayStr();
-        const todayData = app.dailyData[today] || {};
-        const progressToday = todayData.progress || 0;
-        const week = [];
-        for (let i = 1; i <= 7; i++) {
-          const dStr = app.getOffsetDateString(today, i);
+        const yStr = app.getOffsetDateString(today, 1);
+        const recurring = app.recurringTasks || {};
+
+        const summarize = (dStr) => {
           const d = app.dailyData[dStr];
-          week.push({ date: dStr, progress: d?.progress ?? null });
+          if (!d || !d.timetable) return null;
+          const tasks = Object.entries(d.timetable)
+            .filter(([h, t]) => t && t.text && t.text.trim())
+            .map(([h, t]) => ({
+              hour: +h, text: t.text.trim(), done: !!t.done,
+              recurring: !!(recurring[h] && recurring[h].text && recurring[h].text.trim() === t.text.trim())
+            }));
+          if (!tasks.length) return null;
+          const done = tasks.filter(t => t.done);
+          const undone = tasks.filter(t => !t.done);
+          return { date: dStr, tasks, done, undone,
+            progress: Math.round(done.length / tasks.length * 100),
+            timers: Object.keys(d.timers || {}).length };
+        };
+
+        const y  = summarize(yStr);
+        const y2 = summarize(app.getOffsetDateString(today, 2));
+        const days = [];
+        for (let i = 1; i <= 7; i++) {
+          const s = summarize(app.getOffsetDateString(today, i));
+          if (s) days.push(s);
         }
-        const valid = week.filter(w => w.progress !== null);
-        const avg7 = valid.length ? Math.round(valid.reduce((s,w)=>s+w.progress,0)/valid.length) : 0;
-        const missedHours = {};
-        valid.forEach(w => {
-          const d = app.dailyData[w.date];
-          if (!d?.timetable) return;
-          Object.entries(d.timetable).forEach(([h, t]) => {
-            if (t?.text?.trim() && !t.done) missedHours[h] = (missedHours[h]||0)+1;
-          });
-        });
-        const topMissed = Object.entries(missedHours).sort((a,b)=>b[1]-a[1])[0];
-        const totalTasks = Object.values(todayData.timetable || {}).filter(t => t?.text?.trim()).length;
-        const doneTasks = Object.values(todayData.timetable || {}).filter(t => t?.text?.trim() && t.done).length;
-        const diary = todayData.diary || '';
+        const avg7 = days.length ? Math.round(days.reduce((a, d) => a + d.progress, 0) / days.length) : 0;
+
+        // 매일 반복 일정은 '밀림' 집계에서 제외 (21시 문제 해결)
+        const missed = {};
+        days.forEach(d => d.undone.filter(t => !t.recurring).forEach(t => { missed[t.hour] = (missed[t.hour] || 0) + 1; }));
+        const top = Object.entries(missed).sort((a, b) => b[1] - a[1])[0];
+
+        const diary = app.ui.getDiaryEntry(yStr);   // ← 일기 읽는 위치 버그 수정
         return {
-          today, progressToday, avg7, validDays: valid.length,
+          today, yStr, y, y2, avg7, validDays: days.length,
+          trend: (y && y2) ? y.progress - y2.progress : null,
           streak: app.calculateStreak(),
           hour: new Date().getHours(),
           dow: new Date().getDay(),
-          topMissed: topMissed ? { hour: +topMissed[0], count: topMissed[1] } : null,
-          totalTasks, doneTasks,
-          diaryLength: diary.length,
-          hasDiary: !!diary.trim()
+          topMissed: (top && top[1] >= 3) ? { hour: +top[0], count: top[1] } : null,
+          diaryTitle: (diary.title || '').trim(),
+          diaryText: (diary.text || '').trim().slice(0, 120)
         };
       },
 
       pickArea(c) {
-        // 단순 랜덤이 아니라 '현재 상태 × 사용자의 성향 × 목표'를 우선 판단한다.
-        if (c.progressToday === 0 && c.hour >= 18) return 'A';
-        if (c.topMissed && c.topMissed.count >= 3) return 'B';
-        if (c.avg7 < 30 && c.validDays >= 3) return 'I';
-        if (c.progressToday > 0 && c.progressToday < 60 && c.hour < 18) return 'E';
-        if (c.avg7 >= 75 && c.progressToday >= 80) return 'C';
-        if (c.streak === 0 && c.validDays >= 3) return 'A';
-        if (c.hour >= 22) return 'C';
-        if (c.progressToday >= 60 && c.progressToday < 80) return 'D';
-        return 'A';
+        const log = app.store.get('coachAreaLog', {});
+        if (log[c.today]) return log[c.today];            // 하루 동안은 영역 고정
+
+        const y = c.y;
+        const s = { A:0, B:0, C:0, D:0, E:0, I:0, M:0 };
+        if (!y) s.A += 60;
+        else {
+          if (y.progress >= 80)      { s.M += 70; if (c.streak >= 3) s.C += 30; }
+          else if (y.progress >= 40) { s.D += 45; s.E += 40; }
+          else                       { s.A += 55; s.I += 40; }
+          if (y.undone.some(t => !t.recurring)) s.B += 25;
+        }
+        if (c.trend !== null && c.trend <= -30) { s.I += 35; s.C += 20; }
+        if (c.trend !== null && c.trend >= 30)  s.M += 30;
+        if (c.topMissed) s.B += 30;
+        if (c.avg7 >= 80) s.C += 35;
+        if (c.avg7 < 30 && c.validDays >= 3) s.I += 40;
+        if (c.dow === 1) s.A += 15;
+        if (c.dow === 0 || c.dow === 6) s.C += 15;
+
+        const ranked = Object.entries(s).sort((a, b) => b[1] - a[1]);
+        let pick = ranked[0][0];
+        // 어제와 같은 영역이면, 점수 차가 크지 않을 때 2순위로 바꿔 반복을 막음
+        if (pick === log[c.yStr] && ranked[1] && ranked[1][1] >= ranked[0][1] * 0.5) pick = ranked[1][0];
+
+        log[c.today] = pick;
+        Object.keys(log).sort().slice(0, -14).forEach(k => delete log[k]);
+        app.store.set('coachAreaLog', log);
+        return pick;
       },
 
-      personalize(c, area) {
-        const missed = c.topMissed
-          ? `특히 ${c.topMissed.hour}시 일정이 최근 ${c.topMissed.count}번 밀렸어. 이건 의지보다 일정 배치의 문제일 가능성이 커.`
-          : '';
+      compose(c, area) {
+        const y = c.y;
+        const cut = (s, n = 16) => s.length > n ? s.slice(0, n) + '…' : s;
+        const pick = (arr, salt) => arr[app.seededPick(c.today, area + salt, arr.length)];
+        const fu = y && (y.undone.find(t => !t.recurring) || y.undone[0]);
+        const fd = y && y.done[0];
+        const uName = fu ? `'${cut(fu.text)}'` : '어제 못 끝낸 일';
+        const h = c.topMissed ? `${c.topMissed.hour}시` : '밀린';
+        const missedTxt = c.topMissed
+          ? `${c.topMissed.hour}시 일정이 최근 ${c.topMissed.count}번 밀렸어.`
+          : `${uName} 같은 일정이 자꾸 남고 있어.`;
 
-        const map = {
+        // 어제 기록 요약 한 줄 (매일 달라지는 부분)
+        let yLine;
+        if (!y) yLine = '어제는 기록이 없어서 오늘이 새 출발이야.';
+        else {
+          yLine = `어제는 ${y.tasks.length}개 중 ${y.done.length}개를 끝내 달성률 ${y.progress}%였어.`;
+          if (c.trend !== null && Math.abs(c.trend) >= 10) yLine += ` 전날보다 ${c.trend > 0 ? '+' : ''}${c.trend}%p.`;
+          if (fd) yLine += ` 해낸 것: '${cut(fd.text)}'.`;
+          if (fu) yLine += ` 남은 것: ${uName}.`;
+          if (c.diaryTitle) yLine += ` 어제 일기 제목은 "${cut(c.diaryTitle, 20)}".`;
+        }
+
+        const B = {
           A: {
-            core: c.progressToday === 0
-              ? '오늘 아직 0%라면 계획을 더 세울 때가 아니라 첫 행동을 시작할 때야.'
-              : '지금 필요한 건 더 많은 계획이 아니라, 이미 정한 한 가지를 끝내는 거야.',
-            advice: `너는 목표가 분명할 때 추진력이 강한 편이야. 반대로 해야 할 이유가 흐려지면 시작이 늦어질 수 있어. 그래서 오늘은 ${missed || '가장 중요한 한 가지'}만 결과로 남겨.`,
-            todo: '해양경찰 공부라면 기출 10문제처럼 결과를 바로 확인할 수 있는 단위로 시작해.',
-            drop: '오늘 계획을 다시 짜느라 실제 공부 시작을 늦추는 것',
-            one: '생각보다 실행이 늦어지는 순간, 10분짜리 결과를 먼저 만들어.'
+            core: ['오늘은 계획보다 첫 행동이 먼저야.', '시작 버튼 하나만 누르면 오늘이 풀려.', '생각이 길어질수록 시작은 멀어져.'],
+            adv:  ['어제 결과를 곱씹기보다 가장 쉬운 단위 하나를 지금 끝내서 흐름을 바꿔.', '목표 수준은 그대로 두고, 실행 단위만 10분으로 쪼개자.', '첫 체크 하나가 달성률보다 먼저 기분을 바꿔줘. 오전 중에 첫 체크를 만들어.'],
+            todo: [`오늘 첫 25분은 ${uName} 한 가지에만 써.`, `${uName} → 지금 10분만 손대고 바로 체크해.`],
+            drop: ['계획을 다시 짜느라 시작을 늦추는 것', '어제 결과를 오늘의 평가로 가져오는 것', '완벽한 환경을 기다리는 것'],
+            one:  ['생각은 충분했어. 이제 첫 체크만.', '10분이면 하루의 방향이 바뀌어.']
           },
           B: {
-            core: '집중력이 부족한 게 아니라, 집중해야 할 대상이 너무 많아진 거야.',
-            advice: `너는 의미 없는 반복에 금방 지치는 편이라 긴 시간 앉아 있는 것보다 '문제→판단→정답 확인' 구조가 잘 맞아. ${missed}`.trim(),
-            todo: '기출 한 세트를 정하고 휴대폰을 치운 뒤 25분 동안 그것만 풀어.',
-            drop: '공부법·자료·계획을 계속 바꾸는 것',
-            one: '오늘의 승부처는 공부시간이 아니라 한 가지에 끝까지 붙어 있는 거야.'
+            core: [`${h} 일정은 의지가 아니라 배치의 문제야.`, '같은 자리에서 계속 밀리면 자리를 옮겨야 해.', '집중이 안 되는 게 아니라 일정이 한곳에 몰려 있어.'],
+            adv:  [`${missedTxt} 같은 자리에 같은 일을 놓고 반복해서 실패하면 시간대를 바꾸는 게 빨라.`, `${missedTxt} 너는 결과가 바로 보이는 문제풀이형이 잘 맞으니, 밀린 일을 문제 단위로 쪼개봐.`],
+            todo: [`${h} 일정을 집중이 잘 되는 오전 시간대로 옮겨.`, `밀린 일정을 둘로 쪼개 앞부분 25분만 오늘 끝내.`],
+            drop: ['한 번에 너무 많은 일정을 채워 넣는 것', '밀린 일정을 다음 날로 그대로 복사하는 것'],
+            one:  ['한 번에 하나. 그게 가장 빠른 길이야.', '자리만 바꿔도 같은 일이 달라져.']
           },
           C: {
-            core: '계속 밀어붙이는 것보다 내일 다시 강하게 시작할 상태를 만드는 게 이득이야.',
-            advice: `너는 목표 욕심이 있는 편이라 쉬는 순간에도 '이래도 되나'라는 생각이 생기기 쉬워. 하지만 회복 없는 장기전은 결국 집중력과 실행력을 같이 깎아먹어.`,
-            todo: '오늘 남은 일정 중 중요도가 낮은 하나를 과감히 줄이고 수면 시간을 확보해.',
-            drop: '쉬는 시간에 죄책감을 느끼며 계획을 다시 검토하는 것',
-            one: '회복은 포기가 아니라 다음 집중력을 사는 행동이야.'
+            core: ['잘 달려왔으니 오늘은 일부러 속도를 낮춰도 돼.', '회복도 오늘의 일정이야.', '멈출 줄 아는 게 장기전의 실력이야.'],
+            adv:  [`최근 7일 평균 ${c.avg7}%면 충분히 강하게 달린 거야. 이 페이스를 유지하려면 오늘은 여유 구간이 필요해.`, '연속 달성이 길어질수록 번아웃 위험도 같이 커져. 오늘은 중요도 낮은 일정 하나를 과감히 비워.'],
+            todo: ['중요도 낮은 일정 1개를 비우고 취침 시간을 30분 앞당겨.', '30분 걷기나 아무것도 안 하는 시간을 일정에 넣어.'],
+            drop: ['쉬면서 죄책감을 느끼는 것', '빈 시간을 새 일정으로 채우는 것'],
+            one:  ['오늘 쉬는 것도 계획의 일부야.', '회복은 포기가 아니라 다음 집중력을 사는 거야.']
           },
           D: {
-            core: '지금은 더 많은 정보를 찾기보다 이미 가진 정보로 하나를 결정할 때야.',
-            advice: '너는 스스로 납득해야 움직이는 성향이 강해. 그래서 정보 수집이 길어지면 판단보다 검토가 앞설 수 있어. 오늘은 기준 3개만 정하고 결론을 내려.',
-            todo: '지금 고민 중인 한 가지를 ' + "'계속한다/줄인다/버린다'" + ' 중 하나로 결정해.',
-            drop: '결정을 미루기 위해 새로운 정보부터 찾는 행동',
-            one: '완벽한 판단보다 오늘 실행 가능한 판단이 더 가치 있어.'
+            core: ['정보를 더 모으기보다 하나를 결정할 때야.', '어중간한 달성률은 방향이 흐릿하다는 신호야.'],
+            adv:  ['반쯤 끝낸 일이 남아 있다면 의욕 문제가 아니라 우선순위 문제야. 기준 3개(시험 영향, 마감, 소요 시간)만 정해 결론을 내려.'],
+            todo: [`${uName} → 계속 / 줄임 / 버림 중 하나로 오늘 결정해.`],
+            drop: ['결정을 미루려고 새 정보를 찾는 것', '모든 일정을 똑같이 중요하게 취급하는 것'],
+            one:  ['완벽한 판단보다 오늘 실행 가능한 판단이야.']
           },
           E: {
-            core: '너에게는 많이 읽는 공부보다 문제를 맞히고 틀린 이유를 잡는 공부가 더 남아.',
-            advice: '이미 알고 있는 내용을 반복해서 읽는 것보다 기출에서 틀린 문제를 다시 설명해 보는 방식으로 공부해. 특히 해양경찰 시험은 점수로 결과가 보이기 때문에 실전형 학습을 우선해야 해.',
-            todo: '기출 20문제를 풀고 틀린 문제만 ' + "'왜 틀렸는지 한 줄'" + '로 기록해.',
-            drop: '공부한 양을 페이지 수로만 판단하는 것',
-            one: '오늘의 기준은 몇 페이지가 아니라 몇 문제를 확실히 내 것으로 만들었는지야.'
+            core: ['읽은 양 말고 맞힌 문제로 오늘을 재자.', '틀린 문제가 오늘 가장 값진 자료야.'],
+            adv:  ['기출 → 오답 → 취약점 보완 → 재시험 순서로 가자. 어제 공부가 중간까지였다면 오늘은 오답 정리부터 마무리해.'],
+            todo: ['어제 틀린 문제 5개를 먼저 다시 풀고 새 문제로 넘어가.', '기출 20문제를 풀고 틀린 것만 원인을 한 줄로 적어.'],
+            drop: ['페이지 수로 공부량을 판단하는 것', '자료나 공부법을 새로 바꾸는 것'],
+            one:  ['오늘의 기준은 페이지가 아니라 내 것이 된 문제 수야.']
           },
           I: {
-            core: '지금 필요한 건 자신을 몰아붙이는 말이 아니라, 다시 움직일 수 있는 현실적인 기준이야.',
-            advice: `최근 달성률이 ${c.avg7}%라면 능력을 단정하기엔 아직 데이터가 부족해. 너처럼 결과에 대한 기준이 높은 사람은 한 번의 실패를 전체 능력으로 해석하기 쉬워. 오늘은 감정이 아니라 기록으로 판단하자.`,
-            todo: '오늘 완료할 수 있는 가장 작은 목표 하나를 정하고 완료 즉시 체크해.',
-            drop: '지난 결과를 오늘의 능력이라고 단정하는 것',
-            one: '오늘의 평가를 인생 전체의 평가로 확대하지 마.'
+            core: ['어제 결과가 낮아도 오늘의 능력이 낮은 건 아니야.', '기준은 낮추지 말고 시작 단위만 줄이자.'],
+            adv:  ['한 번의 낮은 결과를 전체 능력으로 확대하지 마. 오늘은 감정 말고 기록으로 판단해. 달성 가능한 작은 목표 하나로 다시 흐름을 만들면 돼.'],
+            todo: [`${uName}의 첫 5분만 하고 바로 체크해.`, '오늘 끝낼 수 있는 가장 작은 일정 1개만 정해.'],
+            drop: ['어제 결과를 전체 평가로 확대하는 것', '스스로에게 필요 이상으로 가혹한 말'],
+            one:  ['오늘의 평가를 인생 전체의 평가로 만들지 마.']
+          },
+          M: {
+            core: ['어제 흐름이 좋았어. 오늘은 그대로 이어가자.', '잘 되는 방식은 건드리지 말고 반복해.', '좋은 날의 패턴을 오늘도 복사하자.'],
+            adv:  ['어제 잘 끝낸 시간대와 순서를 오늘도 똑같이 써. 잘 되는 날의 방식이 가장 확실한 데이터야.'],
+            todo: ['어제 잘 끝낸 시간대에 오늘 가장 중요한 일을 배치해.', '어제 완료한 일정의 순서를 그대로 따라가 봐.'],
+            drop: ['잘 되는데 방식을 바꿔보려는 충동', '어제 달성률을 넘기려는 과욕'],
+            one:  ['좋은 날은 반복할 때 습관이 돼.']
           }
         };
-        return map[area] || map.A;
+        const b = B[area] || B.A;
+        return {
+          core: pick(b.core, '_core'),
+          advice: `${yLine} ${pick(b.adv, '_adv')}`,
+          todo: pick(b.todo, '_todo'),
+          drop: pick(b.drop, '_drop'),
+          oneLine: pick(b.one, '_one')
+        };
       },
-      pickDailyQuote(dateStr) {
-        const categories = Object.keys(this.quotes);
-        // 날짜별로 장르를 순환시켜 매일 분위기가 달라지게 한다.
-        const dayNo = Math.floor(new Date(`${dateStr}T00:00:00`).getTime() / 86400000);
-        const category = categories[((dayNo % categories.length) + categories.length) % categories.length];
-        const pool = this.quotes[category];
-        // 같은 장르 안에서도 날짜가 바뀔 때마다 다른 문장을 우선 선택한다.
-        const idx = app.seededPick(dateStr, `daily-inspiration-${category}`, pool.length);
-        return { ...pool[idx], category };
+
+      logHistory(date, core) {
+        const hist = app.store.get('coachHistory', []);
+        if (hist.length && hist[hist.length - 1].date === date) { hist[hist.length - 1].core = core; }
+        else hist.push({ date, core });
+        app.store.set('coachHistory', hist.slice(-7));
       },
 
       build() {
         const c = this.analyze();
         const area = this.pickArea(c);
-        const bank = this.banks[area];
-        const personal = this.personalize(c, area);
-        const pick = (arr, salt) => arr[app.seededPick(c.today, area + salt, arr.length)];
-        // 개인화 문구를 기본으로 사용하고, 데이터가 부족할 때만 기존 bank를 보조로 사용한다.
-        const core   = personal.core || pick(bank.core, '_core');
-        const advice = personal.advice || pick(bank.advice, '_adv');
-        const todo   = personal.todo || pick(bank.todo, '_todo');
-        const drop   = personal.drop || pick(bank.drop, '_drop');
-        const quote = this.pickDailyQuote(c.today);
-        let why;
-        if (c.validDays === 0) {
-          why = "아직 데이터가 며칠 안 쌓였어요. 지금은 방향을 정하기보다 매일 기록하는 습관 자체가 더 중요해요.";
-        } else if (c.avg7 < 30) {
-          why = `최근 7일 평균 달성률이 ${c.avg7}%예요. 지금 필요한 건 무리한 목표가 아니라 ${this.areaNames[area]}이에요.`;
-        } else if (c.avg7 >= 75) {
-          why = `7일 평균 ${c.avg7}%, 이미 안정적이에요. 이 흐름을 유지하려면 오늘은 ${this.areaNames[area]} 쪽에 신경 쓰는 게 좋아요.`;
-        } else {
-          why = `오늘 달성률 ${c.progressToday}%, 7일 평균 ${c.avg7}%. 지금 필요한 건 ${this.areaNames[area]}이에요.`;
+        const r = { area, areaName: this.areaNames[area], ...this.compose(c, area) };
+
+        // AI가 오늘 만든 조언이 있으면 덮어쓰기 (2단계)
+        const ai = app.store.get('coachAICache', null);
+        if (ai && ai.date === c.today && ai.data) {
+          ['core', 'advice', 'todo', 'drop', 'oneLine'].forEach(k => {
+            if (typeof ai.data[k] === 'string' && ai.data[k].trim()) r[k] = ai.data[k].trim();
+          });
+          if (ai.data.areaName) r.areaName = String(ai.data.areaName).slice(0, 10);
         }
-        if (c.topMissed && c.topMissed.count >= 2) {
-          why += ` 특히 ${c.topMissed.hour}시 일정이 최근 ${c.topMissed.count}번 미완료됐어요.`;
-        }
+        this.logHistory(c.today, r.core);
+
+        const q = this.pickDailyQuote(c.today);
+        const why = c.y
+          ? `어제 달성률 ${c.y.progress}%, 7일 평균 ${c.avg7}% 기준으로 '${r.areaName}' 영역을 골랐어요.`
+          : `어제 기록이 없어서 '${r.areaName}'부터 가볍게 시작해요.`;
         const actions = [
-          `⏱️ 지금부터 25분 타이머 켜고: ${todo}`,
-          c.topMissed
-            ? `🔁 최근 자꾸 밀리는 ${c.topMissed.hour}시 일정을 오늘은 다른 시간대로 옮겨보기`
-            : `📝 오늘 타임테이블 항목 중 하나를 골라 '달성' 체크하기`,
-          `🚫 오늘 하루 딱 하나 참아보기: ${drop}`
+          `⏱️ 지금부터 25분 타이머 켜고: ${r.todo}`,
+          c.topMissed ? `🔁 자꾸 밀리는 ${c.topMissed.hour}시 일정을 오늘은 다른 시간대로 옮겨보기`
+                      : `📝 오늘 타임테이블 항목 하나를 골라 '달성' 체크하기`,
+          `🚫 오늘 하루 딱 하나 참아보기: ${r.drop}`
         ];
-        const oneLines = {
-          A: "생각은 이미 충분히 했다. 이제 몸이 나설 차례다.",
-          B: "한 번에 하나. 그게 가장 빠른 길이다.",
-          C: "오늘 쉬는 것도 계획의 일부다.",
-          D: "결정을 미루는 것도 하나의 결정이다.",
-          E: "오늘 배운 한 페이지가 1년 뒤의 나를 만든다.",
-          F: "지금 쌓는 실력은 아무도 못 뺏어간다.",
-          G: "돈은 벌어서가 아니라, 남겨서 모인다.",
-          H: "관계는 자주보다 정확하게.",
-          I: "너는 지금 잘하고 있다. 정말로.",
-          J: "작은 질서 하나가 오늘을 바꾼다."
-        };
-        return {
-          area,
-          areaName: this.areaNames[area],
-          core, advice, todo, drop,
-          quote: quote.t, quoteSource: quote.s,
-          quoteCategory: quote.k || quote.category,
-          why, actions,
-          oneLine: personal.one || oneLines[area] || "오늘 하나면 충분하다.",
-          ctx: c
-        };
+        return { ...r, quote: q.t, quoteSource: q.s, quoteCategory: q.k || q.category, why, actions, ctx: c };
+      },
+
+      pickDailyQuote(dateStr) {
+        const categories = Object.keys(this.quotes);
+        const dayNo = Math.floor(new Date(`${dateStr}T00:00:00`).getTime() / 86400000);
+        const category = categories[((dayNo % categories.length) + categories.length) % categories.length];
+        const pool = this.quotes[category];
+        const idx = app.seededPick(dateStr, `daily-inspiration-${category}`, pool.length);
+        return { ...pool[idx], category };
       },
 
       openModal() {
-        // 오늘 하루 그만 보기 상태라면 팝업을 열지 않음
         if (this.isHiddenToday()) {
           if (app.ui && app.ui.showToast) {
             app.ui.showToast('🌙 오늘의 조언은 오늘 하루 숨겨져 있어요. 내일 다시 볼 수 있어요.');
@@ -2471,7 +2437,6 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         if (hideToday) hideToday.checked = false;
       },
 
-      // 오늘 날짜가 바뀌면 자동으로 다시 표시 가능
       isHiddenToday() {
         const savedDate = localStorage.getItem('coachHideToday');
         return savedDate === this.getTodayKey();
@@ -2492,6 +2457,34 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         } else {
           localStorage.removeItem('coachHideToday');
         }
+      },
+
+      /* ===========================================================
+         2단계: Claude AI 코칭 (선택) — 하루 1회, 캐시 사용
+         Worker URL이 '내계정' 상태면 아무 것도 하지 않음
+         =========================================================== */
+      async refreshAI(force = false) {
+        const today = app.todayStr();
+        const cached = app.store.get('coachAICache', null);
+        if (!force && cached && cached.date === today) return;
+        if (!app.AI_COACH_URL || app.AI_COACH_URL.includes('내계정')) return;
+        const c = this.analyze();
+        const summary = {
+          today, 요일: ['일','월','화','수','목','금','토'][c.dow],
+          어제: c.y ? { 달성률: c.y.progress, 완료: c.y.done.map(t => t.text), 미완료: c.y.undone.map(t => t.text), 타이머세션: c.y.timers } : null,
+          전날대비: c.trend, 최근7일평균: c.avg7, 연속달성: c.streak, 자주밀린시간: c.topMissed,
+          어제일기: { 제목: c.diaryTitle, 내용: c.diaryText },
+          recentCores: app.store.get('coachHistory', []).map(h => h.core)
+        };
+        try {
+          const res = await app.fetchWithTimeout(app.AI_COACH_URL, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(summary)
+          }, 20000);
+          const data = await res.json();
+          if (!data.core || !data.advice) return;
+          app.store.set('coachAICache', { date: today, data });
+          app.renderDailyQuote();
+        } catch (e) { console.warn('AI 코칭 실패, 로컬 코칭 사용:', e.message); }
       }
     },
 
