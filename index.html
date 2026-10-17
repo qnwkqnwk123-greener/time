@@ -1166,6 +1166,24 @@ body.login-required #coachFab{display:none!important}
 .cc-b.ai{align-self:flex-start;background:var(--paper);border:1px solid var(--line)}
 .cc-input{display:flex;gap:8px;padding:10px 14px;border-top:1px dashed var(--line)}
 .cc-input textarea{flex:1;resize:none;padding:10px;max-height:110px}
+
+/* ===========================================================
+   🧑‍🏫 성공 코치 - 4탭 (대화/리포트/회고/설정)
+   =========================================================== */
+.cc-tabs{display:flex;gap:4px;padding:8px 12px;border-bottom:1px dashed var(--line)}
+.cc-tabs button{flex:1;padding:7px 0;font-size:12.5px!important;background:var(--paper)}
+.cc-tabs button.on{background:var(--accent);color:#fff}
+.cc-pane{flex:1;min-height:0;overflow-y:auto;padding:12px 14px}
+.cc-pane-chat{display:flex;flex-direction:column;overflow:hidden;padding:0}
+.cc-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.65}
+.cc-card.praise{border-left:4px solid var(--mint)}
+.cc-card.advice{border-left:4px solid #e0a800}
+.cc-card label{display:block;font-size:12px;font-weight:700;margin:10px 0 4px;color:var(--ink-soft)}
+.cc-card textarea,.cc-card select{width:100%;padding:10px;border-radius:14px!important;resize:vertical}
+.cc-btnrow{display:flex;gap:8px;margin-top:10px}
+.cc-btnrow button{flex:1}
+#coachFab.pulse{animation:ccPulse 1.6s ease-in-out infinite}
+@keyframes ccPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08);box-shadow:0 0 0 8px rgba(110,99,224,.18)}}
 </style>
 </head>
 <body>
@@ -1584,20 +1602,31 @@ body.login-required #coachFab{display:none!important}
     </div>
   </div>
 
-  <!-- 🧑‍🏫 대화형 개인 코치 -->
+  <!-- 🧑‍🏫 인생 성공 코치 (FAB + 4탭 모달) -->
   <button id="coachFab" onclick="app.coachChat.open()">🧑‍🏫 코치</button>
 
   <div id="coachChatOverlay" class="hidden" onclick="if(event.target===this) app.coachChat.close()">
     <div class="cc-modal">
-      <div class="cc-head"><b>🧑‍🏫 내 개인 코치</b><button class="btn-ghost" style="padding:6px 10px;" onclick="app.coachChat.close()">✕</button></div>
-      <div class="cc-checkin" id="ccCheckin"></div>
-      <div class="cc-chips" id="ccChips"></div>
-      <div class="cc-msgs" id="ccMsgs"></div>
-      <div class="cc-input">
-        <textarea id="ccInput" rows="1" placeholder="코치에게 편하게 말해보세요 ✍️"
-          onkeydown="if(event.key==='Enter' && !event.shiftKey && !event.isComposing){event.preventDefault();app.coachChat.send();}"></textarea>
-        <button class="btn-primary" onclick="app.coachChat.send()">보내기</button>
+      <div class="cc-head"><b>🧑‍🏫 내 인생 성공 코치</b><button class="btn-ghost" style="padding:6px 10px;" onclick="app.coachChat.close()">✕</button></div>
+      <div class="cc-tabs">
+        <button data-t="chat" class="on" onclick="app.coachChat.tab('chat')">💬 대화</button>
+        <button data-t="report" onclick="app.coachChat.tab('report')">📊 리포트</button>
+        <button data-t="review" onclick="app.coachChat.tab('review')">🌙 회고</button>
+        <button data-t="settings" onclick="app.coachChat.tab('settings')">⚙️ 설정</button>
       </div>
+      <div class="cc-pane cc-pane-chat" id="ccPane-chat">
+        <div class="cc-checkin" id="ccCheckin"></div>
+        <div class="cc-chips" id="ccChips"></div>
+        <div class="cc-msgs" id="ccMsgs"></div>
+        <div class="cc-input">
+          <textarea id="ccInput" rows="1" placeholder="코치에게 편하게 말해보세요 ✍️"
+            onkeydown="if(event.key==='Enter' && !event.shiftKey && !event.isComposing){event.preventDefault();app.coachChat.send();}"></textarea>
+          <button class="btn-primary" onclick="app.coachChat.send()">보내기</button>
+        </div>
+      </div>
+      <div class="cc-pane hidden" id="ccPane-report"></div>
+      <div class="cc-pane hidden" id="ccPane-review"></div>
+      <div class="cc-pane hidden" id="ccPane-settings"></div>
     </div>
   </div>
 
@@ -1713,6 +1742,7 @@ body.login-required #coachFab{display:none!important}
     diary: JSON.parse(localStorage.getItem('appDiary')) || {},
     recurringTasks: JSON.parse(localStorage.getItem('appRecurringTasks')) || {},
     coachLog: JSON.parse(localStorage.getItem('appCoachLog')) || {},
+    coachProfile: JSON.parse(localStorage.getItem('appCoachProfile')) || { goals: [], tone: 'balanced' },
     settings: JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24, notificationsEnabled: false },
     holidays: {},
     growthChartInstance: null,
@@ -1735,8 +1765,9 @@ body.login-required #coachFab{display:none!important}
       this.diary = {};
       this.recurringTasks = {};
       this.coachLog = {};
+      this.coachProfile = { goals: [], tone: 'balanced' };
       this.settings = { start: 6, end: 24, notificationsEnabled: false };
-      ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appCoachLog', 'appSettings'].forEach(k => localStorage.removeItem(k));
+      ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appCoachLog', 'appCoachProfile', 'appSettings'].forEach(k => localStorage.removeItem(k));
       this.store.set('streakBadges', []);
       this.ui.renderCalendar();
       if (this.selectedDateStr && !document.getElementById('plannerView').classList.contains('hidden')) {
@@ -2071,7 +2102,7 @@ body.login-required #coachFab{display:none!important}
       this.ui.showToast('데이터가 CSV로 다운로드 되었습니다! 📥');
     },
 
-    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme', 'streakBadges', 'appCoachLog'],
+    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme', 'streakBadges', 'appCoachLog', 'appCoachProfile'],
 
     exportBackup() {
       const payload = { exportedAt: new Date().toISOString(), version: 1, data: {} };
@@ -2130,7 +2161,7 @@ body.login-required #coachFab{display:none!important}
     },
 
     /* =========================================================
-       🎓 로컬 조언 생성기 + 2단계 AI 코칭
+       🎓 로컬 조언 생성기 + 2단계 AI 코칭 (기존 유지)
        ========================================================= */
     coach: {
       quotes: {
@@ -2545,39 +2576,78 @@ body.login-required #coachFab{display:none!important}
     },
 
     /* =========================================================
-       🧑‍🏫 대화형 개인 코치 (체크인 + 채팅)
+       🧑‍🏫 인생 성공 코치 (4탭: 대화/리포트/회고/설정)
        ========================================================= */
     coachChat: {
-      history: [],
-      sending: false,
+      history: [], sending: false, activeTab: 'chat',
       chips: [
-        ['🌅 오늘 방향 잡기', '오늘 체크인과 일정을 보고, 어제보다 1%라도 나아질 수 있는 오늘의 방향을 정해줘.'],
+        ['🌅 오늘 방향', '오늘 체크인과 일정, 어제 정한 첫 행동을 보고 어제보다 1% 나아질 오늘의 방향을 정해줘.'],
+        ['🔍 냉정한 피드백', '요즘 내 데이터에서 내가 놓치고 있는 약점을 근거와 함께 직설적으로 말해줘. 잘하고 있는 점도 같이.'],
+        ['🎯 목표 점검', '내 장기목표를 GROW(목표·현실·선택지·실행) 방식으로 점검해줘. 질문은 하나씩.'],
+        ['⚖️ 우선순위', '오늘 일정을 중요도·긴급도로 분류하고, 하지 않아도 될 것까지 정해줘.'],
+        ['🧱 습관 설계', '내 패턴을 보고 습관 하나를 "만약 ~하면 ~한다" 형태로 설계해줘.'],
         ['🧠 멘탈', '지금 멘탈 상태를 같이 점검하고 싶어.'],
-        ['😴 컨디션', '내 컨디션과 수면 기록을 보고 오늘 에너지 관리법을 알려줘.'],
+        ['😴 컨디션', '내 수면·컨디션 기록을 보고 오늘 에너지 관리법을 알려줘.'],
         ['💪 운동', '오늘 내 상태에 맞는 운동을 추천해줘.'],
         ['💰 경제', '이번 달 지출 흐름을 보고 개선점을 짚어줘.'],
-        ['🍱 메뉴추천', '오늘 일정과 컨디션, 지출 상황을 고려해서 메뉴 추천해줘.'],
-        ['📚 공부', '지금 공부 방향과 오늘 계획을 같이 점검해줘.'],
-        ['🌙 하루 회고', '오늘 하루 회고를 도와줘. 질문은 하나씩 해줘.']
+        ['🍱 메뉴추천', '오늘 일정·컨디션·지출을 고려해서 메뉴 추천해줘.'],
+        ['📚 공부', '공부 전략을 기출→오답→취약점 보완 관점에서 점검해줘.']
       ],
 
-      init() { this.history = app.store.get('appCoachChat', []); },
+      init() {
+        this.history = app.store.get('appCoachChat', []);
+        this.updateFab();
+        setTimeout(() => this.watchEvening(), 3000);
+        setInterval(() => this.watchEvening(), 5 * 60 * 1000);
+      },
 
-      open() {
-        document.getElementById('coachChatOverlay').classList.remove('hidden');
+      saveLog() { localStorage.setItem('appCoachLog', JSON.stringify(app.coachLog)); app.cloud.queuePush(); },
+      hasReview(d = app.todayStr()) { const r = (app.coachLog[d] || {}).review; return !!(r && (r.good || r.bad || r.next)); },
+
+      updateFab() {
+        const b = document.getElementById('coachFab'); if (!b) return;
+        const need = new Date().getHours() >= 21 && !this.hasReview();
+        b.textContent = need ? '🌙 회고할 시간' : '🧑‍🏫 코치';
+        b.classList.toggle('pulse', need);
+      },
+      watchEvening() {
+        this.updateFab();
+        const today = app.todayStr();
+        if (new Date().getHours() >= 21 && !this.hasReview() && localStorage.getItem('coachReviewToast') !== today) {
+          localStorage.setItem('coachReviewToast', today);
+          app.ui.showToast('🌙 오늘 하루 회고할 시간이야. 코치 버튼을 눌러줘!');
+        }
+      },
+
+      open() { document.getElementById('coachChatOverlay').classList.remove('hidden'); this.tab('chat'); },
+      close() { document.getElementById('coachChatOverlay').classList.add('hidden'); },
+
+      tab(name) {
+        this.activeTab = name;
+        ['chat', 'report', 'review', 'settings'].forEach(t => document.getElementById('ccPane-' + t).classList.toggle('hidden', t !== name));
+        document.querySelectorAll('.cc-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === name));
+        if (name === 'chat') this.renderChat();
+        if (name === 'report') this.renderReport();
+        if (name === 'review') this.renderReview();
+        if (name === 'settings') this.renderSettings();
+      },
+
+      /* ---------- 💬 대화 ---------- */
+      renderChat() {
         document.getElementById('ccChips').innerHTML = this.chips
           .map((c, i) => `<button onclick="app.coachChat.send(app.coachChat.chips[${i}][1])">${c[0]}</button>`).join('');
         this.renderCheckin();
         this.render();
-        setTimeout(() => document.getElementById('ccInput').focus(), 80);
       },
-      close() { document.getElementById('coachChatOverlay').classList.add('hidden'); },
 
       renderCheckin() {
-        const l = app.coachLog[app.todayStr()] || {};
+        const today = app.todayStr();
+        const l = app.coachLog[today] || {};
+        const yNext = ((app.coachLog[app.getOffsetDateString(today, 1)] || {}).review || {}).next;
         const row = (label, key, opts) => `<div class="cc-row"><b>${label}</b>${opts.map(([v, t]) =>
           `<button class="cc-opt ${l[key] === v ? 'on' : ''}" onclick="app.coachChat.setCheckin('${key}', ${v})">${t}</button>`).join('')}</div>`;
         document.getElementById('ccCheckin').innerHTML =
+          (yNext ? `<div style="background:var(--accent-bg); border-radius:10px; padding:7px 10px; margin-bottom:6px; font-weight:700; color:var(--accent-deep);">🎯 어제 정한 첫 행동: ${app.ui.escapeHtml(yNext)}</div>` : '') +
           `<div style="font-weight:800; color:var(--accent-deep); margin-bottom:2px;">📋 오늘 체크인 <span style="font-weight:500; color:var(--ink-faint);">(3초면 돼요)</span></div>` +
           row('기분', 'mood', [[1,'😫'],[2,'😕'],[3,'😐'],[4,'🙂'],[5,'😄']]) +
           row('에너지', 'energy', [[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']]) +
@@ -2588,20 +2658,17 @@ body.login-required #coachFab{display:none!important}
       setCheckin(key, v) {
         const t = app.todayStr();
         app.coachLog[t] = { ...(app.coachLog[t] || {}), [key]: v };
-        localStorage.setItem('appCoachLog', JSON.stringify(app.coachLog));
-        app.cloud.queuePush();
+        this.saveLog();
         this.renderCheckin();
       },
 
-      fmt(s) {
-        return app.ui.escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-      },
+      fmt(s) { return app.ui.escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>'); },
 
       render(typing = false) {
         const box = document.getElementById('ccMsgs');
         let html = '';
         if (this.history.length === 0) {
-          html += `<div class="cc-b ai">안녕! 나는 네 개인 코치야 🧑‍🏫<br>위에서 오늘 상태를 체크하고, 아래 버튼을 누르거나 하고 싶은 얘기를 편하게 해줘. 멘탈, 컨디션, 운동, 돈, 식단, 공부, 커리어 뭐든 괜찮아.</div>`;
+          html += `<div class="cc-b ai">안녕, 나는 네 인생 성공 코치야 🧑‍🏫<br>나는 <b>잘한 건 근거를 대서 인정하고, 고쳐야 할 건 돌려 말하지 않고</b> 짚어줄 거야. 위에서 오늘 상태를 체크하고, 버튼을 누르거나 하고 싶은 얘기를 편하게 해줘.</div>`;
         }
         html += this.history.map(m => `<div class="cc-b ${m.role === 'user' ? 'user' : 'ai'}">${this.fmt(m.content)}</div>`).join('');
         if (typing) html += `<div class="cc-b ai" style="opacity:.6;">생각 중…</div>`;
@@ -2609,15 +2676,144 @@ body.login-required #coachFab{display:none!important}
         box.scrollTop = box.scrollHeight;
       },
 
-      buildContext() {
-        const c = app.coach.analyze();
+      /* ---------- 📊 리포트 (AI 없이 로컬 계산) ---------- */
+      computeInsights() {
         const today = app.todayStr();
-        const td = app.dailyData[today];
-        const tasks = td && td.timetable
-          ? Object.entries(td.timetable).filter(([h, t]) => t && t.text && t.text.trim())
-              .map(([h, t]) => `${h}시 ${t.text.trim()} ${t.done ? '(완료)' : '(대기)'}`) : [];
+        const from30 = app.getOffsetDateString(today, 30);
+        const rows = Object.keys(app.dailyData).sort().filter(d => d >= from30 && d < today).map(d => {
+          const dd = app.dailyData[d];
+          const planned = dd.timetable ? Object.values(dd.timetable).filter(t => t && t.text && t.text.trim()).length : 0;
+          return planned ? { d, p: dd.progress || 0, dow: new Date(d).getDay(), ...(app.coachLog[d] || {}) } : null;
+        }).filter(Boolean);
+        const avg = a => a.length ? Math.round(a.reduce((s, x) => s + x.p, 0) / a.length) : null;
+
+        const off7 = app.getOffsetDateString(today, 7), off14 = app.getOffsetDateString(today, 14);
+        const thisW = rows.filter(r => r.d >= off7), lastW = rows.filter(r => r.d >= off14 && r.d < off7);
+        const thisAvg = avg(thisW), lastAvg = avg(lastW);
+
+        const compares = [];
+        const compare = (name, hasKey, yes) => {
+          const base = rows.filter(hasKey), A = base.filter(yes), B = base.filter(r => !yes(r));
+          if (A.length >= 3 && B.length >= 3) compares.push({ name, a: avg(A), b: avg(B), na: A.length, nb: B.length, diff: avg(A) - avg(B) });
+        };
+        compare('수면 7시간 이상인 날', r => r.sleep != null, r => r.sleep >= 7);
+        compare('운동한 날', r => r.workout != null, r => r.workout >= 1);
+        compare('에너지 4 이상인 날', r => r.energy != null, r => r.energy >= 4);
+        compare('기분 4 이상인 날', r => r.mood != null, r => r.mood >= 4);
+
+        const names = ['일', '월', '화', '수', '목', '금', '토'];
+        const byDow = names.map((name, i) => { const g = rows.filter(r => r.dow === i); return g.length >= 2 ? { name, avg: avg(g) } : null; }).filter(Boolean);
+        byDow.sort((a, b) => b.avg - a.avg);
+
         const mk = app.monthKey(today);
-        const bucket = app.monthlyData[mk] || {};
+        return {
+          n: rows.length, thisAvg, lastAvg,
+          delta: (thisAvg != null && lastAvg != null) ? thisAvg - lastAvg : null,
+          compares, bestDow: byDow[0] || null, worstDow: byDow.length > 1 ? byDow[byDow.length - 1] : null,
+          streak: app.calculateStreak(),
+          reviews7: Object.keys(app.coachLog).filter(d => d >= off7 && this.hasReview(d)).length,
+          spendThis: app.monthTotal(mk), spendLast: app.monthTotal(app.prevMonthKey(mk))
+        };
+      },
+
+      verdict(i) {
+        let praise, advice;
+        if (i.delta !== null && i.delta >= 5) praise = `이번 주 평균 달성률이 지난주보다 ${i.delta}%p 올랐어. 방향이 맞아.`;
+        else if (i.streak >= 3) praise = `${i.streak}일 연속 기록 중이야. 꾸준함이 이미 실력이 되고 있어.`;
+        else if (i.reviews7 >= 3) praise = `이번 주 회고를 ${i.reviews7}번 썼어. 돌아보는 사람이 성장해.`;
+        else if (i.n > 0) praise = `기록을 이어가고 있다는 게 기반이야. 데이터가 쌓일수록 코칭이 정확해져.`;
+        else praise = '오늘부터 기록을 시작하면 돼. 시작이 가장 큰 일이야.';
+
+        const best = i.compares.slice().sort((a, b) => b.diff - a.diff)[0];
+        if (best && best.diff >= 10) advice = `${best.name} 달성률이 ${best.diff}%p 더 높았어. 의욕을 끌어올리기보다 이 조건부터 지키는 게 가장 효율 좋은 개선이야.`;
+        else if (i.delta !== null && i.delta <= -10) advice = `이번 주는 지난주보다 ${Math.abs(i.delta)}%p 떨어졌어. 계획량이 과했는지, 시간대가 안 맞았는지 먼저 점검해.`;
+        else if (i.worstDow) advice = `${i.worstDow.name}요일 평균이 ${i.worstDow.avg}%로 가장 낮아. 그날은 일정을 30% 줄이고 핵심 1개만 잡아.`;
+        else advice = '체크인과 회고를 3~4일만 더 쌓으면 네 약점을 구체적으로 짚어줄 수 있어.';
+        return { praise, advice };
+      },
+
+      renderReport() {
+        const i = this.computeInsights(), v = this.verdict(i);
+        const fmtD = d => d === null ? '–' : `${d > 0 ? '+' : ''}${d}%p`;
+        const cmpHtml = i.compares.length
+          ? i.compares.map(c => `<div style="margin-bottom:6px;"><b>${c.name}</b><br>${c.na}일 평균 <b>${c.a}%</b> vs 그 외 ${c.nb}일 <b>${c.b}%</b> <span style="font-weight:800; color:${c.diff >= 0 ? '#2f9d78' : '#e8748f'};">(${fmtD(c.diff)})</span></div>`).join('')
+          : `<span style="color:var(--ink-soft);">수면·운동·기분 체크인이 3일 이상씩 쌓이면 "어떤 습관이 내 달성률을 올리는지" 분석해줄게.</span>`;
+        document.getElementById('ccPane-report').innerHTML = `
+          <div class="cc-card praise"><b>✅ 이번 주 인정할 점</b><br>${app.ui.escapeHtml(v.praise)}</div>
+          <div class="cc-card advice"><b>⚠️ 이번 주 충고</b><br>${app.ui.escapeHtml(v.advice)}</div>
+          <div class="cc-card"><b>📈 주간 흐름</b><br>
+            이번 주 평균 <b>${i.thisAvg ?? '–'}%</b> · 지난주 <b>${i.lastAvg ?? '–'}%</b> (${fmtD(i.delta)})<br>
+            연속 달성 ${i.streak}일 · 이번 주 회고 ${i.reviews7}회<br>
+            ${i.bestDow ? `강한 요일 <b>${i.bestDow.name}</b> (${i.bestDow.avg}%)` : ''}${i.worstDow ? ` · 약한 요일 <b>${i.worstDow.name}</b> (${i.worstDow.avg}%)` : ''}<br>
+            이번 달 지출 ₩${i.spendThis.toLocaleString()} (지난달 ₩${i.spendLast.toLocaleString()})</div>
+          <div class="cc-card"><b>🔬 어떤 날 내가 잘했나</b><br>${cmpHtml}
+            <div style="font-size:11px; color:var(--ink-faint); margin-top:6px;">※ 함께 나타나는 경향이지 원인을 증명하는 건 아니에요. 최근 30일, 일정이 있던 날 기준이에요.</div></div>
+          <button class="btn-primary" style="width:100%;" onclick="app.coachChat.askWeekly()">🧠 AI 코치 총평 받기</button>`;
+      },
+      askWeekly() {
+        this.tab('chat');
+        this.send('이번 주 리포트를 코칭해줘. 데이터 근거로 칭찬 2개, 충고 2개, 다음 주에 해볼 실험 1개를 정리해줘.');
+      },
+
+      /* ---------- 🌙 회고 ---------- */
+      renderReview() {
+        const t = app.todayStr(), r = (app.coachLog[t] || {}).review || {}, esc = s => app.ui.escapeHtml(s || '');
+        const past = Object.keys(app.coachLog).filter(d => d < t && this.hasReview(d)).sort().slice(-3).reverse();
+        document.getElementById('ccPane-review').innerHTML = `
+          <div class="cc-card"><b>🌙 오늘 회고</b> <span style="color:var(--ink-faint);">· 3분이면 충분해요</span>
+            <label>✅ 오늘 잘한 것</label><textarea id="rvGood" rows="2">${esc(r.good)}</textarea>
+            <label>⚠️ 아쉬웠던 것 (이유까지)</label><textarea id="rvBad" rows="2">${esc(r.bad)}</textarea>
+            <label>🎯 내일 가장 먼저 할 행동 1개</label><textarea id="rvNext" rows="2" placeholder="예: 아침 8시에 기출 20문제부터">${esc(r.next)}</textarea>
+            <div class="cc-btnrow"><button onclick="app.coachChat.saveReview(false)">💾 저장</button><button class="btn-primary" onclick="app.coachChat.saveReview(true)">저장하고 코치 피드백</button></div></div>` +
+          past.map(d => { const p = app.coachLog[d].review; return `<div class="cc-card" style="font-size:12px;"><b>${d}</b><br>✅ ${esc(p.good)}<br>⚠️ ${esc(p.bad)}<br>🎯 ${esc(p.next)}</div>`; }).join('');
+      },
+      saveReview(askCoach) {
+        const t = app.todayStr();
+        const review = {
+          good: document.getElementById('rvGood').value.trim(),
+          bad: document.getElementById('rvBad').value.trim(),
+          next: document.getElementById('rvNext').value.trim()
+        };
+        app.coachLog[t] = { ...(app.coachLog[t] || {}), review };
+        this.saveLog();
+        this.updateFab();
+        app.ui.showToast('🌙 회고를 저장했어요');
+        if (askCoach) {
+          this.tab('chat');
+          this.send(`오늘 회고야.\n잘한 것: ${review.good || '-'}\n아쉬운 것: ${review.bad || '-'}\n내일 첫 행동: ${review.next || '-'}\n칭찬과 충고를 균형 있게 피드백해주고, 내일 첫 행동을 더 구체적(언제·어디서·무엇을)으로 다듬어줘.`);
+        }
+      },
+
+      /* ---------- ⚙️ 설정 ---------- */
+      renderSettings() {
+        const p = app.coachProfile, t = p.tone || 'balanced';
+        document.getElementById('ccPane-settings').innerHTML = `
+          <div class="cc-card"><b>🎯 나의 장기목표</b> <span style="color:var(--ink-faint);">(한 줄에 하나, 최대 5개)</span>
+            <textarea id="cpGoals" rows="5" placeholder="예: 2026 해양경찰 3차 필기시험 최종합격">${app.ui.escapeHtml((p.goals || []).join('\n'))}</textarea>
+            <label>🧑‍🏫 코치 톤</label>
+            <select id="cpTone">
+              <option value="balanced" ${t === 'balanced' ? 'selected' : ''}>균형형 — 칭찬과 충고를 반반</option>
+              <option value="direct" ${t === 'direct' ? 'selected' : ''}>직설형 — 칭찬은 짧게, 충고는 날카롭게</option>
+              <option value="warm" ${t === 'warm' ? 'selected' : ''}>따뜻형 — 공감 먼저, 충고는 부드럽게</option>
+            </select>
+            <div class="cc-btnrow"><button class="btn-primary" onclick="app.coachChat.saveSettings()">💾 저장</button></div></div>`;
+      },
+      saveSettings() {
+        app.coachProfile = {
+          goals: document.getElementById('cpGoals').value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 5),
+          tone: document.getElementById('cpTone').value
+        };
+        localStorage.setItem('appCoachProfile', JSON.stringify(app.coachProfile));
+        app.cloud.queuePush();
+        app.ui.showToast('코치 설정을 저장했어요 ✅');
+      },
+
+      /* ---------- 코치에게 보내는 컨텍스트 ---------- */
+      buildContext() {
+        const c = app.coach.analyze(), today = app.todayStr(), td = app.dailyData[today];
+        const tasks = td && td.timetable
+          ? Object.entries(td.timetable).filter(([h, t]) => t && t.text && t.text.trim()).map(([h, t]) => `${h}시 ${t.text.trim()} ${t.done ? '(완료)' : '(대기)'}`) : [];
+        const mk = app.monthKey(today), bucket = app.monthlyData[mk] || {};
         const byCat = {}; let total = 0;
         (bucket.finances || []).forEach(f => { byCat[f.category] = (byCat[f.category] || 0) + (f.amount || 0); total += f.amount || 0; });
         const wk = ['안 함', '가볍게', '충분히'];
@@ -2625,12 +2821,24 @@ body.login-required #coachFab{display:none!important}
           const l = app.coachLog[d];
           return { 날짜: d, 기분: l.mood, 에너지: l.energy, 수면시간: l.sleep, 운동: l.workout != null ? wk[l.workout] : undefined };
         });
+        const reviews = Object.keys(app.coachLog).filter(d => this.hasReview(d)).sort().slice(-3).map(d => {
+          const r = app.coachLog[d].review;
+          return { 날짜: d, 잘한것: (r.good || '').slice(0, 100), 아쉬운것: (r.bad || '').slice(0, 100), 다음행동: (r.next || '').slice(0, 100) };
+        });
+        const ins = this.computeInsights();
+        const p = app.coachProfile;
         return {
           오늘: today, 요일: ['일','월','화','수','목','금','토'][new Date().getDay()], 현재시각: `${new Date().getHours()}시`,
           오늘일정: tasks, 어제달성률: c.y ? c.y.progress : null, 최근7일평균달성률: c.avg7, 연속달성일: c.streak,
-          이번달목표: (bucket.priorities || []).filter(p => p && p.trim()),
-          이번달지출합계: total, 카테고리별지출: byCat,
-          최근체크인: logs, 장기목표: app.coach.profile.goals
+          이번달목표: (bucket.priorities || []).filter(x => x && x.trim()),
+          이번달지출합계: total, 카테고리별지출: byCat, 최근체크인: logs, 최근회고: reviews,
+          장기목표: (p.goals && p.goals.length) ? p.goals : app.coach.profile.goals,
+          코치톤: { balanced: '균형', direct: '직설', warm: '따뜻' }[p.tone || 'balanced'],
+          인사이트: {
+            이번주평균: ins.thisAvg, 지난주평균: ins.lastAvg, 변화: ins.delta,
+            습관별달성률: ins.compares.map(x => `${x.name}: ${x.a}% vs 그외 ${x.b}%`),
+            강한요일: ins.bestDow, 약한요일: ins.worstDow
+          }
         };
       },
 
@@ -2638,9 +2846,7 @@ body.login-required #coachFab{display:none!important}
         const input = document.getElementById('ccInput');
         const msg = (typeof text === 'string' ? text : input.value).trim();
         if (!msg || this.sending) return;
-        if (!app.AI_COACH_URL || app.AI_COACH_URL.includes('내계정')) {
-          return app.ui.showToast('코치 서버(AI_COACH_URL)가 아직 설정되지 않았어요 🙏');
-        }
+        if (!app.AI_COACH_URL || app.AI_COACH_URL.includes('내계정')) return app.ui.showToast('코치 서버(AI_COACH_URL)가 아직 설정되지 않았어요 🙏');
         input.value = '';
         this.history.push({ role: 'user', content: msg });
         this.sending = true;
@@ -3516,7 +3722,7 @@ body.login-required #coachFab{display:none!important}
     },
 
     cloud: {
-      SYNC_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'streakBadges', 'appCoachLog'],
+      SYNC_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'streakBadges', 'appCoachLog', 'appCoachProfile'],
       user: null,
       ready: false,
       pushTimer: null,
@@ -3699,6 +3905,7 @@ body.login-required #coachFab{display:none!important}
         app.diary = JSON.parse(localStorage.getItem('appDiary')) || {};
         app.recurringTasks = JSON.parse(localStorage.getItem('appRecurringTasks')) || {};
         app.coachLog = JSON.parse(localStorage.getItem('appCoachLog')) || {};
+        app.coachProfile = JSON.parse(localStorage.getItem('appCoachProfile')) || { goals: [], tone: 'balanced' };
         app.settings = JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24, notificationsEnabled: false };
         app.settings.notificationsEnabled = false;
         app.store.set('appSettings', app.settings);
