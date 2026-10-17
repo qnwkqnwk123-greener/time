@@ -1144,6 +1144,28 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
 
 .hero-quote { transition: transform 0.2s ease, background 0.2s ease; }
 .hero-quote:hover { transform: translateY(-2px); background: rgba(255,255,255,0.24); }
+
+/* ===========================================================
+   🧑‍🏫 대화형 개인 코치 (FAB + 채팅 모달)
+   =========================================================== */
+#coachFab{position:fixed;left:14px;bottom:14px;z-index:60;padding:11px 16px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#fff!important;border:none!important;box-shadow:var(--shadow-md)}
+body.login-required #coachFab{display:none!important}
+#coachChatOverlay{position:fixed;inset:0;background:rgba(30,22,55,.42);backdrop-filter:blur(8px);z-index:310;display:flex;align-items:center;justify-content:center;padding:12px}
+.cc-modal{width:min(620px,100%);height:min(88vh,780px);height:min(88dvh,780px);background:var(--paper-raised);border-radius:24px;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-md)}
+.cc-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px dashed var(--line)}
+.cc-checkin{padding:8px 16px;border-bottom:1px dashed var(--line);font-size:12px}
+.cc-row{display:flex;gap:5px;align-items:center;margin:4px 0;flex-wrap:wrap}
+.cc-row b{width:44px;color:var(--ink-soft);font-weight:700}
+.cc-opt{padding:4px 10px;font-size:13px!important;background:var(--paper)}
+.cc-opt.on{background:var(--accent);color:#fff}
+.cc-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 16px}
+.cc-chips button{white-space:nowrap;padding:6px 12px;font-size:12px!important;background:var(--accent-bg)}
+.cc-msgs{flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:8px}
+.cc-b{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.65;word-break:break-word}
+.cc-b.user{align-self:flex-end;background:var(--accent);color:#fff}
+.cc-b.ai{align-self:flex-start;background:var(--paper);border:1px solid var(--line)}
+.cc-input{display:flex;gap:8px;padding:10px 14px;border-top:1px dashed var(--line)}
+.cc-input textarea{flex:1;resize:none;padding:10px;max-height:110px}
 </style>
 </head>
 <body>
@@ -1562,6 +1584,23 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
     </div>
   </div>
 
+  <!-- 🧑‍🏫 대화형 개인 코치 -->
+  <button id="coachFab" onclick="app.coachChat.open()">🧑‍🏫 코치</button>
+
+  <div id="coachChatOverlay" class="hidden" onclick="if(event.target===this) app.coachChat.close()">
+    <div class="cc-modal">
+      <div class="cc-head"><b>🧑‍🏫 내 개인 코치</b><button class="btn-ghost" style="padding:6px 10px;" onclick="app.coachChat.close()">✕</button></div>
+      <div class="cc-checkin" id="ccCheckin"></div>
+      <div class="cc-chips" id="ccChips"></div>
+      <div class="cc-msgs" id="ccMsgs"></div>
+      <div class="cc-input">
+        <textarea id="ccInput" rows="1" placeholder="코치에게 편하게 말해보세요 ✍️"
+          onkeydown="if(event.key==='Enter' && !event.shiftKey && !event.isComposing){event.preventDefault();app.coachChat.send();}"></textarea>
+        <button class="btn-primary" onclick="app.coachChat.send()">보내기</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toastContainer">저장되었습니다.</div>
 
   <div id="alarmToast">
@@ -1611,7 +1650,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
 
   const app = {
     NEWS_PROXY_URL: 'https://remember-news.qnwkqnwk123.workers.dev',
-    AI_COACH_URL: 'https://remember-coach.내계정.workers.dev',  // 2단계: Cloudflare Worker 배포 후 실제 URL로 교체
+    AI_COACH_URL: 'https://remember-coach.내계정.workers.dev',  // Cloudflare Worker 주소로 교체
     store: {
       get(key, fallback = null) {
         try { const raw = localStorage.getItem(key); return raw !== null ? JSON.parse(raw) : fallback; }
@@ -1673,6 +1712,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
     monthlyData: JSON.parse(localStorage.getItem('appMonthlyData')) || {},
     diary: JSON.parse(localStorage.getItem('appDiary')) || {},
     recurringTasks: JSON.parse(localStorage.getItem('appRecurringTasks')) || {},
+    coachLog: JSON.parse(localStorage.getItem('appCoachLog')) || {},
     settings: JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24, notificationsEnabled: false },
     holidays: {},
     growthChartInstance: null,
@@ -1694,8 +1734,9 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
       this.monthlyData = {};
       this.diary = {};
       this.recurringTasks = {};
+      this.coachLog = {};
       this.settings = { start: 6, end: 24, notificationsEnabled: false };
-      ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings'].forEach(k => localStorage.removeItem(k));
+      ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appCoachLog', 'appSettings'].forEach(k => localStorage.removeItem(k));
       this.store.set('streakBadges', []);
       this.ui.renderCalendar();
       if (this.selectedDateStr && !document.getElementById('plannerView').classList.contains('hidden')) {
@@ -1809,11 +1850,12 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
       this.ui.applyThemePreference();
       this.ui.syncNotificationUI();
       this.cloud.init();
+      this.coachChat.init();
 
       this.fetchHolidays(this.currentDate.getFullYear()).then(() => { this.ui.renderCalendar(); });
 
       this.renderDailyQuote();
-      this.coach.refreshAI();          // ← 2단계: AI 코칭 (URL 미설정 시 조용히 무시)
+      this.coach.refreshAI();
       this.hotIssue.load();
       setInterval(() => this.hotIssue.load(), 60 * 60 * 1000);
       this.weather.init();
@@ -1843,8 +1885,12 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
       document.addEventListener('keydown', (e) => {
         if (e.ctrlKey || e.altKey || e.metaKey) return;
 
-        // ✨ ESC 키 처리
         if (e.key === 'Escape') {
+          const coachChat = document.getElementById('coachChatOverlay');
+          if (coachChat && !coachChat.classList.contains('hidden')) {
+            app.coachChat.close();
+            return;
+          }
           const coachModal = document.getElementById('coachModalOverlay');
           if (coachModal && !coachModal.classList.contains('hidden')) {
             app.coach.closeModal();
@@ -1870,7 +1916,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         const activeTag = document.activeElement ? document.activeElement.tagName : '';
         if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') return;
         if (document.activeElement && document.activeElement.isContentEditable) return;
-        const anyModalOpen = ['weatherPanelOverlay', 'searchModalOverlay', 'loginModalOverlay', 'authModalOverlay', 'coachModalOverlay']
+        const anyModalOpen = ['weatherPanelOverlay', 'searchModalOverlay', 'loginModalOverlay', 'authModalOverlay', 'coachModalOverlay', 'coachChatOverlay']
           .some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
         if (anyModalOpen) return;
 
@@ -2025,7 +2071,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
       this.ui.showToast('데이터가 CSV로 다운로드 되었습니다! 📥');
     },
 
-    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme', 'streakBadges'],
+    BACKUP_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme', 'streakBadges', 'appCoachLog'],
 
     exportBackup() {
       const payload = { exportedAt: new Date().toISOString(), version: 1, data: {} };
@@ -2083,9 +2129,10 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
       return Math.round((target - today) / 86400000);
     },
 
-    /* 🎓 자체 조언 생성기 (외부 API 없이 로컬 데이터 분석 기반) */
+    /* =========================================================
+       🎓 로컬 조언 생성기 + 2단계 AI 코칭
+       ========================================================= */
     coach: {
-      /* 🌈 오늘의 영감 라이브러리 — 날짜에 따라 장르/인물이 순환되며 같은 문장을 연속 사용하지 않음 */
       quotes: {
         book: [
           { t:"인간은 파멸할 수는 있어도 패배할 수는 없다.", s:"어니스트 헤밍웨이 《노인과 바다》", k:"책" },
@@ -2161,11 +2208,29 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
 
       areaNames: { A:'실행', B:'집중', C:'회복', D:'판단', E:'공부', F:'커리어', G:'돈', H:'인간관계', I:'멘탈', J:'생활', M:'흐름 유지' },
 
-      /* ===========================================================
-         1단계: 로컬 분석 엔진
-         - 어제·그제·최근 7일을 실제로 읽고, 반복 일정은 밀림 집계에서 제외
-         - 일기는 app.diary에서 정확히 읽음
-         =========================================================== */
+      profile: {
+        traits: [
+          '겉으로는 차분하지만 속으로는 의지가 강한 편',
+          '남의 말보다 스스로 납득한 판단을 중요하게 생각함',
+          '핵심을 빠르게 파악하지만 의미 없는 반복에는 쉽게 지침',
+          '눈에 보이는 결과가 있을 때 동기와 집중력이 크게 올라감',
+          '기출·실전형 학습에서 기억이 더 잘 남는 편',
+          '목표가 분명하지 않으면 실행력이 떨어지기 쉬움'
+        ],
+        goals: [
+          '2026 해양경찰 3차 필기시험 최종합격',
+          '안정적인 본업 + AI 광고·콘텐츠 사이드 사업 구축',
+          '장기적으로 AI 기반 1인 사업과 월 순소득 1,000만원 달성'
+        ],
+        coachingRules: [
+          '막연한 위로나 칭찬보다 현실적인 판단을 우선한다.',
+          '공부는 기출→오답→취약점 보완→재시험 순으로 제시한다.',
+          '실행 단위는 작게 만들되 목표 수준은 낮추지 않는다.',
+          '반복보다 결과가 보이는 행동을 우선한다.',
+          '사용자가 이미 알고 있는 내용을 장황하게 설명하지 않는다.'
+        ]
+      },
+
       analyze() {
         const today = app.todayStr();
         const yStr = app.getOffsetDateString(today, 1);
@@ -2197,12 +2262,11 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         }
         const avg7 = days.length ? Math.round(days.reduce((a, d) => a + d.progress, 0) / days.length) : 0;
 
-        // 매일 반복 일정은 '밀림' 집계에서 제외 (21시 문제 해결)
         const missed = {};
         days.forEach(d => d.undone.filter(t => !t.recurring).forEach(t => { missed[t.hour] = (missed[t.hour] || 0) + 1; }));
         const top = Object.entries(missed).sort((a, b) => b[1] - a[1])[0];
 
-        const diary = app.ui.getDiaryEntry(yStr);   // ← 일기 읽는 위치 버그 수정
+        const diary = app.ui.getDiaryEntry(yStr);
         return {
           today, yStr, y, y2, avg7, validDays: days.length,
           trend: (y && y2) ? y.progress - y2.progress : null,
@@ -2217,7 +2281,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
 
       pickArea(c) {
         const log = app.store.get('coachAreaLog', {});
-        if (log[c.today]) return log[c.today];            // 하루 동안은 영역 고정
+        if (log[c.today]) return log[c.today];
 
         const y = c.y;
         const s = { A:0, B:0, C:0, D:0, E:0, I:0, M:0 };
@@ -2238,7 +2302,6 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
 
         const ranked = Object.entries(s).sort((a, b) => b[1] - a[1]);
         let pick = ranked[0][0];
-        // 어제와 같은 영역이면, 점수 차가 크지 않을 때 2순위로 바꿔 반복을 막음
         if (pick === log[c.yStr] && ranked[1] && ranked[1][1] >= ranked[0][1] * 0.5) pick = ranked[1][0];
 
         log[c.today] = pick;
@@ -2259,7 +2322,6 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
           ? `${c.topMissed.hour}시 일정이 최근 ${c.topMissed.count}번 밀렸어.`
           : `${uName} 같은 일정이 자꾸 남고 있어.`;
 
-        // 어제 기록 요약 한 줄 (매일 달라지는 부분)
         let yLine;
         if (!y) yLine = '어제는 기록이 없어서 오늘이 새 출발이야.';
         else {
@@ -2343,7 +2405,6 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         const area = this.pickArea(c);
         const r = { area, areaName: this.areaNames[area], ...this.compose(c, area) };
 
-        // AI가 오늘 만든 조언이 있으면 덮어쓰기 (2단계)
         const ai = app.store.get('coachAICache', null);
         if (ai && ai.date === c.today && ai.data) {
           ['core', 'advice', 'todo', 'drop', 'oneLine'].forEach(k => {
@@ -2382,7 +2443,6 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
           }
           return;
         }
-
         const data = this.build();
         document.getElementById('coachAreaBadge').textContent = `오늘의 영역 · ${data.areaName}`;
         const hideToday = document.getElementById('coachHideToday');
@@ -2459,10 +2519,6 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         }
       },
 
-      /* ===========================================================
-         2단계: Claude AI 코칭 (선택) — 하루 1회, 캐시 사용
-         Worker URL이 '내계정' 상태면 아무 것도 하지 않음
-         =========================================================== */
       async refreshAI(force = false) {
         const today = app.todayStr();
         const cached = app.store.get('coachAICache', null);
@@ -2485,6 +2541,126 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
           app.store.set('coachAICache', { date: today, data });
           app.renderDailyQuote();
         } catch (e) { console.warn('AI 코칭 실패, 로컬 코칭 사용:', e.message); }
+      }
+    },
+
+    /* =========================================================
+       🧑‍🏫 대화형 개인 코치 (체크인 + 채팅)
+       ========================================================= */
+    coachChat: {
+      history: [],
+      sending: false,
+      chips: [
+        ['🌅 오늘 방향 잡기', '오늘 체크인과 일정을 보고, 어제보다 1%라도 나아질 수 있는 오늘의 방향을 정해줘.'],
+        ['🧠 멘탈', '지금 멘탈 상태를 같이 점검하고 싶어.'],
+        ['😴 컨디션', '내 컨디션과 수면 기록을 보고 오늘 에너지 관리법을 알려줘.'],
+        ['💪 운동', '오늘 내 상태에 맞는 운동을 추천해줘.'],
+        ['💰 경제', '이번 달 지출 흐름을 보고 개선점을 짚어줘.'],
+        ['🍱 메뉴추천', '오늘 일정과 컨디션, 지출 상황을 고려해서 메뉴 추천해줘.'],
+        ['📚 공부', '지금 공부 방향과 오늘 계획을 같이 점검해줘.'],
+        ['🌙 하루 회고', '오늘 하루 회고를 도와줘. 질문은 하나씩 해줘.']
+      ],
+
+      init() { this.history = app.store.get('appCoachChat', []); },
+
+      open() {
+        document.getElementById('coachChatOverlay').classList.remove('hidden');
+        document.getElementById('ccChips').innerHTML = this.chips
+          .map((c, i) => `<button onclick="app.coachChat.send(app.coachChat.chips[${i}][1])">${c[0]}</button>`).join('');
+        this.renderCheckin();
+        this.render();
+        setTimeout(() => document.getElementById('ccInput').focus(), 80);
+      },
+      close() { document.getElementById('coachChatOverlay').classList.add('hidden'); },
+
+      renderCheckin() {
+        const l = app.coachLog[app.todayStr()] || {};
+        const row = (label, key, opts) => `<div class="cc-row"><b>${label}</b>${opts.map(([v, t]) =>
+          `<button class="cc-opt ${l[key] === v ? 'on' : ''}" onclick="app.coachChat.setCheckin('${key}', ${v})">${t}</button>`).join('')}</div>`;
+        document.getElementById('ccCheckin').innerHTML =
+          `<div style="font-weight:800; color:var(--accent-deep); margin-bottom:2px;">📋 오늘 체크인 <span style="font-weight:500; color:var(--ink-faint);">(3초면 돼요)</span></div>` +
+          row('기분', 'mood', [[1,'😫'],[2,'😕'],[3,'😐'],[4,'🙂'],[5,'😄']]) +
+          row('에너지', 'energy', [[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']]) +
+          row('수면', 'sleep', [[5,'≤5h'],[6,'6h'],[7,'7h'],[8,'8h+']]) +
+          row('운동', 'workout', [[0,'안 함'],[1,'가볍게'],[2,'충분히']]);
+      },
+
+      setCheckin(key, v) {
+        const t = app.todayStr();
+        app.coachLog[t] = { ...(app.coachLog[t] || {}), [key]: v };
+        localStorage.setItem('appCoachLog', JSON.stringify(app.coachLog));
+        app.cloud.queuePush();
+        this.renderCheckin();
+      },
+
+      fmt(s) {
+        return app.ui.escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+      },
+
+      render(typing = false) {
+        const box = document.getElementById('ccMsgs');
+        let html = '';
+        if (this.history.length === 0) {
+          html += `<div class="cc-b ai">안녕! 나는 네 개인 코치야 🧑‍🏫<br>위에서 오늘 상태를 체크하고, 아래 버튼을 누르거나 하고 싶은 얘기를 편하게 해줘. 멘탈, 컨디션, 운동, 돈, 식단, 공부, 커리어 뭐든 괜찮아.</div>`;
+        }
+        html += this.history.map(m => `<div class="cc-b ${m.role === 'user' ? 'user' : 'ai'}">${this.fmt(m.content)}</div>`).join('');
+        if (typing) html += `<div class="cc-b ai" style="opacity:.6;">생각 중…</div>`;
+        box.innerHTML = html;
+        box.scrollTop = box.scrollHeight;
+      },
+
+      buildContext() {
+        const c = app.coach.analyze();
+        const today = app.todayStr();
+        const td = app.dailyData[today];
+        const tasks = td && td.timetable
+          ? Object.entries(td.timetable).filter(([h, t]) => t && t.text && t.text.trim())
+              .map(([h, t]) => `${h}시 ${t.text.trim()} ${t.done ? '(완료)' : '(대기)'}`) : [];
+        const mk = app.monthKey(today);
+        const bucket = app.monthlyData[mk] || {};
+        const byCat = {}; let total = 0;
+        (bucket.finances || []).forEach(f => { byCat[f.category] = (byCat[f.category] || 0) + (f.amount || 0); total += f.amount || 0; });
+        const wk = ['안 함', '가볍게', '충분히'];
+        const logs = Object.keys(app.coachLog).sort().slice(-7).map(d => {
+          const l = app.coachLog[d];
+          return { 날짜: d, 기분: l.mood, 에너지: l.energy, 수면시간: l.sleep, 운동: l.workout != null ? wk[l.workout] : undefined };
+        });
+        return {
+          오늘: today, 요일: ['일','월','화','수','목','금','토'][new Date().getDay()], 현재시각: `${new Date().getHours()}시`,
+          오늘일정: tasks, 어제달성률: c.y ? c.y.progress : null, 최근7일평균달성률: c.avg7, 연속달성일: c.streak,
+          이번달목표: (bucket.priorities || []).filter(p => p && p.trim()),
+          이번달지출합계: total, 카테고리별지출: byCat,
+          최근체크인: logs, 장기목표: app.coach.profile.goals
+        };
+      },
+
+      async send(text) {
+        const input = document.getElementById('ccInput');
+        const msg = (typeof text === 'string' ? text : input.value).trim();
+        if (!msg || this.sending) return;
+        if (!app.AI_COACH_URL || app.AI_COACH_URL.includes('내계정')) {
+          return app.ui.showToast('코치 서버(AI_COACH_URL)가 아직 설정되지 않았어요 🙏');
+        }
+        input.value = '';
+        this.history.push({ role: 'user', content: msg });
+        this.sending = true;
+        this.render(true);
+        try {
+          const res = await app.fetchWithTimeout(app.AI_COACH_URL.replace(/\/$/, '') + '/chat', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: this.history.slice(-16), context: this.buildContext() })
+          }, 40000);
+          const data = await res.json();
+          if (!data.reply) throw new Error('빈 응답');
+          this.history.push({ role: 'assistant', content: data.reply });
+          app.store.set('appCoachChat', this.history.slice(-40));
+        } catch (e) {
+          this.history.pop();
+          input.value = msg;
+          app.ui.showToast('⚠️ 코치 연결에 실패했어요. 잠시 후 다시 보내주세요.');
+        }
+        this.sending = false;
+        this.render();
       }
     },
 
@@ -3340,7 +3516,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
     },
 
     cloud: {
-      SYNC_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'streakBadges'],
+      SYNC_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'streakBadges', 'appCoachLog'],
       user: null,
       ready: false,
       pushTimer: null,
@@ -3522,6 +3698,7 @@ body.dark .coach-one-line { border-color: rgba(255,255,255,0.12); }
         app.monthlyData = JSON.parse(localStorage.getItem('appMonthlyData')) || {};
         app.diary = JSON.parse(localStorage.getItem('appDiary')) || {};
         app.recurringTasks = JSON.parse(localStorage.getItem('appRecurringTasks')) || {};
+        app.coachLog = JSON.parse(localStorage.getItem('appCoachLog')) || {};
         app.settings = JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24, notificationsEnabled: false };
         app.settings.notificationsEnabled = false;
         app.store.set('appSettings', app.settings);
