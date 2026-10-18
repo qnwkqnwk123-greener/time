@@ -520,6 +520,20 @@
   .cc-b.ai{align-self:flex-start;background:var(--paper);border:1px solid var(--line)}
   .cc-input{display:flex;gap:8px;padding-top:8px}
   .cc-input textarea{flex:1;resize:none;padding:10px;max-height:110px}
+
+  /* ===========================================================
+     🌤️ 시간별 날씨 "지금" 강조
+     =========================================================== */
+  .wx-hourly-strip { position: relative; }
+  .wx-hour-item.now {
+    background: var(--accent-bg);
+    box-shadow: inset 0 0 0 2px var(--accent), 0 6px 14px -6px rgba(110, 99, 224, 0.5);
+    transform: translateY(-2px);
+  }
+  .wx-now-tag {
+    display: inline-block; margin-bottom: 3px; padding: 1px 7px; border-radius: 999px;
+    font-size: 9.5px; font-weight: 800; color: #fff; background: var(--accent);
+  }
 </style>
 </head>
 <body>
@@ -1081,6 +1095,13 @@
       this.timer.init();
       setInterval(() => this.weather.refreshWeatherNow(), 10 * 60 * 1000);
 
+      // 정각마다 "지금" 표시 이동 (시간이 바뀔 때만 다시 그림)
+      let lastHour = new Date().getHours();
+      setInterval(() => {
+        const h = new Date().getHours();
+        if (h !== lastHour) { lastHour = h; this.weather.renderAll(); }
+      }, 30 * 1000);
+
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           this.timer.catchUp(); this.timer.updateDisplay(); this.weather.refreshWeatherNow();
@@ -1276,7 +1297,7 @@
     },
 
     /* =========================================================
-       🎓 코치 (카드 본체 + 로컬 계산 + 슬롯 캐시)
+       🎓 코치
        ========================================================= */
     coach: {
       quotes: {
@@ -1502,7 +1523,7 @@
     },
 
     /* =========================================================
-       🧑‍🏫 코치 채팅·리포트·설정 (카드 내부 탭)
+       🧑‍🏫 코치 채팅·리포트·설정
        ========================================================= */
     coachChat: {
       history: [], sending: false, viewSlot: null, loadingSlot: null, lastFail: 0,
@@ -1832,7 +1853,7 @@
     },
 
     /* =========================================================
-       🌤️ 날씨 (기존 그대로)
+       🌤️ 날씨
        ========================================================= */
     weather: {
       cities: { home: null, compare: null }, active: 'home', data: { home: null, compare: null },
@@ -1848,6 +1869,34 @@
         storm: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 13.5a3.7 3.7 0 0 1-.4-7.35 4.7 4.7 0 0 1 9.1-1.75A4.2 4.2 0 0 1 16 13.5Z"/><path d="M12.5 14.5L10 19h3l-2 4"/></svg>`
       },
       todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
+
+      // 현재 시(hour) - 한국 시간(Asia/Seoul) 기준
+      nowHour() {
+        return parseInt(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false }), 10) % 24;
+      },
+
+      // 시간별 스트립 HTML 생성 (오늘이면 "지금" 강조)
+      hourItemsHtml(data, dateStr) {
+        const isToday = dateStr === this.todayStr();
+        const nowH = this.nowHour();
+        let html = '';
+        data.hourly.time.forEach((t, idx) => {
+          if (!t.startsWith(dateStr)) return;
+          const hour = t.split('T')[1].slice(0, 5);
+          const isNow = isToday && parseInt(hour, 10) === nowH;
+          const temp = Math.round(data.hourly.temperature_2m[idx]);
+          const info = this.groupInfo(data.hourly.weathercode[idx]);
+          html += `<div class="wx-hour-item ${isNow ? 'now' : ''}">${isNow ? '<div class="wx-now-tag">지금</div>' : ''}<div>${hour}</div><div style="color:var(--accent-deep); margin:4px 0;">${this.icons[info.icon]}</div><div style="font-weight:700;">${temp}°</div></div>`;
+        });
+        return html;
+      },
+
+      // "지금" 항목이 있으면 중앙으로 스크롤
+      scrollToNow(strip) {
+        const el = strip && strip.querySelector('.now');
+        if (el) strip.scrollLeft = el.offsetLeft - (strip.clientWidth - el.offsetWidth) / 2;
+      },
+
       airData: { home: null, compare: null },
       async init() {
         const legacy = JSON.parse(localStorage.getItem('weatherLocation') || 'null');
@@ -2002,9 +2051,9 @@
         if (diff < 0 || diff > 15) { strip.innerHTML = `<div style="font-size:12px; color:var(--ink-soft); padding:10px;">${diff < 0 ? '지난 날짜는 시간별 날씨를 제공하지 않아요' : '16일 이후는 시간별 예보가 없어요'}</div>`; return; }
         const data = this.activeData();
         if (!data || !data.hourly) { strip.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
-        let html = '';
-        data.hourly.time.forEach((t, idx) => { if (!t.startsWith(dateStr)) return; const hour = t.split('T')[1].slice(0, 5); const temp = Math.round(data.hourly.temperature_2m[idx]); const info = this.groupInfo(data.hourly.weathercode[idx]); html += `<div class="wx-hour-item"><div>${hour}</div><div style="color:var(--accent-deep); margin:4px 0;">${this.icons[info.icon]}</div><div style="font-weight:700;">${temp}°</div></div>`; });
+        const html = this.hourItemsHtml(data, dateStr);
         strip.innerHTML = html || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">시간별 데이터가 없어요</div>';
+        this.scrollToNow(strip);
       },
       activeData() { return this.data[this.active]; }, activeLoc() { return this.cities[this.active]; },
       groupInfo(code) { return this.codeMap[code] || { text: "정보 없음", group: "cloudy", icon: "cloud" }; },
@@ -2065,9 +2114,9 @@
         const minMaxEl = document.getElementById('wxHourlyMinMax');
         if (data && data.daily) { const dIdx = data.daily.time.indexOf(this.detailDateStr); if (dIdx !== -1) { const max = Math.round(data.daily.temperature_2m_max[dIdx]); const min = Math.round(data.daily.temperature_2m_min[dIdx]); minMaxEl.textContent = `최고 ${max}° · 최저 ${min}°`; } else minMaxEl.textContent = ''; }
         if (!data || !data.hourly) { strip.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
-        let html = '';
-        data.hourly.time.forEach((t, idx) => { if (!t.startsWith(this.detailDateStr)) return; const hour = t.split('T')[1].slice(0, 5); const temp = Math.round(data.hourly.temperature_2m[idx]); const info = this.groupInfo(data.hourly.weathercode[idx]); html += `<div class="wx-hour-item"><div>${hour}</div><div style="color:var(--accent-deep); margin:4px 0;">${this.icons[info.icon]}</div><div style="font-weight:700;">${temp}°</div></div>`; });
-        strip.innerHTML = html || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">해당 날짜의 시간별 데이터가 없어요</div>';
+        strip.innerHTML = this.hourItemsHtml(data, this.detailDateStr)
+          || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">해당 날짜의 시간별 데이터가 없어요</div>';
+        this.scrollToNow(strip);
       },
       renderWeekly() {
         const data = this.activeData(); const box = document.getElementById('wxWeeklyList');
