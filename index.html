@@ -479,9 +479,7 @@
   .hot-issue-loading { grid-column: 1 / -1; text-align: center; padding: 24px 14px; font-size: 12.5px; color: var(--ink-soft); }
   @media (max-width: 600px) { .hot-issue-panel { padding: 16px; border-radius: 20px; } .hot-issue-title { font-size: 15px; } .hot-issue-icon { font-size: 19px; } .hot-issue-item { padding: 12px 14px; gap: 12px; border-radius: 14px; } .hot-issue-rank { flex: 0 0 28px; height: 28px; font-size: 13px; border-radius: 9px; } .hot-issue-keyword { font-size: 13px; } .hot-issue-grid .hot-issue-item:nth-child(1) .hot-issue-keyword { font-size: 14px; } .hot-issue-desc { font-size: 11px; } }
 
-  /* ===========================================================
-     💬 오늘의 조언 카드 (코치 본체)
-     =========================================================== */
+  /* 오늘의 조언 카드 */
   .planner-coach-card { margin-bottom: 16px; border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-radius: 18px; background: linear-gradient(145deg, var(--paper-raised), var(--accent-bg)); box-shadow: var(--shadow-sm); overflow: hidden; }
   .planner-coach-card-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line); }
   .planner-coach-card-title { font-size:14px; font-weight:800; color:var(--accent-deep); }
@@ -490,8 +488,6 @@
   .planner-coach-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 16px 14px; border-top:1px dashed var(--line); }
   .planner-coach-hide { display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--ink-faint); }
   @media(max-width:600px){ .planner-coach-card-head,.planner-coach-card-body,.planner-coach-footer{padding-left:13px;padding-right:13px;} }
-
-  /* 코치 카드 내부 컴포넌트 */
   .cc-slots{display:flex;gap:6px;margin-bottom:10px}
   .cc-slots button{flex:1;padding:8px 0;font-size:13px!important;background:var(--paper)}
   .cc-slots button.on{background:var(--accent);color:#fff}
@@ -520,20 +516,9 @@
   .cc-b.ai{align-self:flex-start;background:var(--paper);border:1px solid var(--line)}
   .cc-input{display:flex;gap:8px;padding-top:8px}
   .cc-input textarea{flex:1;resize:none;padding:10px;max-height:110px}
-
-  /* ===========================================================
-     🌤️ 시간별 날씨 "지금" 강조
-     =========================================================== */
   .wx-hourly-strip { position: relative; }
-  .wx-hour-item.now {
-    background: var(--accent-bg);
-    box-shadow: inset 0 0 0 2px var(--accent), 0 6px 14px -6px rgba(110, 99, 224, 0.5);
-    transform: translateY(-2px);
-  }
-  .wx-now-tag {
-    display: inline-block; margin-bottom: 3px; padding: 1px 7px; border-radius: 999px;
-    font-size: 9.5px; font-weight: 800; color: #fff; background: var(--accent);
-  }
+  .wx-hour-item.now { background: var(--accent-bg); box-shadow: inset 0 0 0 2px var(--accent), 0 6px 14px -6px rgba(110, 99, 224, 0.5); transform: translateY(-2px); }
+  .wx-now-tag { display: inline-block; margin-bottom: 3px; padding: 1px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; color: #fff; background: var(--accent); }
 </style>
 </head>
 <body>
@@ -572,9 +557,7 @@
         <div>
           <h1 class="hero-title">🕊️ 리멤버</h1>
           <p class="hero-sub" id="heroSub">오늘의 하늘을 살피며 하루를 그려보세요</p>
-          <p class="hero-quote" id="heroQuote" style="cursor:pointer;"
-             onclick="app.ui.openCoachPlanner()"
-             title="클릭하면 지금 시간대의 코칭을 볼 수 있어요">💬 오늘의 조언을 준비하는 중…</p>
+          <p class="hero-quote" id="heroQuote" style="cursor:pointer;" onclick="app.ui.openCoachPlanner()" title="클릭하면 지금 시간대의 코칭을 볼 수 있어요">💬 오늘의 조언을 준비하는 중…</p>
           <p style="margin:8px 0 0; font-size:11px; opacity:0.75;">⌨️ 아무 화면에서나 <b>T</b>키를 누르면 오늘 할 일로 바로 이동해요</p>
         </div>
         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
@@ -651,10 +634,7 @@
   </div>
 
   <div id="plannerView" class="hidden">
-    <div class="planner-backbar">
-      <button class="planner-back-button" onclick="app.ui.showCalendar()" aria-label="캘린더로 돌아가기">🏠 캘린더로 돌아가기</button>
-    </div>
-
+    <div class="planner-backbar"><button class="planner-back-button" onclick="app.ui.showCalendar()" aria-label="캘린더로 돌아가기">🏠 캘린더로 돌아가기</button></div>
     <div class="planner-header">
       <h2 id="plannerTitle">📝 데일리 플래너</h2>
       <div style="display: flex; gap: 8px;">
@@ -674,7 +654,6 @@
       </div>
       <div class="planner-coach-card-body">
         <div id="ccPane-today"></div>
-
         <details class="cc-more" id="ccMoreChat" ontoggle="if(this.open) app.coachChat.renderChat()">
           <summary>💬 코치에게 더 물어보기</summary>
           <div class="cc-chips" id="ccChips"></div>
@@ -685,12 +664,10 @@
             <button class="btn-primary" onclick="app.coachChat.send()">보내기</button>
           </div>
         </details>
-
         <details class="cc-more" ontoggle="if(this.open) app.coachChat.renderReport()">
           <summary>📊 주간 리포트</summary>
           <div id="ccPane-report" style="padding-top:8px;"></div>
         </details>
-
         <details class="cc-more" ontoggle="if(this.open) app.coachChat.renderSettings()">
           <summary>⚙️ 목표·코치 톤 설정</summary>
           <div id="ccPane-settings" style="padding-top:8px;"></div>
@@ -703,7 +680,6 @@
     </div>
 
     <div class="mood-bar" id="plannerMoodBar">오늘의 날씨를 불러오는 중…</div>
-
     <div class="kpi-board">
       <div class="kpi-card"><h3>🔥 달성률</h3><p class="value" id="kpiProgress">0%</p></div>
       <div class="kpi-card"><h3>💸 이번 달 총 지출</h3><p class="value" id="kpiExpenditure">₩0</p></div>
@@ -729,9 +705,7 @@
             <div style="font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:8px;">⏰ 시간별 날씨 <span style="font-weight:500; color:var(--ink-soft);" id="plannerHourlyLabel"></span></div>
             <div class="wx-hourly-strip" id="plannerHourlyStrip"></div>
           </div>
-          <h3 class="box-title">
-            <span>⏳ 집중 타이머 <span id="timerModeLabel" style="font-size: 11.5px; font-weight: 500; color: var(--ink-soft);">(40분 집중/20분 휴식)</span></span>
-          </h3>
+          <h3 class="box-title"><span>⏳ 집중 타이머 <span id="timerModeLabel" style="font-size: 11.5px; font-weight: 500; color: var(--ink-soft);">(40분 집중/20분 휴식)</span></span></h3>
           <div class="timer-display" id="timerDisplayBox">
             <div class="timer-title" id="timerTitle">🎯 목표: 40분 집중 · 20분 휴식</div>
             <div class="timer-visual-wrap">
@@ -754,13 +728,10 @@
               · 휴식 <input type="number" id="restMinutesInput" min="1" max="60" step="1">분
               <button onclick="app.timer.updateDurations()">적용</button>
             </div>
-            <div class="timer-notify-row">
-              <button id="notificationToggleBtn" onclick="app.ui.toggleNotifications()">🔕 알림 꺼짐</button>
-            </div>
+            <div class="timer-notify-row"><button id="notificationToggleBtn" onclick="app.ui.toggleNotifications()">🔕 알림 꺼짐</button></div>
             <div class="timer-note">🎯 원형 게이지와 진행바가 목표 시간까지 남은 시간을 실시간으로 보여줘요.</div>
           </div>
         </div>
-
         <div class="box-panel">
           <div class="box-title">
             <span>🕒 유연한 타임테이블 <span style="font-size:11px; color:var(--mint); font-weight:500;">(🔄 매일 반복 지원)</span></span>
@@ -773,7 +744,6 @@
           <div class="timetable-wrapper" id="timetableContainer"></div>
         </div>
       </div>
-
       <div class="right-col">
         <div class="box-panel collapsible" id="panelPriority">
           <h3 class="box-title collapsible-header" onclick="app.ui.toggleCollapse('panelPriority')">
@@ -841,9 +811,7 @@
   </div>
 
   <div id="diaryView" class="hidden">
-    <div style="margin-bottom: 15px;">
-      <button class="btn-ghost" onclick="app.ui.closeDiary()">◀ 돌아가기</button>
-    </div>
+    <div style="margin-bottom: 15px;"><button class="btn-ghost" onclick="app.ui.closeDiary()">◀ 돌아가기</button></div>
     <div class="diary-header">
       <div class="diary-date-nav">
         <button onclick="app.ui.shiftDiaryDate(-1)">◀</button>
@@ -860,18 +828,13 @@
       <div class="diary-photo-grid" id="diaryPhotoGrid"></div>
       <input type="file" id="diaryPhotoInput" accept="image/*" multiple style="display:none;" onchange="app.ui.handleDiaryPhotoSelect(event)">
       <div class="diary-meta" id="diaryMeta"></div>
-      <div style="text-align:right; margin-top:10px;">
-        <button class="btn-primary" onclick="app.ui.saveDiary()">💾 일기 저장</button>
-      </div>
+      <div style="text-align:right; margin-top:10px;"><button class="btn-primary" onclick="app.ui.saveDiary()">💾 일기 저장</button></div>
     </div>
   </div>
 
   <div id="weatherPanelOverlay" class="hidden" onclick="if(event.target===this) app.weather.closePanel()">
     <div class="weather-panel">
-      <div class="weather-panel-header">
-        <h3>🌤️ 날씨 자세히 보기</h3>
-        <button class="btn-ghost" style="padding:6px 10px;" onclick="app.weather.closePanel()">✕</button>
-      </div>
+      <div class="weather-panel-header"><h3>🌤️ 날씨 자세히 보기</h3><button class="btn-ghost" style="padding:6px 10px;" onclick="app.weather.closePanel()">✕</button></div>
       <div id="wxAqBar" class="wx-aq-bar"></div>
       <div class="wx-tabs">
         <button class="wx-tab-btn" data-tab="hourly" onclick="app.weather.setTab('hourly')">⏰ 오늘 시간별</button>
@@ -911,10 +874,7 @@
 
   <div id="searchModalOverlay" class="hidden" onclick="if(event.target===this) app.ui.closeSearchModal()">
     <div class="weather-panel" style="max-width: 500px;">
-      <div class="weather-panel-header">
-        <h3>🔍 지난 기록 통합 검색</h3>
-        <button class="btn-ghost" style="padding:6px 10px;" onclick="app.ui.closeSearchModal()">✕</button>
-      </div>
+      <div class="weather-panel-header"><h3>🔍 지난 기록 통합 검색</h3><button class="btn-ghost" style="padding:6px 10px;" onclick="app.ui.closeSearchModal()">✕</button></div>
       <input type="text" id="searchInput" placeholder="일기 제목, 내용, 일정 키워드를 검색해보세요..." style="width:100%; padding:12px; border:1px solid var(--line); border-radius:12px; margin-bottom:12px; outline:none;" oninput="app.ui.performSearch(this.value)">
       <div id="searchResults" style="max-height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
         <div style="font-size:12.5px; color:var(--ink-soft); text-align:center; padding:24px 10px;">찾고 싶은 기억의 조각을 키워드로 입력해보세요! ✨</div>
@@ -924,10 +884,7 @@
 
   <div id="authModalOverlay" class="hidden" onclick="if(event.target===this) app.cloud.closeAuthModal()">
     <div class="weather-panel" style="max-width:380px;">
-      <div class="weather-panel-header">
-        <h3>☁️ 로그인해서 기기 간 동기화</h3>
-        <button class="btn-ghost" style="padding:6px 10px;" onclick="app.cloud.closeAuthModal()">✕</button>
-      </div>
+      <div class="weather-panel-header"><h3>☁️ 로그인해서 기기 간 동기화</h3><button class="btn-ghost" style="padding:6px 10px;" onclick="app.cloud.closeAuthModal()">✕</button></div>
       <div id="authLoggedOutBox">
         <p style="font-size:12.5px; color:var(--ink-soft); margin-bottom:14px; line-height:1.5;">로그인하면 이 계정으로 컴퓨터·폰 어디서든 같은 일정·일기가 보여요.</p>
         <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="app.cloud.signInGoogle()">🔵 Google로 로그인</button>
@@ -966,6 +923,7 @@
 
   const app = {
     NEWS_PROXY_URL: 'https://remember-news.qnwkqnwk123.workers.dev',
+    // ★ Gemini Worker 주소로 교체 (예: https://remember-coach.내계정.workers.dev)
     AI_COACH_URL: 'https://remember-coach.내계정.workers.dev',
     store: {
       get(key, fallback = null) { try { const raw = localStorage.getItem(key); return raw !== null ? JSON.parse(raw) : fallback; } catch (e) { console.error(`store.get(${key}) 실패`, e); return fallback; } },
@@ -998,17 +956,10 @@
     coachLog: JSON.parse(localStorage.getItem('appCoachLog')) || {},
     coachProfile: JSON.parse(localStorage.getItem('appCoachProfile')) || { goals: [], tone: 'balanced' },
     settings: JSON.parse(localStorage.getItem('appSettings')) || { start: 6, end: 24, notificationsEnabled: false },
-    holidays: {},
-    growthChartInstance: null,
-    financeChartInstance: null,
-    expenseCompareChartInstance: null,
-    alarmTriggered: {},
-    diaryDateStr: "",
-    diaryFromView: "calendarView",
-    diaryPhotosDraft: [],
+    holidays: {}, growthChartInstance: null, financeChartInstance: null, expenseCompareChartInstance: null,
+    alarmTriggered: {}, diaryDateStr: "", diaryFromView: "calendarView", diaryPhotosDraft: [],
 
     todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
-
     resetLocalWorkingData() {
       this.events = []; this.dailyData = {}; this.monthlyData = {}; this.diary = {}; this.recurringTasks = {};
       this.coachLog = {}; this.coachProfile = { goals: [], tone: 'balanced' };
@@ -1020,7 +971,6 @@
       if (!document.getElementById('diaryView').classList.contains('hidden')) this.ui.loadDiaryData();
       this.ui.updateMonthGoalBadge();
     },
-
     monthKey(dateStr) { return (dateStr || this.todayStr()).slice(0, 7); },
     getMonthlyBucketByKey(key) {
       if (!this.monthlyData[key]) this.monthlyData[key] = { priorities: ["", "", ""], finances: [] };
@@ -1046,12 +996,10 @@
       while (true) {
         const dStr = `${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}-${String(cursor.getDate()).padStart(2,'0')}`;
         const d = this.dailyData[dStr];
-        if (d && d.progress > 0) { streak++; cursor.setDate(cursor.getDate() - 1); }
-        else break;
+        if (d && d.progress > 0) { streak++; cursor.setDate(cursor.getDate() - 1); } else break;
       }
       return streak;
     },
-
     checkStreakBadge(streak) {
       if (!this.settings.notificationsEnabled) return;
       const milestones = [3, 7, 14, 30, 66, 100];
@@ -1063,7 +1011,6 @@
       this.ui.showAlarmToast('🏅', `연속 ${streak}일 달성!`, '꾸준함이 진짜 실력이 돼요. 정말 멋져요!');
       this.haptic([30, 50, 30, 50, 60]);
     },
-
     generateInsightReport() {
       const groups = {};
       Object.values(this.dailyData).forEach(d => { if (d.weatherGroup && typeof d.progress === 'number') (groups[d.weatherGroup] ||= []).push(d.progress); });
@@ -1086,7 +1033,6 @@
       this.ui.syncNotificationUI();
       this.cloud.init();
       this.coachChat.init();
-
       this.fetchHolidays(this.currentDate.getFullYear()).then(() => { this.ui.renderCalendar(); });
       this.renderDailyQuote();
       this.hotIssue.load();
@@ -1095,7 +1041,6 @@
       this.timer.init();
       setInterval(() => this.weather.refreshWeatherNow(), 10 * 60 * 1000);
 
-      // 정각마다 "지금" 표시 이동 (시간이 바뀔 때만 다시 그림)
       let lastHour = new Date().getHours();
       setInterval(() => {
         const h = new Date().getHours();
@@ -1138,7 +1083,6 @@
         this.holidays[year] = data.reduce((acc, curr) => { acc[curr.date] = curr.localName; return acc; }, {});
       } catch (error) { console.error('공휴일 데이터 연동 실패', error); this.holidays[year] = this.holidays[year] || {}; this.warnNetworkIssueOnce(); }
     },
-
     checkAlarms() {
       if (!this.settings.notificationsEnabled) return;
       const now = new Date();
@@ -1152,29 +1096,24 @@
         this.alarmTriggered[todayStr + currentHour] = true;
       }
     },
-
     addEventToCurrentDate() {
       const title = document.getElementById('eventTitle').value.trim();
       if (!title) return this.ui.showToast('일정 이름을 입력해주세요. 😅');
       this.events.push({ date: this.selectedDateStr, title: title });
-      localStorage.setItem('appEvents', JSON.stringify(this.events));
-      app.cloud.queuePush();
+      localStorage.setItem('appEvents', JSON.stringify(this.events)); app.cloud.queuePush();
       document.getElementById('eventTitle').value = '';
       this.ui.showToast('기념일이 귀엽게 추가되었습니다! 🎉');
       this.ui.renderCalendar(); this.ui.updatePanelSummaries();
     },
-
     savePriorities() {
       const priorities = Array.from(document.querySelectorAll('#priorityList .priority-item input')).map(i => i.value);
       this.saveMonthlyBucket(this.selectedDateStr, { priorities });
       this.ui.updatePanelSummaries(); this.ui.updateMonthGoalBadge();
     },
-
     saveFinances() {
       const rows = Array.from(document.querySelectorAll('.finance-item'));
       const finances = rows.map(row => {
-        const category = row.querySelector('.cat').value;
-        const desc = row.querySelector('.desc').value;
+        const category = row.querySelector('.cat').value, desc = row.querySelector('.desc').value;
         const amount = Number(row.querySelector('.amt').value) || 0;
         const monthsInput = row.querySelector('.installment-months');
         const months = monthsInput ? Math.max(1, Math.min(36, parseInt(monthsInput.value) || 1)) : 1;
@@ -1183,8 +1122,7 @@
         if (existingGroupId) { entry.installment = { groupId: existingGroupId, months, index: parseInt(row.dataset.installmentIndex) || 1 }; }
         else if (months > 1) {
           const groupId = 'inst_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-          const perMonthBase = Math.floor(amount / months);
-          const remainder = amount - perMonthBase * months;
+          const perMonthBase = Math.floor(amount / months), remainder = amount - perMonthBase * months;
           entry.amount = perMonthBase;
           entry.installment = { groupId, months, index: 1, totalAmount: amount };
           row.querySelector('.amt').value = perMonthBase;
@@ -1204,7 +1142,6 @@
       this.saveMonthlyBucket(this.selectedDateStr, { finances });
       this.ui.calculateExpenditure(); this.ui.updatePanelSummaries();
     },
-
     saveDailyData(showToast = true) {
       const timetableData = {};
       document.querySelectorAll('.time-row').forEach(row => {
@@ -1224,14 +1161,12 @@
           return currentData.weatherGroup || null;
         })()
       };
-      localStorage.setItem('appDailyData', JSON.stringify(this.dailyData));
-      app.cloud.queuePush();
+      localStorage.setItem('appDailyData', JSON.stringify(this.dailyData)); app.cloud.queuePush();
       this.ui.calculateExpenditure(); this.ui.updateGrowthReport();
       const streak = this.calculateStreak();
       this.ui.updateStreakUI(streak); this.checkStreakBadge(streak);
       if (showToast) this.ui.showToast('데이터가 성공적으로 저장되었습니다. 💾');
     },
-
     exportCSV() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       csvContent += "Date,Progress(%),Monthly Expense Total,Monthly Key Goals\n";
@@ -1248,25 +1183,20 @@
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       this.ui.showToast('데이터가 CSV로 다운로드 되었습니다! 📥');
     },
-
     BACKUP_KEYS: ['appEvents', 'appDailyData', 'appMonthlyData', 'appDiary', 'appRecurringTasks', 'appSettings', 'weatherHome', 'weatherCompare', 'weatherActive', 'weatherLocation', 'darkMode', 'appTheme', 'streakBadges', 'appCoachLog', 'appCoachProfile'],
-
     exportBackup() {
       const payload = { exportedAt: new Date().toISOString(), version: 1, data: {} };
       this.BACKUP_KEYS.forEach(key => { const raw = localStorage.getItem(key); if (raw !== null) payload.data[key] = raw; });
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
+      const link = document.createElement('a'); link.href = url;
       const d = new Date();
       link.download = `remember_backup_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.json`;
       document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
-      this.ui.showToast('전체 데이터를 백업 파일로 저장했어요. 새 기기에서 "⬆️ 복원"으로 불러올 수 있어요 💾');
+      this.ui.showToast('전체 데이터를 백업 파일로 저장했어요.');
     },
-
     importBackup(event) {
-      const file = event.target.files && event.target.files[0];
-      event.target.value = '';
+      const file = event.target.files && event.target.files[0]; event.target.value = '';
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -1283,192 +1213,106 @@
       reader.onerror = () => this.ui.showToast('파일을 읽는 중 오류가 발생했어요 😢');
       reader.readAsText(file);
     },
-
     getOffsetDateString(baseDateStr, offsetDays) {
-      const date = new Date(baseDateStr);
-      date.setDate(date.getDate() - offsetDays);
+      const date = new Date(baseDateStr); date.setDate(date.getDate() - offsetDays);
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     },
-
     diffDaysFromToday(dateStr) {
       const today = new Date(); today.setHours(0,0,0,0);
       const target = new Date(dateStr); target.setHours(0,0,0,0);
       return Math.round((target - today) / 86400000);
     },
 
-    /* =========================================================
-       🎓 코치
-       ========================================================= */
     coach: {
       quotes: {
         book: [
           { t:"인간은 파멸할 수는 있어도 패배할 수는 없다.", s:"어니스트 헤밍웨이 《노인과 바다》", k:"책" },
           { t:"집중은 오늘의 가장 귀한 자원이다.", s:"칼 뉴포트 《딥 워크》의 핵심을 살린 문장", k:"책" },
-          { t:"삶이 의미를 묻는 것이 아니라, 우리가 삶에 대답한다.", s:"빅터 프랭클 《죽음의 수용소에서》의 핵심을 살린 문장", k:"책" },
           { t:"작은 습관의 변화가 큰 결과를 만든다.", s:"제임스 클리어 《아주 작은 습관의 힘》의 핵심을 살린 문장", k:"책" },
           { t:"우리는 우리가 반복해서 하는 것에 의해 만들어진다.", s:"윌 듀랜트가 아리스토텔레스의 생각을 요약한 표현", k:"책" }
         ],
         film: [
           { t:"희망은 좋은 거야. 좋은 것 중에서도 가장 좋은 거지.", s:"영화 《쇼생크 탈출》", k:"영화" },
           { t:"카르페 디엠. 오늘을 잡아라.", s:"영화 《죽은 시인의 사회》", k:"영화" },
-          { t:"경험은 결코 낭비되지 않아.", s:"영화 《인턴》", k:"영화" },
-          { t:"숨 쉬어. 계속 숨 쉬어.", s:"영화 《그래비티》", k:"영화" },
-          { t:"두려움은 선택이다.", s:"영화 《인터스텔라》의 주제를 살린 짧은 코칭 문장", k:"영화" }
-        ],
-        animation: [
-          { t:"한 번이라도 도망치면, 계속 도망치게 돼.", s:"애니메이션 《나의 히어로 아카데미아》", k:"애니메이션" },
-          { t:"길을 잃어도 괜찮아. 중요한 건 다시 걷는 거야.", s:"애니메이션 작품들의 메시지를 살린 문장", k:"애니메이션" },
-          { t:"포기하면 그 순간이 진짜 끝이야.", s:"애니메이션 《슬램덩크》의 정신을 살린 문장", k:"애니메이션" },
-          { t:"살아 있다는 건 계속 선택하는 일이야.", s:"애니메이션 《신세기 에반게리온》의 주제를 살린 문장", k:"애니메이션" },
-          { t:"자신을 믿는 힘은 누가 대신 만들어 줄 수 없어.", s:"애니메이션 작품의 메시지를 살린 문장", k:"애니메이션" }
+          { t:"경험은 결코 낭비되지 않아.", s:"영화 《인턴》", k:"영화" }
         ],
         sage: [
           { t:"우리는 실제보다 상상 속에서 더 많이 고통받는다.", s:"세네카", k:"현자" },
-          { t:"지금 이 순간을 살아라.", s:"마르쿠스 아우렐리우스 《명상록》의 뜻을 살린 번역", k:"현자" },
-          { t:"행동이 생각을 따른다면, 생각도 행동을 따라간다.", s:"마르쿠스 아우렐리우스의 사상에서 뜻을 살린 문장", k:"현자" },
-          { t:"우리가 통제할 수 있는 것은 우리의 판단과 행동이다.", s:"에픽테토스의 사상에서 뜻을 살린 문장", k:"현자" },
-          { t:"장애물은 행동을 가로막지만, 행동은 장애물을 돌파한다.", s:"마르쿠스 아우렐리우스의 사상에서 뜻을 살린 문장", k:"현자" }
-        ],
-        gunja: [
-          { t:"군자는 의를 생각하고, 소인은 이익을 생각한다.", s:"《논어》 〈이인〉 — 뜻을 살린 번역", k:"성인·군자" },
-          { t:"군자는 화합하되 같아지지는 않는다.", s:"《논어》 〈자로〉 — 뜻을 살린 번역", k:"성인·군자" },
-          { t:"배우고 때때로 익히면 또한 기쁘지 아니한가.", s:"공자 《논어》 〈학이〉 — 뜻을 살린 번역", k:"성인·군자" },
-          { t:"남이 나를 알아주지 않아도 성내지 않는 것이 군자다.", s:"공자 《논어》 〈학이〉 — 뜻을 살린 번역", k:"성인·군자" },
-          { t:"스스로를 이기는 자가 진정 강한 사람이다.", s:"노자 《도덕경》의 뜻을 살린 번역", k:"성인·군자" }
-        ],
-        famous: [
-          { t:"성공은 열정을 잃지 않고 실패에서 실패로 나아가는 것이다.", s:"윈스턴 처칠", k:"유명인" },
-          { t:"할 수 있다고 믿든, 할 수 없다고 믿든, 둘 다 맞다.", s:"헨리 포드", k:"유명인" },
-          { t:"미래를 예측하는 가장 좋은 방법은 미래를 만드는 것이다.", s:"피터 드러커에게 흔히 귀속되는 표현", k:"유명인" },
-          { t:"천천히 가는 것을 두려워하지 말고, 멈추는 것을 두려워하라.", s:"동양 격언으로 널리 전해지는 표현", k:"유명인" },
-          { t:"성공한 사람과 그렇지 않은 사람의 차이는 포기하지 않는 데 있다.", s:"여러 출처에서 전해지는 격언", k:"유명인" }
-        ],
-        sports: [
-          { t:"훈련은 아무도 보지 않을 때 시작된다.", s:"스포츠 정신을 살린 코칭 문장", k:"스포츠" },
-          { t:"챔피언은 체육관에서 만들어진다.", s:"스포츠 격언으로 널리 쓰이는 표현", k:"스포츠" },
-          { t:"오늘의 작은 승리가 내일의 자신감을 만든다.", s:"스포츠 코칭 문장", k:"스포츠" },
-          { t:"경기에서 이기기 전에 자신과의 싸움에서 이겨라.", s:"스포츠 코칭 문장", k:"스포츠" },
-          { t:"기록은 거짓말하지 않는다. 훈련량도 마찬가지다.", s:"스포츠 코칭 문장", k:"스포츠" }
+          { t:"지금 이 순간을 살아라.", s:"마르쿠스 아우렐리우스 《명상록》", k:"현자" },
+          { t:"우리가 통제할 수 있는 것은 우리의 판단과 행동이다.", s:"에픽테토스의 사상에서 뜻을 살린 문장", k:"현자" }
         ],
         korean: [
           { t:"뜻이 있는 곳에 길이 있다.", s:"한국 속담", k:"한국" },
           { t:"천 리 길도 한 걸음부터.", s:"한국 속담", k:"한국" },
-          { t:"구슬이 서 말이라도 꿰어야 보배다.", s:"한국 속담", k:"한국" },
-          { t:"늦었다고 생각할 때가 가장 빠를 때다.", s:"한국에서 널리 전해지는 격언", k:"한국" },
-          { t:"작은 물방울이 바위를 뚫는다.", s:"동아시아권에서 널리 전해지는 격언", k:"한국" }
+          { t:"늦었다고 생각할 때가 가장 빠를 때다.", s:"한국에서 널리 전해지는 격언", k:"한국" }
+        ],
+        famous: [
+          { t:"성공은 열정을 잃지 않고 실패에서 실패로 나아가는 것이다.", s:"윈스턴 처칠", k:"유명인" },
+          { t:"할 수 있다고 믿든, 할 수 없다고 믿든, 둘 다 맞다.", s:"헨리 포드", k:"유명인" },
+          { t:"미래를 예측하는 가장 좋은 방법은 미래를 만드는 것이다.", s:"피터 드러커에게 흔히 귀속되는 표현", k:"유명인" }
+        ],
+        sports: [
+          { t:"훈련은 아무도 보지 않을 때 시작된다.", s:"스포츠 정신을 살린 코칭 문장", k:"스포츠" },
+          { t:"오늘의 작은 승리가 내일의 자신감을 만든다.", s:"스포츠 코칭 문장", k:"스포츠" },
+          { t:"기록은 거짓말하지 않는다. 훈련량도 마찬가지다.", s:"스포츠 코칭 문장", k:"스포츠" }
         ],
         business: [
           { t:"측정할 수 없다면 개선할 수도 없다.", s:"경영학에서 널리 쓰이는 원칙", k:"경영" },
           { t:"완벽을 기다리기보다 시작하고 개선하라.", s:"린 스타트업의 핵심 원칙을 살린 문장", k:"경영" },
-          { t:"고객이 원하는 것을 가장 먼저 보라.", s:"마케팅의 기본 원칙을 살린 문장", k:"경영" },
-          { t:"시간은 가장 희소한 자원이다.", s:"경영 코칭 문장", k:"경영" },
-          { t:"좋은 전략은 하지 않을 일을 결정한다.", s:"전략 경영의 핵심을 살린 문장", k:"경영" }
-        ],
-        history: [
-          { t:"나는 천천히 걷지만 결코 뒤로 가지 않는다.", s:"에이브러햄 링컨에게 흔히 귀속되는 표현", k:"역사" },
-          { t:"불가능해 보이는 일도 시작하면 길이 열린다.", s:"역사적 리더십의 의미를 살린 문장", k:"역사" },
-          { t:"위기는 기회가 아니라, 선택을 요구하는 순간이다.", s:"역사·리더십 코칭 문장", k:"역사" },
-          { t:"오늘의 선택이 내일의 역사가 된다.", s:"역사 코칭 문장", k:"역사" },
-          { t:"큰 변화는 작은 결단이 쌓여 만들어진다.", s:"역사적 교훈을 살린 문장", k:"역사" }
+          { t:"시간은 가장 희소한 자원이다.", s:"경영 코칭 문장", k:"경영" }
         ]
       },
-
-      profile: {
-        goals: [
-          '2026 해양경찰 3차 필기시험 최종합격',
-          '안정적인 본업 + AI 광고·콘텐츠 사이드 사업 구축',
-          '장기적으로 AI 기반 1인 사업과 월 순소득 1,000만원 달성'
-        ]
-      },
-
+      profile: { goals: [ '2026 해양경찰 3차 필기시험 최종합격', 'AI 기반 1인 사업 구축', '장기적으로 월 순소득 1,000만원 달성' ] },
       slotMeta: { morning: { icon: '🌅', name: '아침' }, lunch: { icon: '🌞', name: '점심' }, evening: { icon: '🌙', name: '저녁' } },
       slotOf(h = new Date().getHours()) { return h >= 5 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'lunch' : 'evening'; },
 
       analyze() {
-        const today = app.todayStr();
-        const yStr = app.getOffsetDateString(today, 1);
-        const recurring = app.recurringTasks || {};
+        const today = app.todayStr(), yStr = app.getOffsetDateString(today, 1), recurring = app.recurringTasks || {};
         const summarize = (dStr) => {
-          const d = app.dailyData[dStr];
-          if (!d || !d.timetable) return null;
+          const d = app.dailyData[dStr]; if (!d || !d.timetable) return null;
           const tasks = Object.entries(d.timetable).filter(([h, t]) => t && t.text && t.text.trim()).map(([h, t]) => ({ hour: +h, text: t.text.trim(), done: !!t.done, recurring: !!(recurring[h] && recurring[h].text && recurring[h].text.trim() === t.text.trim()) }));
           if (!tasks.length) return null;
-          const done = tasks.filter(t => t.done);
-          const undone = tasks.filter(t => !t.done);
+          const done = tasks.filter(t => t.done), undone = tasks.filter(t => !t.done);
           return { date: dStr, tasks, done, undone, progress: Math.round(done.length / tasks.length * 100), timers: Object.keys(d.timers || {}).length };
         };
-        const y = summarize(yStr);
-        const y2 = summarize(app.getOffsetDateString(today, 2));
-        const days = [];
-        for (let i = 1; i <= 7; i++) { const s = summarize(app.getOffsetDateString(today, i)); if (s) days.push(s); }
+        const y = summarize(yStr), y2 = summarize(app.getOffsetDateString(today, 2));
+        const days = []; for (let i = 1; i <= 7; i++) { const s = summarize(app.getOffsetDateString(today, i)); if (s) days.push(s); }
         const avg7 = days.length ? Math.round(days.reduce((a, d) => a + d.progress, 0) / days.length) : 0;
-        const missed = {};
-        days.forEach(d => d.undone.filter(t => !t.recurring).forEach(t => { missed[t.hour] = (missed[t.hour] || 0) + 1; }));
+        const missed = {}; days.forEach(d => d.undone.filter(t => !t.recurring).forEach(t => { missed[t.hour] = (missed[t.hour] || 0) + 1; }));
         const top = Object.entries(missed).sort((a, b) => b[1] - a[1])[0];
         const diary = app.ui.getDiaryEntry(yStr);
         return { today, yStr, y, y2, avg7, validDays: days.length, trend: (y && y2) ? y.progress - y2.progress : null, streak: app.calculateStreak(), hour: new Date().getHours(), dow: new Date().getDay(), topMissed: (top && top[1] >= 3) ? { hour: +top[0], count: top[1] } : null, diaryTitle: (diary.title || '').trim(), diaryText: (diary.text || '').trim().slice(0, 120) };
       },
-
       snapshot() {
         const today = app.todayStr(), hour = new Date().getHours(), td = app.dailyData[today];
         const tasks = td && td.timetable ? Object.entries(td.timetable).filter(([h, t]) => t && t.text && t.text.trim()).map(([h, t]) => ({ hour: +h, text: t.text.trim(), done: !!t.done })).sort((a, b) => a.hour - b.hour) : [];
-        const done = tasks.filter(t => t.done);
-        const overdue = tasks.filter(t => !t.done && t.hour < hour);
-        const upcoming = tasks.filter(t => !t.done && t.hour >= hour);
+        const done = tasks.filter(t => t.done), overdue = tasks.filter(t => !t.done && t.hour < hour), upcoming = tasks.filter(t => !t.done && t.hour >= hour);
         const yLog = app.coachLog[app.getOffsetDateString(today, 1)] || {};
-        return {
-          today, hour, tasks, done, overdue, upcoming, next: upcoming[0] || null,
-          progress: tasks.length ? Math.round(done.length / tasks.length * 100) : null,
-          log: app.coachLog[today] || {}, yNext: (yLog.review || {}).next || '', c: this.analyze()
-        };
+        return { today, hour, tasks, done, overdue, upcoming, next: upcoming[0] || null, progress: tasks.length ? Math.round(done.length / tasks.length * 100) : null, log: app.coachLog[today] || {}, yNext: (yLog.review || {}).next || '', c: this.analyze() };
       },
-
       slotLocal(slot) {
         const s = this.snapshot(), c = s.c, l = s.log;
         const cut = (t, n = 16) => t.length > n ? t.slice(0, n) + '…' : t;
         let core, praise, advice, action;
         if (slot === 'morning') {
           core = '아침은 하루의 방향을 정하는 시간이야.';
-          praise = (c.y && c.y.progress >= 80) ? `어제 달성률 ${c.y.progress}%. 어제의 너는 약속을 지켰어.`
-            : (c.y && c.y.done.length) ? `어제 '${cut(c.y.done[0].text)}'를 끝냈어. 그게 오늘의 발판이야.`
-            : c.streak >= 2 ? `${c.streak}일 연속 기록 중이야. 꾸준함이 쌓이고 있어.`
-            : '아침에 오늘을 점검하러 온 것부터가 첫 행동이야.';
-          advice = (l.sleep && l.sleep <= 5) ? `수면이 ${l.sleep}시간 이하야. 오늘은 새로운 것보다 복습형 일정이 맞고, 오후 무리한 계획은 줄여.`
-            : (l.energy && l.energy <= 2) ? '에너지가 낮아. 가장 중요한 일을 가장 쉬운 단위로 쪼개 오전에 끝내.'
-            : !s.tasks.length ? '타임테이블이 비어 있어. 계획 없는 하루는 남의 일정에 끌려가. 핵심 3개만 적어.'
-            : s.tasks.length >= 9 ? `일정이 ${s.tasks.length}개야. 못 지킬 계획은 자신감만 깎아. 핵심 3개만 남겨.`
-            : c.topMissed ? `${c.topMissed.hour}시 일정이 자주 밀려. 오늘은 그 시간대를 다른 곳으로 옮겨.`
-            : '흐름은 좋아. 다만 첫 일정 시작을 미루지 마. 하루의 질은 첫 25분이 정해.';
-          action = s.yNext ? `어제 정한 첫 행동 "${cut(s.yNext, 30)}"을 오늘 첫 25분에 해.`
-            : s.next ? `${s.next.hour}시 '${cut(s.next.text)}'를 시작 시각 정각에 열어.`
-            : '가장 중요한 일 하나를 정하고 25분 타이머를 켜.';
+          praise = (c.y && c.y.progress >= 80) ? `어제 달성률 ${c.y.progress}%. 어제의 너는 약속을 지켰어.` : (c.y && c.y.done.length) ? `어제 '${cut(c.y.done[0].text)}'를 끝냈어. 그게 오늘의 발판이야.` : c.streak >= 2 ? `${c.streak}일 연속 기록 중이야. 꾸준함이 쌓이고 있어.` : '아침에 오늘을 점검하러 온 것부터가 첫 행동이야.';
+          advice = (l.sleep && l.sleep <= 5) ? `수면이 ${l.sleep}시간 이하야. 오늘은 새로운 것보다 복습형 일정이 맞고, 오후 무리한 계획은 줄여.` : (l.energy && l.energy <= 2) ? '에너지가 낮아. 가장 중요한 일을 가장 쉬운 단위로 쪼개 오전에 끝내.' : !s.tasks.length ? '타임테이블이 비어 있어. 계획 없는 하루는 남의 일정에 끌려가. 핵심 3개만 적어.' : s.tasks.length >= 9 ? `일정이 ${s.tasks.length}개야. 못 지킬 계획은 자신감만 깎아. 핵심 3개만 남겨.` : c.topMissed ? `${c.topMissed.hour}시 일정이 자주 밀려. 오늘은 그 시간대를 다른 곳으로 옮겨.` : '흐름은 좋아. 다만 첫 일정 시작을 미루지 마. 하루의 질은 첫 25분이 정해.';
+          action = s.yNext ? `어제 정한 첫 행동 "${cut(s.yNext, 30)}"을 오늘 첫 25분에 해.` : s.next ? `${s.next.hour}시 '${cut(s.next.text)}'를 시작 시각 정각에 열어.` : '가장 중요한 일 하나를 정하고 25분 타이머를 켜.';
         } else if (slot === 'lunch') {
           core = '점심은 오전을 평가하고 오후를 고치는 시간이야.';
-          praise = s.done.length ? `오전에 ${s.done.length}개를 끝냈어(${s.progress}%). 이미 하루의 일부를 이겨둔 거야.`
-            : '아직 체크는 없지만 지금부터 만회할 시간이 충분해.';
-          advice = s.overdue.length >= 2 ? `지나간 일정 ${s.overdue.length}개가 미완료야. 전부 따라잡으려 하지 말고 가장 중요한 1개만 오후 첫 블록에 다시 넣어.`
-            : l.meal === 0 ? '식사를 걸렀다고 했어. 오후 집중력의 연료야. 가볍게라도 먹고 시작해.'
-            : (l.focus && l.focus <= 2) ? '오전 집중도가 낮았어. 휴대폰을 멀리 두고 25분 단위로 쪼개 보자.'
-            : (l.energy && l.energy <= 2) ? '에너지가 낮아. 10분 걷고 가장 쉬운 일부터 시작해.'
-            : '지금 흐름을 오후에도 이어가. 식후 졸린 시간대에는 가벼운 일을 배치해.';
-          action = s.overdue.length ? `'${cut(s.overdue[0].text)}'를 오후 첫 25분에 다시 해.`
-            : s.next ? `${s.next.hour}시 '${cut(s.next.text)}' 전에 10분 쉬고 시작해.`
-            : '오후에 할 핵심 1개를 정해 타임테이블에 넣어.';
+          praise = s.done.length ? `오전에 ${s.done.length}개를 끝냈어(${s.progress}%). 이미 하루의 일부를 이겨둔 거야.` : '아직 체크는 없지만 지금부터 만회할 시간이 충분해.';
+          advice = s.overdue.length >= 2 ? `지나간 일정 ${s.overdue.length}개가 미완료야. 전부 따라잡으려 하지 말고 가장 중요한 1개만 오후 첫 블록에 다시 넣어.` : l.meal === 0 ? '식사를 걸렀다고 했어. 오후 집중력의 연료야. 가볍게라도 먹고 시작해.' : (l.focus && l.focus <= 2) ? '오전 집중도가 낮았어. 휴대폰을 멀리 두고 25분 단위로 쪼개 보자.' : (l.energy && l.energy <= 2) ? '에너지가 낮아. 10분 걷고 가장 쉬운 일부터 시작해.' : '지금 흐름을 오후에도 이어가. 식후 졸린 시간대에는 가벼운 일을 배치해.';
+          action = s.overdue.length ? `'${cut(s.overdue[0].text)}'를 오후 첫 25분에 다시 해.` : s.next ? `${s.next.hour}시 '${cut(s.next.text)}' 전에 10분 쉬고 시작해.` : '오후에 할 핵심 1개를 정해 타임테이블에 넣어.';
         } else {
           core = '저녁은 오늘을 정리하고 내일을 설계하는 시간이야.';
-          praise = (s.progress != null && s.progress >= 80) ? `오늘 ${s.done.length}/${s.tasks.length}개 완료(${s.progress}%). 정말 잘했어.`
-            : s.done.length ? `${s.done.length}개를 끝냈어. 0이 아닌 하루였다는 게 중요해.`
-            : '힘든 하루였어도 마무리하러 온 건 좋은 습관이야.';
+          praise = (s.progress != null && s.progress >= 80) ? `오늘 ${s.done.length}/${s.tasks.length}개 완료(${s.progress}%). 정말 잘했어.` : s.done.length ? `${s.done.length}개를 끝냈어. 0이 아닌 하루였다는 게 중요해.` : '힘든 하루였어도 마무리하러 온 건 좋은 습관이야.';
           const reviewed = app.coachChat.hasReview();
-          advice = s.overdue.length ? `미완료 ${s.overdue.length}개('${cut(s.overdue[0].text)}' 등)가 남았어. 내일로 그냥 복사하지 말고 못 한 이유부터 한 줄 적어.`
-            : l.workout === 0 ? '오늘 운동을 안 했어. 10분 스트레칭이라도 해두면 내일 컨디션이 달라져.'
-            : !reviewed ? '회고가 비어 있어. 3줄 회고가 내일의 시행착오를 줄여줘.'
-            : '마무리까지 잘했어. 내일 첫 행동만 구체화하고 일찍 자.';
+          advice = s.overdue.length ? `미완료 ${s.overdue.length}개('${cut(s.overdue[0].text)}' 등)가 남았어. 내일로 그냥 복사하지 말고 못 한 이유부터 한 줄 적어.` : l.workout === 0 ? '오늘 운동을 안 했어. 10분 스트레칭이라도 해두면 내일 컨디션이 달라져.' : !reviewed ? '회고가 비어 있어. 3줄 회고가 내일의 시행착오를 줄여줘.' : '마무리까지 잘했어. 내일 첫 행동만 구체화하고 일찍 자.';
           action = reviewed ? '내일 입을 옷과 펼칠 책을 지금 세팅하고 자.' : '아래 회고 3줄을 쓰고 내일 첫 행동을 정해.';
         }
         return { slot, core, praise, advice, action, source: 'local' };
       },
-
       getSlot(slot) { return ((app.store.get('appCoachSlots', {}))[app.todayStr()] || {})[slot] || null; },
       saveSlot(slot, data) {
         const all = app.store.get('appCoachSlots', {}), t = app.todayStr();
@@ -1476,7 +1320,6 @@
         Object.keys(all).sort().slice(0, -3).forEach(k => delete all[k]);
         app.store.set('appCoachSlots', all);
       },
-
       async requestSlotAI(slot) {
         try {
           const res = await app.fetchWithTimeout(app.AI_COACH_URL.replace(/\/$/, '') + '/slot', {
@@ -1489,18 +1332,12 @@
           return true;
         } catch (e) { console.warn('시간대 코칭 실패', e.message); return false; }
       },
-
       build() {
         const slot = this.slotOf(), m = this.slotMeta[slot];
         const sc = this.getSlot(slot) || this.slotLocal(slot);
         const c = this.analyze(), q = this.pickDailyQuote(c.today);
-        return {
-          slot, slotName: m.name, icon: m.icon, areaName: m.name,
-          core: sc.core || sc.advice, praise: sc.praise, advice: sc.advice, action: sc.action, source: sc.source,
-          quote: q.t, quoteSource: q.s, quoteCategory: q.k || q.category, ctx: c
-        };
+        return { slot, slotName: m.name, icon: m.icon, areaName: m.name, core: sc.core || sc.advice, praise: sc.praise, advice: sc.advice, action: sc.action, source: sc.source, quote: q.t, quoteSource: q.s, quoteCategory: q.k || q.category, ctx: c };
       },
-
       pickDailyQuote(dateStr) {
         const categories = Object.keys(this.quotes);
         const dayNo = Math.floor(new Date(`${dateStr}T00:00:00`).getTime() / 86400000);
@@ -1509,22 +1346,17 @@
         const idx = app.seededPick(dateStr, `daily-inspiration-${category}`, pool.length);
         return { ...pool[idx], category };
       },
-
       isHiddenToday() { return localStorage.getItem('coachHideToday') === this.getTodayKey(); },
       getTodayKey() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
       toggleHideToday(checked) {
         if (checked) {
-          localStorage.setItem('coachHideToday', this.getTodayKey());
-          this.closeModal();
+          localStorage.setItem('coachHideToday', this.getTodayKey()); this.closeModal();
           if (app.ui && app.ui.showToast) app.ui.showToast('🌙 오늘 하루 조언 팝업을 숨겼어요. 내일 다시 표시됩니다.');
         } else localStorage.removeItem('coachHideToday');
       },
       closeModal() { app.ui.closeCoachPlanner(); }
     },
 
-    /* =========================================================
-       🧑‍🏫 코치 채팅·리포트·설정
-       ========================================================= */
     coachChat: {
       history: [], sending: false, viewSlot: null, loadingSlot: null, lastFail: 0,
       chips: [
@@ -1539,7 +1371,6 @@
         ['🍱 메뉴추천', '오늘 일정·컨디션·지출을 고려해서 메뉴 추천해줘.'],
         ['📚 공부', '공부 전략을 기출→오답→취약점 보완 관점에서 점검해줘.']
       ],
-
       init() {
         this.history = app.store.get('appCoachChat', []);
         setTimeout(() => this.watchEvening(), 3000);
@@ -1555,7 +1386,6 @@
       saveLog() { localStorage.setItem('appCoachLog', JSON.stringify(app.coachLog)); app.cloud.queuePush(); },
       hasReview(d = app.todayStr()) { const r = (app.coachLog[d] || {}).review; return !!(r && (r.good || r.bad || r.next)); },
       cardVisible() { const c = document.getElementById('plannerCoachCard'); return !!c && !c.classList.contains('hidden'); },
-
       fieldsOf(slot) {
         const emo = [[1,'😫'],[2,'😕'],[3,'😐'],[4,'🙂'],[5,'😄']], lv = [[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']];
         return {
@@ -1564,65 +1394,50 @@
           evening: [['기분','mood',emo], ['에너지','energy',lv], ['운동','workout',[[0,'안 함'],[1,'가볍게'],[2,'충분히']]]]
         }[slot];
       },
-
       selectSlot(k) { this.viewSlot = k; this.renderToday(); if (k === app.coach.slotOf()) this.ensureAI(k); },
-
       setCheckin(key, v) {
         const t = app.todayStr();
         app.coachLog[t] = { ...(app.coachLog[t] || {}), [key]: v };
         this.saveLog(); this.renderToday(); app.renderDailyQuote();
       },
-
       async ensureAI(slot) {
         if (slot !== app.coach.slotOf() || app.coach.getSlot(slot) || this.loadingSlot) return;
         if (Date.now() - this.lastFail < 5 * 60 * 1000) return;
         await this.refreshSlot(slot, true);
       },
-
       async refreshSlot(slot, quiet) {
         if (this.loadingSlot) return;
         if (!app.AI_COACH_URL || app.AI_COACH_URL.includes('내계정')) {
           if (!quiet) app.ui.showToast('AI 서버가 설정되지 않아 기본 코칭(내 기록 기반)을 보여줘요');
           return this.renderToday();
         }
-        this.loadingSlot = slot;
-        this.renderToday();
+        this.loadingSlot = slot; this.renderToday();
         const ok = await app.coach.requestSlotAI(slot);
         this.loadingSlot = null;
         if (!ok) { this.lastFail = Date.now(); if (!quiet) app.ui.showToast('⚠️ AI 코칭에 실패해 기본 코칭을 보여줘요'); }
         if (this.cardVisible()) this.renderToday();
         app.renderDailyQuote();
       },
-
       renderToday() {
-        const box = document.getElementById('ccPane-today');
-        if (!box) return;
+        const box = document.getElementById('ccPane-today'); if (!box) return;
         const A = app.coach, e = app.ui.escapeHtml, order = ['morning', 'lunch', 'evening'];
         const cur = A.slotOf(), slot = this.viewSlot || cur, meta = A.slotMeta[slot];
         const future = order.indexOf(slot) > order.indexOf(cur);
         const s = A.snapshot(), l = s.log;
         const area = document.getElementById('plannerCoachArea');
         if (area) area.textContent = `· ${A.slotMeta[cur].icon} ${A.slotMeta[cur].name} · ${s.hour}시 기준`;
-
         const slotTabs = order.map(k => `<button class="${k === slot ? 'on' : ''} ${k === cur ? 'now' : ''}" onclick="app.coachChat.selectSlot('${k}')">${A.slotMeta[k].icon} ${A.slotMeta[k].name}</button>`).join('');
-
-        const status = s.tasks.length
-          ? `📍 지금 상태 · 일정 ${s.done.length}/${s.tasks.length} 완료(${s.progress}%)` + (s.overdue.length ? ` · 지나간 미완료 ${s.overdue.length}개` : '') + (s.next ? ` · 다음 ${s.next.hour}시 '${e(s.next.text.slice(0, 14))}'` : '')
-          : '📍 지금 상태 · 오늘 타임테이블이 아직 비어 있어요';
-
+        const status = s.tasks.length ? `📍 지금 상태 · 일정 ${s.done.length}/${s.tasks.length} 완료(${s.progress}%)` + (s.overdue.length ? ` · 지나간 미완료 ${s.overdue.length}개` : '') + (s.next ? ` · 다음 ${s.next.hour}시 '${e(s.next.text.slice(0, 14))}'` : '') : '📍 지금 상태 · 오늘 타임테이블이 아직 비어 있어요';
         const checkin = future ? '' : `<div class="cc-card"><b>📋 ${meta.name} 체크인</b> <span style="color:var(--ink-faint); font-size:11.5px;">(눌러두면 코칭이 정확해져요)</span>` +
           this.fieldsOf(slot).map(([label, key, opts]) => `<div class="cc-row"><b>${label}</b>${opts.map(([v, t]) => `<button class="cc-opt ${l[key] === v ? 'on' : ''}" onclick="app.coachChat.setCheckin('${key}', ${v})">${t}</button>`).join('')}</div>`).join('') + `</div>`;
-
         let coaching;
-        if (future) {
-          coaching = `<div class="cc-card">⏳ ${meta.name}이 되면 그때 상태를 보고 코칭해줄게.</div>`;
-        } else {
+        if (future) coaching = `<div class="cc-card">⏳ ${meta.name}이 되면 그때 상태를 보고 코칭해줄게.</div>`;
+        else {
           const sc = A.getSlot(slot) || (slot === cur ? A.slotLocal(slot) : null);
           if (!sc) coaching = `<div class="cc-card">이 시간대에는 저장된 코칭 기록이 없어요.</div>`;
           else {
             const when = sc.at ? new Date(sc.at) : null;
-            coaching =
-              (this.loadingSlot === slot ? `<div class="cc-status">🤖 AI 코치가 지금 상태를 분석하는 중… (아래는 기본 코칭이에요)</div>` : '') +
+            coaching = (this.loadingSlot === slot ? `<div class="cc-status">🤖 AI 코치가 지금 상태를 분석하는 중… (아래는 기본 코칭이에요)</div>` : '') +
               `<div class="cc-card" style="font-weight:800;">${e(sc.core || '')}</div>
                <div class="cc-card praise"><b>✅ 인정</b><br>${e(sc.praise)}</div>
                <div class="cc-card advice"><b>⚠️ 충고</b><br>${e(sc.advice)}</div>
@@ -1630,22 +1445,17 @@
                <div class="cc-src">${sc.source === 'ai' ? `🤖 AI 코치 · ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')} 기준` : '📐 기본 코칭 (내 기록 기반)'}</div>`;
           }
         }
-
         const r = l.review || {};
         const review = (slot === 'evening' && !future) ? `<div class="cc-card"><b>🌙 오늘 회고</b> <span style="color:var(--ink-faint); font-size:11.5px;">· 3분이면 충분해요</span>
             <label>✅ 오늘 잘한 것</label><textarea id="rvGood" rows="2">${e(r.good || '')}</textarea>
             <label>⚠️ 아쉬웠던 것 (이유까지)</label><textarea id="rvBad" rows="2">${e(r.bad || '')}</textarea>
             <label>🎯 내일 가장 먼저 할 행동 1개</label><textarea id="rvNext" rows="2" placeholder="예: 아침 8시에 기출 20문제부터">${e(r.next || '')}</textarea>
             <div class="cc-btnrow"><button onclick="app.coachChat.saveReview(false)">💾 저장</button><button class="btn-primary" onclick="app.coachChat.saveReview(true)">저장하고 저녁 코칭</button></div></div>` : '';
-
         const q = A.pickDailyQuote(s.today);
         const quote = `<div class="cc-card" style="background:linear-gradient(135deg,var(--accent-bg),var(--paper));"><b>✨ 오늘의 영감 · ${e(q.k || q.category || '')}</b><br><i>“${e(q.t)}”</i><div style="text-align:right; font-size:11px; color:var(--ink-faint);">— ${e(q.s)}</div></div>`;
-
         const buttons = `<div class="cc-btnrow">${(!future && slot === cur) ? `<button class="btn-primary" onclick="app.coachChat.refreshSlot('${slot}')">🔄 지금 상태로 다시 코칭</button>` : ''}<button onclick="app.coachChat.openChat()">💬 더 물어보기</button></div>`;
-
         box.innerHTML = `<div class="cc-slots">${slotTabs}</div><div class="cc-status">${status}</div>` + checkin + coaching + review + quote + buttons;
       },
-
       saveReview(askCoach) {
         const t = app.todayStr();
         const review = { good: document.getElementById('rvGood').value.trim(), bad: document.getElementById('rvBad').value.trim(), next: document.getElementById('rvNext').value.trim() };
@@ -1654,11 +1464,9 @@
         app.ui.showToast('🌙 회고를 저장했어요');
         if (askCoach) this.refreshSlot('evening'); else this.renderToday();
       },
-
       openChat() {
         const d = document.getElementById('ccMoreChat');
-        d.open = true;
-        this.renderChat();
+        d.open = true; this.renderChat();
         d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       },
       renderChat() {
@@ -1667,10 +1475,9 @@
       },
       fmt(s) { return app.ui.escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>'); },
       render(typing = false) {
-        const box = document.getElementById('ccMsgs');
-        if (!box) return;
+        const box = document.getElementById('ccMsgs'); if (!box) return;
         let html = '';
-        if (this.history.length === 0) html += `<div class="cc-b ai">나는 네 인생 성공 코치야 🧑‍🏫 <b>잘한 건 근거를 대서 인정하고, 고쳐야 할 건 돌려 말하지 않고</b> 짚어줄게. 위 버튼을 누르거나 하고 싶은 얘기를 편하게 해줘.</div>`;
+        if (this.history.length === 0) html += `<div class="cc-b ai">나는 네 인생 성공 코치야 🧑‍🏫 <b>잘한 건 근거를 대서 인정하고, 고쳐야 할 건 돌려 말하지 않고</b> 짚어줄게.</div>`;
         html += this.history.map(m => `<div class="cc-b ${m.role === 'user' ? 'user' : 'ai'}">${this.fmt(m.content)}</div>`).join('');
         if (typing) html += `<div class="cc-b ai" style="opacity:.6;">생각 중…</div>`;
         box.innerHTML = html; box.scrollTop = box.scrollHeight;
@@ -1699,7 +1506,6 @@
         }
         this.sending = false; this.render();
       },
-
       computeInsights() {
         const today = app.todayStr(), from30 = app.getOffsetDateString(today, 30);
         const rows = Object.keys(app.dailyData).sort().filter(d => d >= from30 && d < today).map(d => {
@@ -1723,12 +1529,7 @@
         const names = ['일', '월', '화', '수', '목', '금', '토'];
         const byDow = names.map((name, i) => { const g = rows.filter(r => r.dow === i); return g.length >= 2 ? { name, avg: avg(g) } : null; }).filter(Boolean).sort((a, b) => b.avg - a.avg);
         const mk = app.monthKey(today);
-        return {
-          n: rows.length, thisAvg, lastAvg, delta: (thisAvg != null && lastAvg != null) ? thisAvg - lastAvg : null,
-          compares, bestDow: byDow[0] || null, worstDow: byDow.length > 1 ? byDow[byDow.length - 1] : null,
-          streak: app.calculateStreak(), reviews7: Object.keys(app.coachLog).filter(d => d >= off7 && this.hasReview(d)).length,
-          spendThis: app.monthTotal(mk), spendLast: app.monthTotal(app.prevMonthKey(mk))
-        };
+        return { n: rows.length, thisAvg, lastAvg, delta: (thisAvg != null && lastAvg != null) ? thisAvg - lastAvg : null, compares, bestDow: byDow[0] || null, worstDow: byDow.length > 1 ? byDow[byDow.length - 1] : null, streak: app.calculateStreak(), reviews7: Object.keys(app.coachLog).filter(d => d >= off7 && this.hasReview(d)).length, spendThis: app.monthTotal(mk), spendLast: app.monthTotal(app.prevMonthKey(mk)) };
       },
       verdict(i) {
         let praise, advice;
@@ -1747,7 +1548,7 @@
       renderReport() {
         const i = this.computeInsights(), v = this.verdict(i), e = app.ui.escapeHtml;
         const fmtD = d => d === null ? '–' : `${d > 0 ? '+' : ''}${d}%p`;
-        const cmpHtml = i.compares.length ? i.compares.map(c => `<div style="margin-bottom:6px;"><b>${c.name}</b><br>${c.na}일 평균 <b>${c.a}%</b> vs 그 외 ${c.nb}일 <b>${c.b}%</b> <span style="font-weight:800; color:${c.diff >= 0 ? '#2f9d78' : '#e8748f'};">(${fmtD(c.diff)})</span></div>`).join('') : `<span style="color:var(--ink-soft);">수면·운동·기분 체크인이 3일 이상씩 쌓이면 "어떤 습관이 내 달성률을 올리는지" 분석해줄게.</span>`;
+        const cmpHtml = i.compares.length ? i.compares.map(c => `<div style="margin-bottom:6px;"><b>${c.name}</b><br>${c.na}일 평균 <b>${c.a}%</b> vs 그 외 ${c.nb}일 <b>${c.b}%</b> <span style="font-weight:800; color:${c.diff >= 0 ? '#2f9d78' : '#e8748f'};">(${fmtD(c.diff)})</span></div>`).join('') : `<span style="color:var(--ink-soft);">수면·운동·기분 체크인이 3일 이상씩 쌓이면 분석해줄게.</span>`;
         document.getElementById('ccPane-report').innerHTML = `
           <div class="cc-card praise"><b>✅ 이번 주 인정할 점</b><br>${e(v.praise)}</div>
           <div class="cc-card advice"><b>⚠️ 이번 주 충고</b><br>${e(v.advice)}</div>
@@ -1757,11 +1558,10 @@
             ${i.bestDow ? `강한 요일 <b>${i.bestDow.name}</b> (${i.bestDow.avg}%)` : ''}${i.worstDow ? ` · 약한 요일 <b>${i.worstDow.name}</b> (${i.worstDow.avg}%)` : ''}<br>
             이번 달 지출 ₩${i.spendThis.toLocaleString()} (지난달 ₩${i.spendLast.toLocaleString()})</div>
           <div class="cc-card"><b>🔬 어떤 날 내가 잘했나</b><br>${cmpHtml}
-            <div style="font-size:11px; color:var(--ink-faint); margin-top:6px;">※ 함께 나타나는 경향이지 원인을 증명하는 건 아니에요. 최근 30일, 일정이 있던 날 기준이에요.</div></div>
+            <div style="font-size:11px; color:var(--ink-faint); margin-top:6px;">※ 상관관계일 뿐 원인 증명은 아니에요. 최근 30일, 일정이 있던 날 기준.</div></div>
           <button class="btn-primary" style="width:100%;" onclick="app.coachChat.askWeekly()">🧠 AI 코치 총평 받기</button>`;
       },
       askWeekly() { this.openChat(); this.send('이번 주 리포트를 코칭해줘. 데이터 근거로 칭찬 2개, 충고 2개, 다음 주에 해볼 실험 1개를 정리해줘.'); },
-
       renderSettings() {
         const p = app.coachProfile, t = p.tone || 'balanced';
         document.getElementById('ccPane-settings').innerHTML = `
@@ -1776,15 +1576,11 @@
             <div class="cc-btnrow"><button class="btn-primary" onclick="app.coachChat.saveSettings()">💾 저장</button></div></div>`;
       },
       saveSettings() {
-        app.coachProfile = {
-          goals: document.getElementById('cpGoals').value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 5),
-          tone: document.getElementById('cpTone').value
-        };
+        app.coachProfile = { goals: document.getElementById('cpGoals').value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 5), tone: document.getElementById('cpTone').value };
         localStorage.setItem('appCoachProfile', JSON.stringify(app.coachProfile));
         app.cloud.queuePush();
         app.ui.showToast('코치 설정을 저장했어요 ✅');
       },
-
       buildContext() {
         const s = app.coach.snapshot(), today = app.todayStr();
         const tasks = s.tasks.map(t => `${t.hour}시 ${t.text} ${t.done ? '(완료)' : '(대기)'}`);
@@ -1794,9 +1590,7 @@
         const wk = ['안 함', '가볍게', '충분히'];
         const logs = Object.keys(app.coachLog).sort().slice(-7).map(d => {
           const l = app.coachLog[d];
-          return { 날짜: d, 기분: l.mood, 에너지: l.energy, 수면시간: l.sleep, 집중도: l.focus,
-            식사: l.meal != null ? ['걸렀음', '가볍게', '든든히'][l.meal] : undefined,
-            운동: l.workout != null ? wk[l.workout] : undefined };
+          return { 날짜: d, 기분: l.mood, 에너지: l.energy, 수면시간: l.sleep, 집중도: l.focus, 식사: l.meal != null ? ['걸렀음', '가볍게', '든든히'][l.meal] : undefined, 운동: l.workout != null ? wk[l.workout] : undefined };
         });
         const reviews = Object.keys(app.coachLog).filter(d => this.hasReview(d)).sort().slice(-3).map(d => {
           const r = app.coachLog[d].review;
@@ -1806,27 +1600,23 @@
         return {
           오늘: today, 요일: ['일','월','화','수','목','금','토'][new Date().getDay()], 현재시각: `${s.hour}시`,
           현재시간대: app.coach.slotMeta[app.coach.slotOf()].name,
-          지금상태: { 오늘진행률: s.progress, 완료: s.done.length, 전체일정: s.tasks.length,
-            지나간미완료: s.overdue.map(t => `${t.hour}시 ${t.text}`), 다음일정: s.next ? `${s.next.hour}시 ${s.next.text}` : null },
+          지금상태: { 오늘진행률: s.progress, 완료: s.done.length, 전체일정: s.tasks.length, 지나간미완료: s.overdue.map(t => `${t.hour}시 ${t.text}`), 다음일정: s.next ? `${s.next.hour}시 ${s.next.text}` : null },
           오늘일정: tasks, 어제정한첫행동: s.yNext,
           어제달성률: s.c.y ? s.c.y.progress : null, 최근7일평균달성률: s.c.avg7, 연속달성일: s.streak,
           이번달목표: (bucket.priorities || []).filter(x => x && x.trim()),
           이번달지출합계: total, 카테고리별지출: byCat, 최근체크인: logs, 최근회고: reviews,
           장기목표: (p.goals && p.goals.length) ? p.goals : ['(아직 설정 안 함)'],
           코치톤: { balanced: '균형', direct: '직설', warm: '따뜻' }[p.tone || 'balanced'],
-          인사이트: { 이번주평균: ins.thisAvg, 지난주평균: ins.lastAvg, 변화: ins.delta,
-            습관별달성률: ins.compares.map(x => `${x.name}: ${x.a}% vs 그외 ${x.b}%`), 강한요일: ins.bestDow, 약한요일: ins.worstDow }
+          인사이트: { 이번주평균: ins.thisAvg, 지난주평균: ins.lastAvg, 변화: ins.delta, 습관별달성률: ins.compares.map(x => `${x.name}: ${x.a}% vs 그외 ${x.b}%`), 강한요일: ins.bestDow, 약한요일: ins.worstDow }
         };
       }
     },
 
     renderDailyQuote() {
-      const el = document.getElementById('heroQuote');
-      if (!el) return;
+      const el = document.getElementById('heroQuote'); if (!el) return;
       const d = this.coach.build();
       el.innerHTML = `${d.icon} <b>${this.ui.escapeHtml(d.core)}</b> <span style="opacity:.75; font-size:11px; margin-left:6px;">— ${d.slotName} 코칭 · 눌러서 체크인 ▸</span>`;
     },
-
     haptic(pattern = 15) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch(e) {} } },
     networkWarned: false,
     async fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
@@ -1847,38 +1637,28 @@
     warnNetworkIssueOnce() {
       if (this.networkWarned) return;
       this.networkWarned = true;
-      if (location.protocol === 'file:') this.ui.showToast('⚠️ 파일을 더블클릭해서 열면(file://) 날씨·공휴일 정보를 못 불러와요. 로컬 서버나 웹 배포로 열어주세요.');
-      else if (typeof navigator !== 'undefined' && navigator.onLine === false) this.ui.showToast('⚠️ 오프라인 상태예요. 인터넷 연결을 확인해주세요. 일정·일기 기록은 계속 사용할 수 있어요.');
-      else this.ui.showToast('⚠️ 날씨·공휴일 서버 연결에 실패했어요. 방화벽/네트워크를 확인해주세요. 다른 기능은 정상 작동해요.');
+      if (location.protocol === 'file:') this.ui.showToast('⚠️ 파일을 더블클릭해서 열면(file://) 날씨·공휴일 정보를 못 불러와요.');
+      else if (typeof navigator !== 'undefined' && navigator.onLine === false) this.ui.showToast('⚠️ 오프라인 상태예요. 인터넷 연결을 확인해주세요.');
+      else this.ui.showToast('⚠️ 날씨·공휴일 서버 연결에 실패했어요. 다른 기능은 정상 작동해요.');
     },
 
-    /* =========================================================
-       🌤️ 날씨
-       ========================================================= */
     weather: {
       cities: { home: null, compare: null }, active: 'home', data: { home: null, compare: null },
       dailyCache: {}, detailDateStr: null, activeTab: 'hourly',
-      codeMap: { 0: { text: "맑음", group: "sunny", icon: "sun" }, 1: { text: "대체로 맑음", group: "sunny", icon: "sun" }, 2: { text: "구름 조금", group: "cloudy", icon: "cloud" }, 3: { text: "흐림", group: "cloudy", icon: "cloud" }, 45: { text: "안개", group: "fog", icon: "fog" }, 48: { text: "짙은 안개", group: "fog", icon: "fog" }, 51: { text: "이슬비", group: "rain", icon: "rain" }, 53: { text: "이슬비", group: "rain", icon: "rain" }, 55: { text: "강한 이슬비", group: "rain", icon: "rain" }, 56: { text: "언 이슬비", group: "rain", icon: "rain" }, 57: { text: "언 이슬비", group: "rain", icon: "rain" }, 61: { text: "약한 비", group: "rain", icon: "rain" }, 63: { text: "비", group: "rain", icon: "rain" }, 65: { text: "강한 비", group: "rain", icon: "rain" }, 66: { text: "언 비", group: "rain", icon: "rain" }, 67: { text: "강한 언 비", group: "rain", icon: "rain" }, 71: { text: "약한 눈", group: "snow", icon: "snow" }, 73: { text: "눈", group: "snow", icon: "snow" }, 75: { text: "강한 눈", group: "snow", icon: "snow" }, 77: { text: "싸락눈", group: "snow", icon: "snow" }, 80: { text: "약한 소나기", group: "rain", icon: "rain" }, 81: { text: "소나기", group: "rain", icon: "rain" }, 82: { text: "강한 소나기", group: "rain", icon: "rain" }, 85: { text: "약한 눈보라", group: "snow", icon: "snow" }, 86: { text: "강한 눈보라", group: "snow", icon: "snow" }, 95: { text: "뇌우", group: "storm", icon: "storm" }, 96: { text: "우박 동반 뇌우", group: "storm", icon: "storm" }, 99: { text: "강한 우박 뇌우", group: "storm", icon: "storm" } },
+      codeMap: { 0: { text: "맑음", group: "sunny", icon: "sun" }, 1: { text: "대체로 맑음", group: "sunny", icon: "sun" }, 2: { text: "구름 조금", group: "cloudy", icon: "cloud" }, 3: { text: "흐림", group: "cloudy", icon: "cloud" }, 45: { text: "안개", group: "fog", icon: "fog" }, 48: { text: "짙은 안개", group: "fog", icon: "fog" }, 51: { text: "이슬비", group: "rain", icon: "rain" }, 53: { text: "이슬비", group: "rain", icon: "rain" }, 55: { text: "강한 이슬비", group: "rain", icon: "rain" }, 61: { text: "약한 비", group: "rain", icon: "rain" }, 63: { text: "비", group: "rain", icon: "rain" }, 65: { text: "강한 비", group: "rain", icon: "rain" }, 71: { text: "약한 눈", group: "snow", icon: "snow" }, 73: { text: "눈", group: "snow", icon: "snow" }, 75: { text: "강한 눈", group: "snow", icon: "snow" }, 80: { text: "약한 소나기", group: "rain", icon: "rain" }, 81: { text: "소나기", group: "rain", icon: "rain" }, 82: { text: "강한 소나기", group: "rain", icon: "rain" }, 85: { text: "약한 눈보라", group: "snow", icon: "snow" }, 86: { text: "강한 눈보라", group: "snow", icon: "snow" }, 95: { text: "뇌우", group: "storm", icon: "storm" }, 96: { text: "우박 동반 뇌우", group: "storm", icon: "storm" }, 99: { text: "강한 우박 뇌우", group: "storm", icon: "storm" } },
       icons: {
         sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"/></svg>`,
         moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/></svg>`,
         cloud: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 18.5a4 4 0 0 1-.6-7.95 5 5 0 0 1 9.75-1.9A4.5 4.5 0 0 1 17 18.5Z"/></svg>`,
         rain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 15.5a3.8 3.8 0 0 1-.5-7.55 4.8 4.8 0 0 1 9.3-1.8A4.3 4.3 0 0 1 16.2 15.5Z"/><path d="M8 19l-1 2.2M12 19l-1 2.2M16 19l-1 2.2"/></svg>`,
-        snow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 14.5a3.8 3.8 0 0 1-.5-7.55 4.8 4.8 0 0 1 9.3-1.8A4.3 4.3 0 0 1 16.2 14.5Z"/><path d="M9 19.2l.01 0M12 20.2l.01 0M15 19.2l.01 0M9 17.5l3-2 3 2M12 15.5v4.7"/></svg>`,
+        snow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 14.5a3.8 3.8 0 0 1-.5-7.55 4.8 4.8 0 0 1 9.3-1.8A4.3 4.3 0 0 1 16.2 14.5Z"/><path d="M9 19.2l.01 0M12 20.2l.01 0M15 19.2l.01 0"/></svg>`,
         fog: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 11.8a3.6 3.6 0 0 1-.4-7.15 4.6 4.6 0 0 1 8.9-1.7A4.1 4.1 0 0 1 15.9 11.8Z"/><path d="M4 15.5h16M6 18.5h12M8 21.5h8"/></svg>`,
         storm: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.8 13.5a3.7 3.7 0 0 1-.4-7.35 4.7 4.7 0 0 1 9.1-1.75A4.2 4.2 0 0 1 16 13.5Z"/><path d="M12.5 14.5L10 19h3l-2 4"/></svg>`
       },
       todayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
-
-      // 현재 시(hour) - 한국 시간(Asia/Seoul) 기준
-      nowHour() {
-        return parseInt(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false }), 10) % 24;
-      },
-
-      // 시간별 스트립 HTML 생성 (오늘이면 "지금" 강조)
+      nowHour() { return parseInt(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false }), 10) % 24; },
       hourItemsHtml(data, dateStr) {
-        const isToday = dateStr === this.todayStr();
-        const nowH = this.nowHour();
+        const isToday = dateStr === this.todayStr(), nowH = this.nowHour();
         let html = '';
         data.hourly.time.forEach((t, idx) => {
           if (!t.startsWith(dateStr)) return;
@@ -1890,13 +1670,7 @@
         });
         return html;
       },
-
-      // "지금" 항목이 있으면 중앙으로 스크롤
-      scrollToNow(strip) {
-        const el = strip && strip.querySelector('.now');
-        if (el) strip.scrollLeft = el.offsetLeft - (strip.clientWidth - el.offsetWidth) / 2;
-      },
-
+      scrollToNow(strip) { const el = strip && strip.querySelector('.now'); if (el) strip.scrollLeft = el.offsetLeft - (strip.clientWidth - el.offsetWidth) / 2; },
       airData: { home: null, compare: null },
       async init() {
         const legacy = JSON.parse(localStorage.getItem('weatherLocation') || 'null');
@@ -1989,16 +1763,13 @@
         const scene = scenes[group] || scenes.cloudy;
         const photo = document.getElementById('weatherScenePhoto');
         if (photo && scene.image && photo.dataset.sceneImage !== scene.image) {
-          photo.style.backgroundImage = `url("${scene.image}")`;
-          photo.dataset.sceneImage = scene.image;
+          photo.style.backgroundImage = `url("${scene.image}")`; photo.dataset.sceneImage = scene.image;
           const preloader = new Image();
-          preloader.decoding = 'async';
-          preloader.onload = () => { photo.style.backgroundImage = `url("${scene.image}")`; photo.dataset.sceneImage = scene.image; };
+          preloader.onload = () => { photo.style.backgroundImage = `url("${scene.image}")`; };
           preloader.onerror = () => { photo.style.backgroundImage = 'none'; photo.dataset.sceneImage = 'fallback'; };
           preloader.src = scene.image;
         }
-        const el = document.getElementById('weatherSceneLabel');
-        if (el) el.textContent = scene.label;
+        const el = document.getElementById('weatherSceneLabel'); if (el) el.textContent = scene.label;
         const hero = document.getElementById('calHero');
         if (hero && scene.image) {
           const heroOverlay = {
@@ -2011,8 +1782,7 @@
             night: 'linear-gradient(135deg, rgba(22,28,78,.76), rgba(42,33,103,.62), rgba(8,10,31,.72))'
           }[group] || 'linear-gradient(135deg, rgba(86,76,160,.48), rgba(50,60,120,.30))';
           hero.style.backgroundImage = `${heroOverlay}, url("${scene.image}")`;
-          hero.style.backgroundPosition = 'center';
-          hero.style.backgroundSize = 'cover';
+          hero.style.backgroundPosition = 'center'; hero.style.backgroundSize = 'cover';
         }
       },
       async refreshWeatherNow() {
@@ -2022,22 +1792,17 @@
           await Promise.all(jobs); this.renderAll();
         } catch (e) { console.warn('주기적 날씨 갱신 실패', e); }
       },
-      renderAll() {
-        this.renderCityChips(); this.renderBadge(); this.renderAqBadges(); this.renderWeeklyStripCalendar(); this.renderPanel();
-        app.ui.renderCalendar();
-        if (app.selectedDateStr) this.renderPlannerWeather(app.selectedDateStr);
-      },
+      renderAll() { this.renderCityChips(); this.renderBadge(); this.renderAqBadges(); this.renderWeeklyStripCalendar(); this.renderPanel(); app.ui.renderCalendar(); if (app.selectedDateStr) this.renderPlannerWeather(app.selectedDateStr); },
       renderWeeklyStripCalendar() {
-        const box = document.getElementById('weeklyStripDays');
-        const locEl = document.getElementById('weeklyStripLoc');
+        const box = document.getElementById('weeklyStripDays'), locEl = document.getElementById('weeklyStripLoc');
         if (!box) return;
         const data = this.activeData();
         if (locEl) locEl.textContent = `· ${this.activeLoc().name}`;
         if (!data || !data.daily) { box.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
         let html = '';
         for (let i = 0; i < 7 && i < data.daily.time.length; i++) {
-          const dStr = data.daily.time[i]; const d = new Date(dStr); const info = this.groupInfo(data.daily.weathercode[i]);
-          const max = Math.round(data.daily.temperature_2m_max[i]); const min = Math.round(data.daily.temperature_2m_min[i]);
+          const dStr = data.daily.time[i], d = new Date(dStr), info = this.groupInfo(data.daily.weathercode[i]);
+          const max = Math.round(data.daily.temperature_2m_max[i]), min = Math.round(data.daily.temperature_2m_min[i]);
           const dayLabel = i === 0 ? '오늘' : ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
           html += `<div class="wx-hour-item" style="min-width:64px; cursor:pointer;" onclick="app.weather.openPanel('weekly')"><div style="font-weight:700;">${dayLabel}</div><div style="color:var(--ink-faint); font-size:10.5px;">${d.getMonth() + 1}/${d.getDate()}</div><div style="color:var(--accent-deep); margin:4px 0;">${this.icons[info.icon]}</div><div style="font-weight:700;">${max}°</div><div style="color:var(--ink-faint); font-size:10.5px;">${min}°</div></div>`;
         }
@@ -2051,8 +1816,7 @@
         if (diff < 0 || diff > 15) { strip.innerHTML = `<div style="font-size:12px; color:var(--ink-soft); padding:10px;">${diff < 0 ? '지난 날짜는 시간별 날씨를 제공하지 않아요' : '16일 이후는 시간별 예보가 없어요'}</div>`; return; }
         const data = this.activeData();
         if (!data || !data.hourly) { strip.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
-        const html = this.hourItemsHtml(data, dateStr);
-        strip.innerHTML = html || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">시간별 데이터가 없어요</div>';
+        strip.innerHTML = this.hourItemsHtml(data, dateStr) || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">시간별 데이터가 없어요</div>';
         this.scrollToNow(strip);
       },
       activeData() { return this.data[this.active]; }, activeLoc() { return this.cities[this.active]; },
@@ -2068,8 +1832,7 @@
       renderBadge() {
         const d = this.activeData();
         if (!d || !d.current_weather) { this.applyWeatherAtmosphere({group:'cloudy'}, false); return; }
-        const code = d.current_weather.weathercode; const info = this.groupInfo(code);
-        const isNight = d.current_weather.is_day === 0;
+        const code = d.current_weather.weathercode, info = this.groupInfo(code), isNight = d.current_weather.is_day === 0;
         const icon = isNight && info.group === "sunny" ? this.icons.moon : this.icons[info.icon];
         document.getElementById('wbIconCal').innerHTML = icon;
         document.getElementById('wbTempCal').textContent = `${Math.round(d.current_weather.temperature)}°`;
@@ -2109,22 +1872,25 @@
       renderHourly() {
         const data = this.activeData();
         const label = document.getElementById('wxHourlyDateLabel'), strip = document.getElementById('wxHourlyStrip');
-        const d = new Date(this.detailDateStr); const isToday = this.detailDateStr === this.todayStr();
+        const d = new Date(this.detailDateStr), isToday = this.detailDateStr === this.todayStr();
         label.textContent = `${isToday ? '오늘 · ' : ''}${d.getMonth() + 1}월 ${d.getDate()}일 시간별`;
         const minMaxEl = document.getElementById('wxHourlyMinMax');
-        if (data && data.daily) { const dIdx = data.daily.time.indexOf(this.detailDateStr); if (dIdx !== -1) { const max = Math.round(data.daily.temperature_2m_max[dIdx]); const min = Math.round(data.daily.temperature_2m_min[dIdx]); minMaxEl.textContent = `최고 ${max}° · 최저 ${min}°`; } else minMaxEl.textContent = ''; }
+        if (data && data.daily) {
+          const dIdx = data.daily.time.indexOf(this.detailDateStr);
+          if (dIdx !== -1) { const max = Math.round(data.daily.temperature_2m_max[dIdx]), min = Math.round(data.daily.temperature_2m_min[dIdx]); minMaxEl.textContent = `최고 ${max}° · 최저 ${min}°`; }
+          else minMaxEl.textContent = '';
+        }
         if (!data || !data.hourly) { strip.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
-        strip.innerHTML = this.hourItemsHtml(data, this.detailDateStr)
-          || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">해당 날짜의 시간별 데이터가 없어요</div>';
+        strip.innerHTML = this.hourItemsHtml(data, this.detailDateStr) || '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">해당 날짜의 시간별 데이터가 없어요</div>';
         this.scrollToNow(strip);
       },
       renderWeekly() {
-        const data = this.activeData(); const box = document.getElementById('wxWeeklyList');
+        const data = this.activeData(), box = document.getElementById('wxWeeklyList');
         if (!data || !data.daily) { box.innerHTML = '<div style="font-size:12px; color:var(--ink-soft); padding:10px;">날씨 데이터를 불러오는 중이에요…</div>'; return; }
         let html = '';
         for (let i = 0; i < 7 && i < data.daily.time.length; i++) {
-          const dStr = data.daily.time[i]; const d = new Date(dStr); const info = this.groupInfo(data.daily.weathercode[i]);
-          const max = Math.round(data.daily.temperature_2m_max[i]); const min = Math.round(data.daily.temperature_2m_min[i]);
+          const dStr = data.daily.time[i], d = new Date(dStr), info = this.groupInfo(data.daily.weathercode[i]);
+          const max = Math.round(data.daily.temperature_2m_max[i]), min = Math.round(data.daily.temperature_2m_min[i]);
           const dayLabel = i === 0 ? '오늘' : ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
           html += `<div class="wx-week-row"><div class="wx-day-label">${dayLabel}<br><span style="color:var(--ink-faint); font-weight:500;">${d.getMonth() + 1}/${d.getDate()}</span></div><span style="color:var(--accent-deep);">${this.icons[info.icon]}</span><div class="wx-day-desc">${info.text}</div><div class="wx-day-temp">${max}° / ${min}°</div></div>`;
         }
@@ -2139,7 +1905,7 @@
       useGeolocation() {
         if (!navigator.geolocation) return app.ui.showToast('이 브라우저는 위치 정보를 지원하지 않아요');
         app.ui.showToast('📍 현재 위치를 확인하고 있어요…');
-        navigator.geolocation.getCurrentPosition(pos => this.selectLocation('home', pos.coords.latitude, pos.coords.longitude, '내 위치'), () => app.ui.showToast('위치 정보를 가져오지 못했어요. 도시 이름으로 검색해주세요 🙏'));
+        navigator.geolocation.getCurrentPosition(pos => this.selectLocation('home', pos.coords.latitude, pos.coords.longitude, '내 위치'), () => app.ui.showToast('위치 정보를 가져오지 못했어요.'));
       },
       async searchLocation(target) {
         const inputId = target === 'home' ? 'locationInputHome' : 'locationInputCompare';
@@ -2176,7 +1942,7 @@
         document.getElementById('wcLoc').textContent = this.activeLoc().name;
         this.renderPlannerHourlyStrip(dateStr);
         descEl.textContent = '날씨 불러오는 중…'; tempEl.textContent = '--°'; rangeEl.textContent = '';
-        const diffDays = app.diffDaysFromToday(dateStr); const cacheKey = this.active + ':' + dateStr;
+        const diffDays = app.diffDaysFromToday(dateStr), cacheKey = this.active + ':' + dateStr;
         const paint = (day) => {
           const info = this.groupInfo(day.code);
           iconEl.innerHTML = `<span style="color:var(--accent-deep);">${this.icons[info.icon]}</span>`;
@@ -2217,7 +1983,7 @@
     hotIssue: {
       cache: { date: null, items: null, fetchedAt: 0 },
       async load() {
-        const today = this.todayStr(); const label = document.getElementById('hotIssueDateLabel');
+        const today = this.todayStr(), label = document.getElementById('hotIssueDateLabel');
         if (label) { const d = new Date(); label.textContent = `· ${d.getMonth() + 1}월 ${d.getDate()}일 실시간`; }
         const now = Date.now();
         if (this.cache.date === today && this.cache.items && (now - this.cache.fetchedAt) < 60 * 60 * 1000) { this.render(this.cache.items); return; }
@@ -2241,11 +2007,9 @@
       },
       getFallbackItems() {
         return [
-          { keyword: '코스피 6800선 후퇴', desc: '유가·미국 금리 급등에 2%대 약세', source: '뉴스1', url: '#' },
-          { keyword: '이재명 대통령 수석보좌관회의', desc: '지지율 반전책 고심, 대수보 메시지 주목', source: '뉴스1', url: '#' },
-          { keyword: '네팔 긴급구호대 2진 출발', desc: '재건복구팀 8명 포함, 현지 파견', source: '연합뉴스TV', url: '#' },
-          { keyword: '김정관 대미투자협상 방미', desc: '최종 사인 전 협상 진행', source: '연합뉴스', url: '#' },
-          { keyword: '이종섭 호주도피 1심 선고', desc: '특검 관련 윤석열 오늘 1심 선고', source: '연합뉴스', url: '#' }
+          { keyword: '오늘의 주요 뉴스를 준비 중이에요', desc: '서버 연결이 되면 자동으로 업데이트돼요', source: '오프라인', url: '#' },
+          { keyword: '두 번째 뉴스 항목', desc: '샘플 항목이에요', source: '오프라인', url: '#' },
+          { keyword: '세 번째 뉴스 항목', desc: '샘플 항목이에요', source: '오프라인', url: '#' }
         ];
       },
       render(items) {
@@ -2278,8 +2042,7 @@
         if (label) label.textContent = `(${this.studyMinutes}분 집중/${this.restMinutes}분 휴식)`;
       },
       updateDurations() {
-        const sVal = parseInt(document.getElementById('studyMinutesInput').value);
-        const rVal = parseInt(document.getElementById('restMinutesInput').value);
+        const sVal = parseInt(document.getElementById('studyMinutesInput').value), rVal = parseInt(document.getElementById('restMinutesInput').value);
         if (!sVal || !rVal || sVal < 5 || sVal > 180 || rVal < 1 || rVal > 60) return app.ui.showToast('집중 5~180분, 휴식 1~60분 사이로 설정해주세요 🙏');
         this.studyMinutes = sVal; this.restMinutes = rVal;
         app.store.set(this.DURATIONS_KEY, { study: sVal, rest: rVal });
@@ -2308,20 +2071,19 @@
         if (!this.dateStr) this.dateStr = app.selectedDateStr;
         this.isRunning = true; this.endTimestamp = Date.now() + this.timeLeft * 1000;
         app.haptic(15); this.persist(); this.resumeInterval(); this.requestWakeLock(); this.updateDisplay();
-        app.ui.showToast('⏳ 타이머가 시작됐어요. 목표를 달성하면 지금 시각 기준으로 타임테이블이 자동 완료돼요!');
+        app.ui.showToast('⏳ 타이머가 시작됐어요.');
       },
       pause() { if (this.endTimestamp) this.timeLeft = Math.max(0, Math.round((this.endTimestamp - Date.now()) / 1000)); this.stopInterval(); this.releaseWakeLock(); this.endTimestamp = null; this.persist(); this.updateDisplay(); },
       reset() { this.stopInterval(); this.releaseWakeLock(); this.mode = 'study'; this.timeLeft = this.studyMinutes * 60; this.endTimestamp = null; this.dateStr = null; this.persist(); this.updateDisplay(); },
       completeCycle(fromCatchUp) {
         if (this.mode === 'study') {
           if (!fromCatchUp) { app.haptic([40,60,40]); app.ui.showAlarmToast('🎉', '집중 완료!', `${this.studyMinutes}분 집중 목표를 달성했어요! ${this.restMinutes}분 휴식을 시작하세요 ☕`); }
-          const targetDate = this.dateStr || app.selectedDateStr; const currentHour = new Date().getHours();
+          const targetDate = this.dateStr || app.selectedDateStr, currentHour = new Date().getHours();
           if (targetDate) {
             if (!app.dailyData[targetDate]) app.dailyData[targetDate] = { timers: {} };
             if (!app.dailyData[targetDate].timers) app.dailyData[targetDate].timers = {};
             app.dailyData[targetDate].timers[currentHour] = 'done';
-            localStorage.setItem('appDailyData', JSON.stringify(app.dailyData));
-            app.cloud.queuePush();
+            localStorage.setItem('appDailyData', JSON.stringify(app.dailyData)); app.cloud.queuePush();
             app.ui.markTimetableDone(targetDate, currentHour);
           }
           this.mode = 'rest'; this.timeLeft = this.restMinutes * 60; this.endTimestamp = Date.now() + this.timeLeft * 1000;
@@ -2387,7 +2149,7 @@
         const emailId = context === 'gate' ? 'gateEmailInput' : 'authEmailInput', pwId = context === 'gate' ? 'gatePasswordInput' : 'authPasswordInput', errId = context === 'gate' ? 'gateErrorMsg' : 'authErrorMsg';
         const email = document.getElementById(emailId).value.trim(), pw = document.getElementById(pwId).value;
         if (!email || !pw) return this.setFieldError(errId, '이메일과 비밀번호를 입력해주세요.');
-        try { await this.auth.createUserWithEmailAndPassword(email, pw); if (context === 'modal') this.closeAuthModal(); app.ui.showToast('🎉 가입 완료! 자동으로 로그인됐어요.'); }
+        try { await this.auth.createUserWithEmailAndPassword(email, pw); if (context === 'modal') this.closeAuthModal(); app.ui.showToast('🎉 가입 완료!'); }
         catch (e) { this.setFieldError(errId, this.errorMessage(e)); }
       },
       async signOut() { if (!this.requireReady()) return; if (this.unsubscribeSnapshot) { this.unsubscribeSnapshot(); this.unsubscribeSnapshot = null; } await this.auth.signOut(); app.ui.showToast('로그아웃했어요.'); },
@@ -2471,7 +2233,7 @@
       skipLogin() { sessionStorage.setItem('rememberGuestSession', 'true'); this.hideLoginGate(); this.showToast('👀 게스트 모드로 시작했어요.'); },
       toggleCollapse(panelId) { const panel = document.getElementById(panelId); if (!panel) return; panel.classList.toggle('collapsed'); app.haptic(8); },
       updatePanelSummaries() {
-        const data = app.dailyData[app.selectedDateStr] || {}; const monthly = app.getMonthlyBucket(app.selectedDateStr);
+        const data = app.dailyData[app.selectedDateStr] || {}, monthly = app.getMonthlyBucket(app.selectedDateStr);
         const priEl = document.getElementById('prioritySummary');
         if (priEl) { const inputs = document.querySelectorAll('#priorityList .priority-item input'); const filled = Array.from(inputs).filter(i => i.value.trim()).length; priEl.textContent = filled > 0 ? `${filled}개 입력됨` : ''; }
         const evEl = document.getElementById('eventSummary'); if (evEl) { const count = app.events.filter(e => e.date === app.selectedDateStr).length; evEl.textContent = count > 0 ? `${count}개` : ''; }
@@ -2547,7 +2309,7 @@
         const box = document.getElementById('searchResults'); keyword = keyword.trim().toLowerCase();
         if (!keyword) { box.innerHTML = '<div style="font-size:12.5px; color:var(--ink-soft); text-align:center; padding:24px 10px;">찾고 싶은 기억의 조각을 키워드로 입력해보세요! ✨</div>'; return; }
         const results = [];
-        Object.keys(app.diary).forEach(date => { const d = app.diary[date]; const title = (d.title || '').toLowerCase(); const text = (d.text || '').toLowerCase(); if (title.includes(keyword) || text.includes(keyword)) results.push({ date, type: '📓 일기 기록', preview: d.title || d.text.slice(0, 32) + '...', action: () => { app.ui.closeSearchModal(); app.ui.openDiary(date, 'calendarView'); } }); });
+        Object.keys(app.diary).forEach(date => { const d = app.diary[date]; const title = (d.title || '').toLowerCase(), text = (d.text || '').toLowerCase(); if (title.includes(keyword) || text.includes(keyword)) results.push({ date, type: '📓 일기 기록', preview: d.title || d.text.slice(0, 32) + '...', action: () => { app.ui.closeSearchModal(); app.ui.openDiary(date, 'calendarView'); } }); });
         Object.keys(app.monthlyData).forEach(monthKey => { const m = app.monthlyData[monthKey]; if (m.priorities) m.priorities.forEach((p, idx) => { if (p && p.toLowerCase().includes(keyword)) { const jumpDate = (app.selectedDateStr && app.monthKey(app.selectedDateStr) === monthKey) ? app.selectedDateStr : `${monthKey}-01`; results.push({ date: `${monthKey} (이번 달)`, type: `📌 ${idx+1}순위 이번 달 목표`, preview: p, action: () => { app.ui.closeSearchModal(); app.ui.showPlanner(jumpDate); } }); } }); });
         Object.keys(app.dailyData).forEach(date => { const d = app.dailyData[date]; if (d.timetable) Object.keys(d.timetable).forEach(hour => { const t = d.timetable[hour]; if (t && t.text && t.text.toLowerCase().includes(keyword)) results.push({ date, type: `⏰ ${hour}시 타임테이블`, preview: t.text, action: () => { app.ui.closeSearchModal(); app.ui.showPlanner(date); } }); }); });
         if (results.length === 0) { box.innerHTML = '<div style="font-size:12.5px; color:var(--ink-soft); text-align:center; padding:24px 10px;">일치하는 기록이 전혀 없어요 😢</div>'; return; }
@@ -2581,15 +2343,10 @@
         this.showToast(on ? '🌙 다크 모드로 전환했어요' : '☀️ 라이트 모드로 전환했어요');
       },
       changeMonth(offset) { app.currentDate.setMonth(app.currentDate.getMonth() + offset); app.fetchHolidays(app.currentDate.getFullYear()).then(() => this.renderCalendar()); },
-
       openCoachPlanner() {
         this.showPlanner(app.todayStr());
         app.coachChat.viewSlot = app.coach.slotOf();
-        setTimeout(() => {
-          this.renderCoachPlanner(true);
-          const card = document.getElementById('plannerCoachCard');
-          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 0);
+        setTimeout(() => { this.renderCoachPlanner(true); const card = document.getElementById('plannerCoachCard'); if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 0);
       },
       renderCoachPlanner(force = false) {
         const card = document.getElementById('plannerCoachCard'); if (!card) return;
@@ -2603,7 +2360,6 @@
         cc.ensureAI(cc.viewSlot);
       },
       closeCoachPlanner() { const card = document.getElementById('plannerCoachCard'); if (card) card.classList.add('hidden'); },
-
       showPlanner(dateStr) {
         app.selectedDateStr = dateStr;
         document.getElementById('calendarView').classList.add('hidden');
@@ -2630,12 +2386,7 @@
         this.loadDiaryData();
         window.scrollTo(0, 0);
       },
-      closeDiary() {
-        this.saveDiary(false);
-        document.getElementById('diaryView').classList.add('hidden');
-        if (app.diaryFromView === 'plannerView' && app.selectedDateStr) this.showPlanner(app.selectedDateStr);
-        else this.showCalendar();
-      },
+      closeDiary() { this.saveDiary(false); document.getElementById('diaryView').classList.add('hidden'); if (app.diaryFromView === 'plannerView' && app.selectedDateStr) this.showPlanner(app.selectedDateStr); else this.showCalendar(); },
       shiftDiaryDate(offset) {
         this.saveDiary(false);
         const d = new Date(app.diaryDateStr); d.setDate(d.getDate() + offset);
@@ -2652,7 +2403,7 @@
       escapeHtml(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); },
       autoResizeTextarea(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; },
       loadDiaryData() {
-        const dateStr = app.diaryDateStr; const d = new Date(dateStr); const isToday = dateStr === app.todayStr();
+        const dateStr = app.diaryDateStr, d = new Date(dateStr), isToday = dateStr === app.todayStr();
         document.getElementById('diaryDateLabel').textContent = `${isToday ? '오늘 · ' : ''}${d.getMonth() + 1}월 ${d.getDate()}일 (${['일', '월', '화', '수', '목', '금', '토'][d.getDay()]}) 일기`;
         const entry = this.getDiaryEntry(dateStr);
         document.getElementById('diaryTitle').value = entry.title;
@@ -2677,7 +2428,7 @@
       },
       async viewDiaryPhoto(idx) {
         const photo = (app.diaryPhotosDraft || [])[idx]; if (!photo) return;
-        let src = photo.thumb; let objectUrl = null;
+        let src = photo.thumb, objectUrl = null;
         if (photo.id) { try { const blob = await app.idb.get(photo.id); if (blob) { objectUrl = URL.createObjectURL(blob); src = objectUrl; } } catch (e) { console.error('사진 원본을 불러오지 못했어요', e); } }
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,16,30,0.88);z-index:2000;display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out;';
@@ -2708,11 +2459,7 @@
               fCanvas.getContext('2d').drawImage(img, 0, 0, fCanvas.width, fCanvas.height);
               const photoId = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
               fCanvas.toBlob((blob) => {
-                const finish = () => {
-                  app.diaryPhotosDraft.push({ id: blob ? photoId : null, thumb: thumbDataUrl });
-                  remaining--;
-                  if (remaining === 0) { this.renderDiaryPhotoGrid(); this.updateDiaryMeta(document.getElementById('diaryTextarea').value); this.saveDiary(false); }
-                };
+                const finish = () => { app.diaryPhotosDraft.push({ id: blob ? photoId : null, thumb: thumbDataUrl }); remaining--; if (remaining === 0) { this.renderDiaryPhotoGrid(); this.updateDiaryMeta(document.getElementById('diaryTextarea').value); this.saveDiary(false); } };
                 if (blob) app.idb.put(photoId, blob).then(finish).catch(err => { console.error('사진 원본 저장 실패, 썸네일만 저장돼요', err); finish(); });
                 else finish();
               }, 'image/jpeg', 0.82);
@@ -2724,8 +2471,7 @@
       },
       saveDiary(showToast = true) {
         const dateStr = app.diaryDateStr; if (!dateStr) return;
-        const title = document.getElementById('diaryTitle').value; const text = document.getElementById('diaryTextarea').value;
-        const photos = app.diaryPhotosDraft || [];
+        const title = document.getElementById('diaryTitle').value, text = document.getElementById('diaryTextarea').value, photos = app.diaryPhotosDraft || [];
         if (title.trim() === '' && text.trim() === '' && photos.length === 0) delete app.diary[dateStr];
         else app.diary[dateStr] = { title, text, photos };
         try { localStorage.setItem('appDiary', JSON.stringify(app.diary)); app.cloud.queuePush(); }
@@ -2734,7 +2480,7 @@
         if (showToast) app.ui.showToast('일기가 저장되었습니다. 📓');
       },
       updateTimetableRange() {
-        const start = parseInt(document.getElementById('timeStart').value); const end = parseInt(document.getElementById('timeEnd').value);
+        const start = parseInt(document.getElementById('timeStart').value), end = parseInt(document.getElementById('timeEnd').value);
         if (start >= end) return this.showToast("시작 시간이 종료 시간보다 작아야 합니다.");
         app.settings.start = start; app.settings.end = end;
         localStorage.setItem('appSettings', JSON.stringify(app.settings)); app.cloud.queuePush();
@@ -2772,7 +2518,7 @@
         if (dateStr === app.selectedDateStr) {
           const row = document.querySelector(`.time-row[data-hour="${hour}"]`);
           if (row) {
-            const input = row.querySelector('.time-input'); const btn = row.querySelector('.status-btn');
+            const input = row.querySelector('.time-input'), btn = row.querySelector('.status-btn');
             if (input && btn && !btn.classList.contains('done')) { btn.classList.add('done'); btn.textContent = '💖 달성'; if (input.value.trim() !== '') input.classList.add('done-input'); }
             row.scrollIntoView({ behavior: 'smooth', block: 'center' });
             row.classList.add('just-completed'); setTimeout(() => row.classList.remove('just-completed'), 1600);
@@ -2791,7 +2537,7 @@
             const rows = Array.from(container.querySelectorAll('.time-row'));
             const newTimetable = {}; let currentHour = app.settings.start;
             rows.forEach(row => {
-              const input = row.querySelector('.time-input'); const btn = row.querySelector('.status-btn'); const repeatBtn = row.querySelector('.repeat-btn');
+              const input = row.querySelector('.time-input'), btn = row.querySelector('.status-btn'), repeatBtn = row.querySelector('.repeat-btn');
               row.dataset.hour = currentHour;
               row.querySelector('.time-label').textContent = `${String(currentHour).padStart(2, '0')}:00`;
               newTimetable[currentHour] = { text: input.value, done: btn.classList.contains('done') };
@@ -2846,7 +2592,7 @@
       },
       addPriorityRow() {
         const container = document.getElementById('priorityList'); if (!container) return;
-        const idx = container.children.length; const ranks = ['🥇', '🥈', '🥉']; const rank = ranks[idx] || `${idx + 1}.`;
+        const idx = container.children.length, ranks = ['🥇', '🥈', '🥉'], rank = ranks[idx] || `${idx + 1}.`;
         const div = document.createElement('div'); div.className = 'priority-item';
         div.innerHTML = `<span class="priority-rank">${rank}</span><input type="text" value="" placeholder="목표를 적어보세요" onchange="app.savePriorities()" oninput="app.ui.updatePanelSummaries()"><button class="btn-danger" onclick="this.parentElement.remove(); app.savePriorities();">❌</button>`;
         container.appendChild(div); div.querySelector('input').focus();
@@ -2861,7 +2607,7 @@
         fContainer.appendChild(div);
       },
       deleteFinanceRow(btn) {
-        const row = btn.closest('.finance-item'); const groupId = row.dataset.installmentGroup;
+        const row = btn.closest('.finance-item'), groupId = row.dataset.installmentGroup;
         if (groupId) {
           const months = row.dataset.installmentMonths || '';
           const cascadeAll = window.confirm(`이 항목은 할부(${months}개월) 지출이에요.\n전체 할부 기록을 다 지울까요?\n(취소하면 이번 달 항목만 삭제돼요)`);
@@ -2873,27 +2619,27 @@
         row.remove(); app.saveFinances();
       },
       calculateExpenditure() {
-        const amounts = document.querySelectorAll('.finance-item .amt'); const cats = document.querySelectorAll('.finance-item .cat');
+        const amounts = document.querySelectorAll('.finance-item .amt'), cats = document.querySelectorAll('.finance-item .cat');
         let total = 0; let categorySums = { '식비': 0, '교통비': 0, '쇼핑': 0, '자기계발': 0, '기타': 0 };
         amounts.forEach((input, index) => { const val = Number(input.value) || 0; total += val; if (cats[index]) categorySums[cats[index].value] += val; });
         document.getElementById('kpiExpenditure').textContent = `₩${total.toLocaleString()}`;
         const finSummaryEl = document.getElementById('financeSummary'); if (finSummaryEl) finSummaryEl.textContent = total > 0 ? `이번 달 ₩${total.toLocaleString()}` : '';
-        const data = app.dailyData[app.selectedDateStr]; const progress = data && data.progress !== undefined ? data.progress : 0;
+        const data = app.dailyData[app.selectedDateStr], progress = data && data.progress !== undefined ? data.progress : 0;
         document.getElementById('kpiProgress').textContent = progress + '%';
         const score = Math.floor(progress * 0.8 + 20);
         document.getElementById('kpiScore').textContent = (progress === 0 ? 0 : score) + '점';
         this.updateFinanceChart(categorySums); this.updateExpenseComparison();
       },
       updateExpenseComparison() {
-        const thisKey = app.monthKey(app.selectedDateStr); const lastKey = app.prevMonthKey(thisKey);
-        const thisTotal = app.monthTotal(thisKey); const lastTotal = app.monthTotal(lastKey);
-        const lastEl = document.getElementById('lastMonthExpense'); const thisEl = document.getElementById('thisMonthExpense');
+        const thisKey = app.monthKey(app.selectedDateStr), lastKey = app.prevMonthKey(thisKey);
+        const thisTotal = app.monthTotal(thisKey), lastTotal = app.monthTotal(lastKey);
+        const lastEl = document.getElementById('lastMonthExpense'), thisEl = document.getElementById('thisMonthExpense');
         if (lastEl) lastEl.textContent = `₩${lastTotal.toLocaleString()}`; if (thisEl) thisEl.textContent = `₩${thisTotal.toLocaleString()}`;
         const fb = document.getElementById('expenseCompareFeedback');
         if (fb) {
           if (lastTotal === 0) { fb.innerHTML = thisTotal === 0 ? "아직 비교할 지출 기록이 없어요" : "지난달 기록이 없어서 비교할 수 없어요"; fb.style.color = "var(--ink-soft)"; fb.style.backgroundColor = "#f4f1fa"; }
           else {
-            const diff = thisTotal - lastTotal; const pct = Math.round(Math.abs(diff) / lastTotal * 100);
+            const diff = thisTotal - lastTotal, pct = Math.round(Math.abs(diff) / lastTotal * 100);
             if (diff < 0) { fb.innerHTML = `지난달보다 <b>₩${Math.abs(diff).toLocaleString()} (${pct}%)</b> 덜 썼어요! 잘하고 있어요 🎉`; fb.style.color = "#2f9d78"; fb.style.backgroundColor = "var(--mint-bg)"; }
             else if (diff > 0) { fb.innerHTML = `지난달보다 <b>₩${diff.toLocaleString()} (${pct}%)</b> 더 썼어요`; fb.style.color = "#b8792a"; fb.style.backgroundColor = "var(--amber-bg)"; }
             else { fb.innerHTML = `지난달과 지출이 똑같아요`; fb.style.color = "#3d6fae"; fb.style.backgroundColor = "var(--sky-bg)"; }
@@ -2912,7 +2658,7 @@
         if (typeof Chart === 'undefined') return;
         const ctx = document.getElementById('financeChart').getContext('2d');
         if (app.financeChartInstance) app.financeChartInstance.destroy();
-        const labels = Object.keys(categorySums).filter(k => categorySums[k] > 0); const data = labels.map(k => categorySums[k]);
+        const labels = Object.keys(categorySums).filter(k => categorySums[k] > 0), data = labels.map(k => categorySums[k]);
         if (data.length === 0) return;
         const computedStyle = getComputedStyle(document.body);
         const cAccent = computedStyle.getPropertyValue('--accent').trim() || '#6e63e0';
@@ -2921,9 +2667,9 @@
         app.financeChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } } } });
       },
       updateGrowthReport() {
-        const todayStr = app.selectedDateStr; const yesterdayStr = app.getOffsetDateString(todayStr, 1);
-        const monthStartStr = `${app.monthKey(todayStr)}-01`; const lastWeekCandidate = app.getOffsetDateString(todayStr, 7);
-        const lastWeekInThisMonth = lastWeekCandidate >= monthStartStr; const lastWeekStr = lastWeekInThisMonth ? lastWeekCandidate : null;
+        const todayStr = app.selectedDateStr, yesterdayStr = app.getOffsetDateString(todayStr, 1);
+        const monthStartStr = `${app.monthKey(todayStr)}-01`, lastWeekCandidate = app.getOffsetDateString(todayStr, 7);
+        const lastWeekInThisMonth = lastWeekCandidate >= monthStartStr, lastWeekStr = lastWeekInThisMonth ? lastWeekCandidate : null;
         const pToday = (app.dailyData[todayStr] && app.dailyData[todayStr].progress) || 0;
         const pYest = (yesterdayStr >= monthStartStr && app.dailyData[yesterdayStr] && app.dailyData[yesterdayStr].progress) || 0;
         const pLast = (lastWeekStr && app.dailyData[lastWeekStr] && app.dailyData[lastWeekStr].progress) || 0;
@@ -2935,9 +2681,9 @@
         else if (pToday > pYest) { fb.innerHTML = `어제보다 <b>${pToday - pYest}%</b> 성장! 이대로 계속 나아가요! 🤩🎉`; fb.style.color = "#2f9d78"; fb.style.backgroundColor = "var(--mint-bg)"; }
         else if (pToday > 0 && pToday === pYest) { fb.innerHTML = `어제만큼 꾸준히 해내고 있어요! 🔥💪`; fb.style.color = "#3d6fae"; fb.style.backgroundColor = "var(--sky-bg)"; }
         else { fb.innerHTML = `무리하지 말고 작은 것부터 하나씩 완료해봐요! 🌱`; fb.style.color = "#b8792a"; fb.style.backgroundColor = "var(--amber-bg)"; }
-        const dayOfMonth = parseInt(todayStr.slice(8, 10), 10); const daysToShow = Math.min(7, dayOfMonth);
+        const dayOfMonth = parseInt(todayStr.slice(8, 10), 10), daysToShow = Math.min(7, dayOfMonth);
         const labels = [], dataPts = [];
-        for (let i = daysToShow - 1; i >= 0; i--) { const dStr = app.getOffsetDateString(todayStr, i); const dObj = new Date(dStr); labels.push(`${dObj.getMonth() + 1}/${dObj.getDate()}`); dataPts.push((app.dailyData[dStr] && app.dailyData[dStr].progress) || 0); }
+        for (let i = daysToShow - 1; i >= 0; i--) { const dStr = app.getOffsetDateString(todayStr, i), dObj = new Date(dStr); labels.push(`${dObj.getMonth() + 1}/${dObj.getDate()}`); dataPts.push((app.dailyData[dStr] && app.dailyData[dStr].progress) || 0); }
         const ctx = document.getElementById('growthChart').getContext('2d');
         if (app.growthChartInstance) app.growthChartInstance.destroy();
         if (typeof Chart === 'undefined') return;
@@ -2948,12 +2694,12 @@
       },
       renderCalendar() {
         this.updateMonthGoalBadge(); this.applySeasonalHero();
-        const year = app.currentDate.getFullYear(); const month = app.currentDate.getMonth();
+        const year = app.currentDate.getFullYear(), month = app.currentDate.getMonth();
         document.getElementById('currentMonthStr').textContent = `${year}년 ${month + 1}월`;
-        const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
         const grid = document.getElementById('calendarDays'); grid.innerHTML = '';
         for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-        const today = new Date(); const wxData = app.weather.activeData(); const wxDaily = wxData && wxData.daily;
+        const today = new Date(), wxData = app.weather.activeData(), wxDaily = wxData && wxData.daily;
         for (let day = 1; day <= daysInMonth; day++) {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const dayOfWeek = new Date(year, month, day).getDay();
@@ -2970,7 +2716,7 @@
           if (app.holidays[year] && app.holidays[year][dateStr]) { dateStyle = 'class="sun"'; extraHtml += `<div class="holiday-text">🎈 ${app.holidays[year][dateStr]}</div>`; }
           app.events.filter(e => e.date === dateStr).forEach(e => { extraHtml += `<div class="event-text">🎉 ${e.title}</div>`; });
           const diaryEntry = this.getDiaryEntry(dateStr);
-          const diaryHasTitle = diaryEntry.title && diaryEntry.title.trim() !== ''; const diaryHasText = diaryEntry.text && diaryEntry.text.trim() !== ''; const diaryHasPhotos = diaryEntry.photos && diaryEntry.photos.length > 0;
+          const diaryHasTitle = diaryEntry.title && diaryEntry.title.trim() !== '', diaryHasText = diaryEntry.text && diaryEntry.text.trim() !== '', diaryHasPhotos = diaryEntry.photos && diaryEntry.photos.length > 0;
           if (diaryHasTitle || diaryHasText || diaryHasPhotos) { let preview = diaryHasTitle ? diaryEntry.title.trim() : (diaryHasText ? diaryEntry.text.trim().split('\n')[0] : ''); if (preview.length > 16) preview = preview.slice(0, 16) + '…'; if (!preview) preview = `사진 ${diaryEntry.photos.length}장`; extraHtml += `<div class="diary-indicator" onclick="event.stopPropagation(); app.ui.openDiary('${dateStr}', 'calendarView')">📓 ${this.escapeHtml(preview)}</div>`; }
           grid.innerHTML += `<div class="${classes}" onclick="app.ui.showPlanner('${dateStr}')"><span ${dateStyle}>${day}</span>${wxHtml}${progressBadge}${extraHtml}</div>`;
         }
