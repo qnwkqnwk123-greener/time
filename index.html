@@ -511,6 +511,155 @@
   .wx-hourly-strip { position: relative; }
   .wx-hour-item.now { background: var(--accent-bg); box-shadow: inset 0 0 0 2px var(--accent), 0 6px 14px -6px rgba(110, 99, 224, 0.5); transform: translateY(-2px); }
   .wx-now-tag { display: inline-block; margin-bottom: 3px; padding: 1px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; color: #fff; background: var(--accent); }
+
+  /* =====================================================================
+     ✨ 세련된 디자인 오버라이드 — 이 블록(여기부터 style 끝까지)을 지우면 이전 디자인으로 돌아가요
+     ===================================================================== */
+  :root {
+    --font-display: 'Gowun Batang', 'Noto Serif KR', serif;
+    --font-body: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius-lg: 24px; --radius-md: 18px; --radius-sm: 13px;
+    --shadow-sm: 0 1px 2px rgba(30,24,60,.05), 0 10px 28px -14px rgba(30,24,60,.16);
+    --shadow-md: 0 2px 6px rgba(30,24,60,.06), 0 22px 48px -22px rgba(70,60,170,.34);
+    --glass: rgba(255,255,255,.74); --glass-line: rgba(255,255,255,.88);
+  }
+  body.dark { --glass: rgba(38,33,54,.68); --glass-line: rgba(255,255,255,.09); }
+  body, button, input, select, textarea, .time-input { font-family: var(--font-body) !important; }
+  body { font-size: 15px; letter-spacing: -0.006em; }
+  h1, h2, h3, .hero-title, .box-title, #plannerTitle, .login-gate-title, .planner-coach-card-title { font-family: var(--font-display) !important; letter-spacing: -0.015em; }
+
+  /* 패널: 은은한 유리 느낌 */
+  .box-panel, .timer-display, .kpi-card, .planner-header, .diary-header {
+    border: 1px solid var(--glass-line) !important; background: var(--glass) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.25); backdrop-filter: blur(18px) saturate(1.25);
+    box-shadow: var(--shadow-sm) !important; border-radius: var(--radius-lg) !important;
+  }
+  .kpi-card { border-radius: var(--radius-md) !important; }
+  .kpi-card .value { font-family: var(--font-display); letter-spacing: -0.02em; }
+  .box-title { font-size: 16px; border-bottom: 1px solid var(--line); }
+
+  /* 버튼: 튀는 효과 대신 차분한 반응 */
+  button {
+    font-size: 13.5px !important; font-weight: 600; letter-spacing: -0.005em;
+    border: 1px solid var(--line) !important; background: rgba(255,255,255,.86);
+    transition: background .2s ease, box-shadow .2s ease, transform .2s ease !important;
+  }
+  button:hover { transform: translateY(-1px) !important; box-shadow: var(--shadow-sm) !important; }
+  button:active { transform: translateY(0) !important; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-deep)) !important; color: #fff !important; border: none !important; box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, transparent) !important; }
+  .btn-ghost { background: transparent !important; }
+  .btn-danger { background: var(--blush-bg) !important; color: #d4608d !important; border: 1px solid #f4c9da !important; }
+  .hero-nav button { border: 1px solid rgba(255,255,255,.34) !important; background: rgba(255,255,255,.16); color: #fff; }
+  .hero-nav button:hover { background: rgba(255,255,255,.28); }
+  body.dark button { background: rgba(255,255,255,.07); }
+  body.dark .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-deep)) !important; }
+
+  /* 입력창 */
+  input[type="text"], input[type="number"], input[type="password"], input[type="date"], textarea, select, .time-input {
+    border: 1.5px solid var(--line) !important; border-radius: 14px !important; background: rgba(255,255,255,.92) !important;
+    transition: border-color .2s ease, box-shadow .2s ease !important;
+  }
+  input:focus, textarea:focus, select:focus, .time-input:focus {
+    border-color: var(--accent) !important; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent) !important; transform: none !important;
+  }
+  body.dark input[type="text"], body.dark input[type="number"], body.dark input[type="password"], body.dark input[type="date"], body.dark textarea, body.dark select, body.dark .time-input { background: rgba(255,255,255,.06) !important; border-color: var(--line) !important; }
+  input[type="date"] { font-size: 15px !important; color: var(--ink); }
+
+  /* 히어로 */
+  .hero { border-radius: 30px !important; box-shadow: var(--shadow-md); }
+  .hero-title { font-size: 24px; }
+  .hero-quote { font-style: normal !important; font-size: 13px !important; line-height: 1.55; background: rgba(255,255,255,.14) !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.3) !important; border-radius: 14px !important; transition: background .2s ease; }
+  .hero-quote:hover { background: rgba(255,255,255,.24) !important; }
+  .hq-meta { opacity: .8; font-size: 11px; margin-left: 6px; }
+
+  /* 달력 */
+  .day-name { font-size: 11.5px; letter-spacing: .08em; }
+  .cal-day { border-radius: 16px !important; transition: transform .2s ease, box-shadow .2s ease !important; }
+  .cal-day:hover { transform: translateY(-2px) !important; box-shadow: var(--shadow-sm) !important; }
+  .cal-progress-badge { letter-spacing: -.01em; }
+
+  /* 오늘의 조언 카드 */
+  .planner-coach-card { border: 1px solid var(--glass-line); background: var(--glass); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-radius: 28px; box-shadow: var(--shadow-md); }
+  .planner-coach-card-head { border-bottom: 1px solid var(--line); padding: 16px 20px; }
+  .planner-coach-card-title { font-size: 16px; }
+  .planner-coach-card-body { padding: 16px 20px; }
+  .planner-coach-footer { padding: 10px 20px 16px; }
+  .cc-slots { background: rgba(120,110,200,.1); padding: 4px; border-radius: 16px; gap: 2px; }
+  .cc-slots button { border: none !important; background: transparent !important; border-radius: 12px !important; box-shadow: none !important; color: var(--ink-soft); }
+  .cc-slots button.on { background: var(--paper-raised) !important; color: var(--accent-deep); box-shadow: var(--shadow-sm) !important; }
+  .cc-status { background: color-mix(in srgb, var(--accent-bg) 80%, transparent); border-radius: 14px; }
+  .cc-card { border: none !important; background: rgba(255,255,255,.66); box-shadow: inset 0 0 0 1px var(--line); border-radius: 16px; }
+  body.dark .cc-card { background: rgba(255,255,255,.05); }
+  .cc-card.praise { box-shadow: inset 3px 0 0 var(--mint), inset 0 0 0 1px var(--line); }
+  .cc-card.advice { box-shadow: inset 3px 0 0 #e0a800, inset 0 0 0 1px var(--line); }
+  .cc-card.action { box-shadow: inset 3px 0 0 var(--accent), inset 0 0 0 1px var(--line); }
+  .cc-opt { border-radius: 999px !important; }
+  .cc-opt.on { background: var(--accent) !important; color: #fff; border-color: transparent !important; }
+  .cc-more summary { font-weight: 700; }
+
+  /* 목표 배너 (D-day 링) */
+  .gb { display: flex; gap: 16px; align-items: center; padding: 16px 18px; margin-bottom: 12px; border-radius: 22px; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 13%, #fff), color-mix(in srgb, var(--accent-bg) 70%, #fff)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent); }
+  body.dark .gb { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 22%, #241f33), #241f33); }
+  .gb-ring { --p: 0%; width: 82px; height: 82px; flex: 0 0 82px; border-radius: 50%; background: conic-gradient(var(--accent) var(--p), rgba(120,110,200,.16) 0); display: grid; place-items: center; }
+  .gb-ring-in { width: 66px; height: 66px; border-radius: 50%; background: var(--paper-raised); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; text-align: center; box-shadow: inset 0 0 0 1px var(--line); }
+  .gb-ring-in b { font-size: 15px; font-weight: 800; color: var(--accent-deep); letter-spacing: -.02em; }
+  .gb-ring-in span { font-size: 9.5px; color: var(--ink-soft); max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gb-main { flex: 1; min-width: 0; }
+  .gb-title { font-size: 16px; font-weight: 800; color: var(--ink); font-family: var(--font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gb-sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .gb-bar { height: 6px; border-radius: 999px; background: rgba(120,110,200,.16); margin: 9px 0 8px; overflow: hidden; }
+  .gb-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--blush)); }
+  .gb-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .gb-chip { padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; border: 1px solid var(--line); color: var(--ink-soft); background: rgba(255,255,255,.55); }
+  body.dark .gb-chip { background: rgba(255,255,255,.06); }
+  .gb-chip.done { opacity: .5; }
+  .gb-chip.now { background: var(--accent); color: #fff; border-color: transparent; }
+  .gb-chip.next { background: var(--accent-bg); color: var(--accent-deep); border-color: var(--accent); }
+  .gb-pills { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .gb-pill { padding: 5px 12px; font-size: 12px !important; border-radius: 999px !important; }
+  .gb-pill.on { background: var(--accent) !important; color: #fff; border-color: transparent !important; }
+  .gb-empty { text-align: left; }
+  .gb-list { margin: 8px 0 0 18px; padding: 0; }
+  .gb-list li { margin-bottom: 6px; }
+  .cc-note { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+
+  /* 달력 페이지 D-day 위젯 */
+  .gd-add { padding: 5px 12px !important; font-size: 11.5px !important; border-radius: 999px !important; }
+  .gd-item { padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px var(--line); margin-bottom: 8px; cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; }
+  body.dark .gd-item { background: rgba(255,255,255,.05); }
+  .gd-item:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--accent), var(--shadow-sm); }
+  .gd-item.main { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .gd-top { display: flex; align-items: center; gap: 6px; }
+  .gd-top b { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gd-top em { font-style: normal; font-weight: 800; font-size: 12px; color: var(--accent-deep); background: var(--accent-bg); padding: 2px 9px; border-radius: 999px; }
+  .gd-bar { height: 5px; border-radius: 999px; background: rgba(120,110,200,.16); margin: 8px 0 5px; overflow: hidden; }
+  .gd-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--blush)); }
+  .gd-sub { font-size: 10.5px; color: var(--ink-faint); }
+  .gd-empty { font-size: 12.5px; color: var(--ink-soft); padding: 8px 2px; }
+
+  /* 목표 관리 목록 */
+  .gl-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .gl-row:last-child { border-bottom: none; }
+  .gl-ico { width: 36px; height: 36px; border-radius: 12px; background: var(--accent-bg); display: grid; place-items: center; font-size: 17px; flex: 0 0 36px; }
+  .gl-row.main .gl-ico { background: var(--accent); }
+  .gl-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .gl-txt b { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gl-txt span { font-size: 11px; color: var(--ink-soft); }
+  .gl-act { display: flex; gap: 6px; align-items: center; }
+  .gl-act button { padding: 5px 11px !important; font-size: 11.5px !important; }
+  .gl-act em { font-style: normal; font-size: 11px; font-weight: 800; color: #fff; background: var(--accent); padding: 4px 11px; border-radius: 999px; }
+
+  @media (max-width: 600px) {
+    .cal-day:hover { transform: none !important; }
+    .hero-title { font-size: 21px !important; }
+    .gb { padding: 13px; gap: 12px; }
+    .gb-ring { width: 68px; height: 68px; flex-basis: 68px; }
+    .gb-ring-in { width: 54px; height: 54px; }
+    .gb-ring-in b { font-size: 13px; }
+    .planner-coach-card-head, .planner-coach-card-body, .planner-coach-footer { padding-left: 14px; padding-right: 14px; }
+    .gl-row { flex-wrap: wrap; }
+    .gl-act { width: 100%; justify-content: flex-end; }
+  }
 </style>
 </head>
 <body>
@@ -595,6 +744,10 @@
         <h3 class="box-title" style="margin-bottom:10px; padding-bottom:8px;">🎯 이번 달 목표</h3>
         <div id="monthGoalText" style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.4; max-height:180px; overflow-y:auto;">아직 목표가 없어요</div>
       </div>
+      <div class="box-panel" style="flex:1.2; min-width:240px; padding:16px 18px; margin-bottom:0;">
+        <h3 class="box-title" style="margin-bottom:10px; padding-bottom:8px;">⏳ 목표 D-day <button class="gd-add" onclick="app.coach.openGoals()">＋ 관리</button></h3>
+        <div id="goalDash"></div>
+      </div>
     </div>
 
     <div class="calendar-grid">
@@ -650,8 +803,8 @@
           <summary>📊 주간 리포트</summary>
           <div id="ccPane-report" style="padding-top:8px;"></div>
         </details>
-        <details class="cc-more" ontoggle="if(this.open) app.coachChat.renderSettings()">
-          <summary>⚙️ 목표·시험 일정 설정</summary>
+        <details class="cc-more" id="ccSettingsDetails" ontoggle="if(this.open) app.coachChat.renderSettings()">
+          <summary>🎯 목표 관리</summary>
           <div id="ccPane-settings" style="padding-top:8px;"></div>
         </details>
       </div>
@@ -1207,6 +1360,7 @@
       return Math.round((target - today) / 86400000);
     },
 
+    /* 🎓 코치: 내 기록 + 시험 일정 단계 기반 (외부 AI 없음) */
     coach: {
       quotes: {
         book: [
@@ -2581,16 +2735,13 @@
   });
 
 /* =====================================================================
-   🎓 시험 일정 기반 코칭 패치 (D-day · 공부법 · 인생 조언)
-   - 기존 코드를 monkey-patch로 확장
-   - AI 서버 없이 로컬 데이터 + 시험 일정으로 코칭
+   🎓 시험 일정 기반 코칭 (D-day 단계 · 공부법 · 인생 조언)
    ===================================================================== */
 (function () {
   'use strict';
   const C = app.coach, CC = app.coachChat;
   const esc = (s) => app.ui.escapeHtml(s);
 
-  /* ---------- 1. 기본 일정 (2026년 3차 해양경찰공무원 채용 공고 기준) ---------- */
   const DEFAULT_SCHED = {
     written: '2026-10-24', result: '2026-11-13', aptitude: '2026-11-21',
     fitStart: '2026-11-23', fitEnd: '2026-11-26', docStart: '2026-12-01', docEnd: '2026-12-03',
@@ -2604,7 +2755,6 @@
   ];
   const DEFAULT_GOALS = ['2026 해양경찰 3차 최종합격', 'AI 기반 1인 사업 구축 (시험 우선)', '장기적으로 월 순소득 1,000만원'];
 
-  /* ---------- 2. 공통 도우미 ---------- */
   const P = () => (app.coachProfile = app.coachProfile || { goals: [], tone: 'balanced' });
   const toDate = (s) => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
   const daysTo = (s) => {
@@ -2624,7 +2774,6 @@
   C.sched = function () { return { ...DEFAULT_SCHED, ...(P().sched || {}) }; };
   C.goals = function () { const g = (P().goals || []).filter(Boolean); return g.length ? g : DEFAULT_GOALS; };
 
-  /* ---------- 3. 단계별 코칭 문구 (adv/act = [아침, 점심, 저녁]) ---------- */
   const PHASES = {
     drill: {
       icon: '📚', name: '기출·약점 집중기',
@@ -2740,7 +2889,6 @@
     }
   };
 
-  /* ---------- 4. 단계별 공부·준비법 [제목, 설명] ---------- */
   const STUDY = {
     drill: [
       [`🔁 인출 먼저`, `책을 덮고 답을 떠올린 다음 확인해. 읽기 반복은 익숙함만 만들고, 문제풀이·백지복습 같은 인출 연습이 기억에 더 오래 남는다는 게 학습과학의 일관된 결과야.`],
@@ -2796,7 +2944,6 @@
     ]
   };
 
-  /* ---------- 5. 인생 조언 ---------- */
   const LIFE = {
     wait: [
       `발표를 기다리는 시간엔 통제할 수 없는 것에 에너지를 쓰기 쉬워. 결과는 못 바꾸지만 오늘의 운동·수면·준비는 바꿀 수 있어. 오늘의 일은 통제 가능한 것으로만 채워.`,
@@ -2820,7 +2967,6 @@
     ]
   };
 
-  /* ---------- 6. 단계 계산 ---------- */
   C.phaseNow = function () {
     const S = this.sched(), res = P().writtenResult || 'pending';
     const n = {
@@ -2882,8 +3028,7 @@
     return { tag: ph.name, text: pick(pool, ph.key) };
   };
 
-  /* ---------- 7. 아침·점심·저녁 코칭에 단계 반영 ---------- */
-  const origSlotLocal = C.slotLocal;
+  const origSlotLocal = C.slotLocal; C.baseSlotLocal = origSlotLocal;
   C.slotLocal = function (slot) {
     const base = origSlotLocal.call(this, slot), ph = this.phaseNow();
     const i = ['morning', 'lunch', 'evening'].indexOf(slot);
@@ -2897,7 +3042,6 @@
     return { ...base, core: fill(ph.core, ph.n), advice: `${fill(ph.adv[i], ph.n)}${extra}`, action: fill(ph.act[i], ph.n) };
   };
 
-  /* ---------- 8. 화면: D-day 배너 + 공부법·인생조언 카드 ---------- */
   C.bannerHtml = function () {
     const ph = this.phaseNow(), tl = this.timeline(), n = ph.n;
     const next = tl.find((i) => i.state === 'now' || i.state === 'next');
@@ -2943,7 +3087,6 @@
     box.insertAdjacentHTML('beforeend', C.prescriptionHtml());
   };
 
-  /* ---------- 9. 설정 탭: 시험 일정 편집 ---------- */
   const origRenderSettings = CC.renderSettings;
   CC.renderSettings = function () {
     origRenderSettings.call(this);
@@ -2976,7 +3119,6 @@
     if (CC.cardVisible()) CC.renderToday();
   };
 
-  /* ---------- 10. 히어로 문장에 D-day 표시 ---------- */
   app.renderDailyQuote = function () {
     const el = document.getElementById('heroQuote');
     if (!el) return;
@@ -2986,6 +3128,403 @@
     el.innerHTML = `${d.icon} <b>${esc(d.core)}</b> <span style="opacity:.75; font-size:11px; margin-left:6px;">— ${esc(chipTxt)} · ${d.slotName} 코칭 ▸</span>`;
   };
 })();
+
+/* =====================================================================
+   🎯 목표 등록형 코칭 엔진
+   목표와 날짜를 등록하면, 그 날짜가 다가오는 정도에 따라 조언 단계가 바뀝니다.
+   (기반 다지기 → 집중 몰입기 → 완성도 올리기 → 마무리 주간 → D-DAY → 돌아보기)
+   ===================================================================== */
+(function () {
+  'use strict';
+  const C = app.coach, CC = app.coachChat;
+  const esc = (s) => app.ui.escapeHtml(s);
+  const PRESET_ID = 'g_coastguard';
+
+  const DEFAULT_SCHED = {
+    written: '2026-10-24', result: '2026-11-13', aptitude: '2026-11-21',
+    fitStart: '2026-11-23', fitEnd: '2026-11-26', docStart: '2026-12-01', docEnd: '2026-12-03',
+    intStart: '2026-12-14', intEnd: '2026-12-18', final: '2026-12-24'
+  };
+  const SCHED_LABELS = [
+    ['written', '필기시험'], ['result', '필기 합격 발표'], ['aptitude', '적성검사'],
+    ['fitStart', '체력검사 시작'], ['fitEnd', '체력검사 종료'],
+    ['docStart', '서류전형 시작'], ['docEnd', '서류전형 종료'],
+    ['intStart', '면접 시작'], ['intEnd', '면접 종료'], ['final', '최종 합격 발표']
+  ];
+  const TYPES = {
+    exam: { icon: '📚', label: '시험·자격증' },
+    fitness: { icon: '💪', label: '체력·운동' },
+    project: { icon: '🚀', label: '프로젝트·사업' },
+    general: { icon: '🎯', label: '일반 목표' }
+  };
+
+  /* ---------- 공통 도우미 ---------- */
+  const P = () => (app.coachProfile = app.coachProfile || { goals: [], tone: 'balanced' });
+  const toDate = (s) => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+  const todayDate = () => { const [y, m, d] = app.todayStr().split('-').map(Number); return new Date(y, m - 1, d); };
+  const daysTo = (s) => (s ? Math.round((toDate(s) - todayDate()) / 86400000) : NaN);
+  const chip = (n) => (n === 0 ? 'D-DAY' : n > 0 ? `D-${n}` : `D+${-n}`);
+  const md = (s) => { const d = toDate(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const cut = (s, n) => (String(s).length > n ? String(s).slice(0, n) + '…' : String(s));
+  const saveProfile = () => { localStorage.setItem('appCoachProfile', JSON.stringify(P())); app.cloud.queuePush(); };
+  const fillD = (s, d) => String(s).replace(/\{D\}/g, d >= 0 ? chip(d) : '종료');
+
+  /* ---------- 목표 저장소 ---------- */
+  const presetGoal = () => ({ id: PRESET_ID, title: '2026 해양경찰 3차 최종합격', type: 'exam', start: '2026-08-14', pack: 'coastguard' });
+  C.goalList = function () {
+    const p = P();
+    if (!Array.isArray(p.goalList)) { p.goalList = [presetGoal()]; p.mainGoal = PRESET_ID; saveProfile(); }
+    return p.goalList;
+  };
+  C.activeGoals = function () { return this.goalList().filter((g) => !g.done); };
+  C.mainGoal = function () {
+    const list = this.activeGoals();
+    return list.find((g) => g.id === P().mainGoal) || list[0] || null;
+  };
+  C.goalEnd = function (g) { return g.pack === 'coastguard' ? this.sched().final : g.date; };
+  C.goalProgress = function (g) {
+    const s = toDate(g.start || app.todayStr()), e = toDate(this.goalEnd(g)), span = e - s;
+    if (!(span > 0)) return 100;
+    return Math.round(clamp((todayDate() - s) / span, 0, 1) * 100);
+  };
+
+  /* ---------- 일반 목표용 단계 콘텐츠 ---------- */
+  const GEN_META = {
+    build: { icon: '🌱', name: '기반 다지기' }, deepen: { icon: '🔥', name: '집중 몰입기' },
+    sharpen: { icon: '🎯', name: '완성도 올리기' }, final: { icon: '🧘', name: '마무리 주간' },
+    dday: { icon: '🏁', name: 'D-DAY' }, after: { icon: '🌿', name: '돌아보기' }
+  };
+  const SLOT_LEAD = [`아침엔 오늘의 가장 중요한 일부터 정해. `, `점심은 오전을 점검하는 시간이야. `, `저녁엔 오늘을 정리해. `];
+  const AFTER = {
+    core: `목표일이 지났어. 결과를 돌아보고 다음 목표를 정해.`,
+    focus: `잘한 것, 아쉬운 것, 다음에 바꿀 것을 한 줄씩 적고 새 목표로 넘어가. 목표 관리에서 새 목표를 추가해도 좋아.`,
+    acts: [`이번 목표에서 잘한 것 한 줄 적기`, `아쉬운 것과 다음에 바꿀 것 한 줄 적기`, `새 목표 후보 1개 정하고 날짜 붙이기`],
+    study: [
+      [`📝 회고 3줄`, `잘한 것, 아쉬운 것, 바꿀 것을 한 줄씩 적어. 다음 목표의 설계도가 돼.`],
+      [`🎯 새 목표`, `목표 관리에서 새 목표와 날짜를 추가하면 그 날짜 기준으로 조언이 다시 시작돼.`]
+    ]
+  };
+  const GEN = {
+    exam: {
+      core: {
+        build: `기초를 넓게 깔 시간이야. 기출을 먼저 한 번 풀어 범위부터 파악해. ({D})`,
+        deepen: `약점을 찾아 메우는 시기야. 틀린 문제가 네 교재야. ({D})`,
+        sharpen: `실전 속도를 올리는 시기야. 시간을 재고 풀어. ({D})`,
+        final: `새로운 건 멈추고 아는 것을 지켜. ({D})`,
+        dday: `오늘이 그날이야. 평소대로만 해.`
+      },
+      focus: {
+        build: `처음엔 교재 완독보다 기출로 출제 방향을 파악하고, 모르는 부분만 교재로 돌아가는 순서가 효율이 좋아.`,
+        deepen: `기출을 회독하면서 오답을 원인별로 분류하고, 같은 원인이 반복되는 영역부터 집중해.`,
+        sharpen: `제한시간을 두고 풀며 시간 배분을 연습하고, 3번 이상 틀린 문제만 한 장으로 압축해.`,
+        final: `압축 노트 복습과 수면 고정이 최우선이야. 새 문제집은 불안만 키워.`,
+        dday: `평소 루틴 그대로 움직이고 준비한 순서대로 풀어. 모르는 문제는 표시하고 넘어가.`
+      },
+      acts: [`25분 타이머: 어제 틀린 문제를 책 덮고 다시 풀기`, `오전에 틀린 문제의 원인을 한 줄로 분류하기`, `오늘 오답 3개를 내일 복습 목록에 넣기`],
+      study: [
+        [`🔁 인출 먼저`, `책을 덮고 답을 떠올린 다음 확인해. 읽기 반복보다 문제풀이·백지복습이 기억에 더 오래 남아.`],
+        [`📆 간격 반복`, `오답은 1일·3일·7일·14일 뒤에 다시 꺼내. 달력에 복습을 넣어두면 의지가 아니라 시스템으로 돌아가.`],
+        [`🔀 과목 섞기`, `40분 단위로 과목을 번갈아 풀어. 한 과목을 몰아 하는 것보다 오래가.`],
+        [`⏱️ 40/20 블록`, `하루 4~6블록(40분 집중 + 20분 휴식)을 목표로 하고 첫 블록은 가장 약한 과목에 써.`]
+      ]
+    },
+    fitness: {
+      core: {
+        build: `기록의 기준선을 만들 시기야. ({D})`,
+        deepen: `약한 종목을 끌어올리는 시기야. ({D})`,
+        sharpen: `실전 기록을 맞추는 시기야. ({D})`,
+        final: `이제는 줄여서 날을 세울 때야. ({D})`,
+        dday: `준비한 만큼 나온다. 다치지 않는 게 먼저야.`
+      },
+      focus: {
+        build: `지금 기록을 측정해 기준선을 남기고, 주 3회 이상 일정하게 하는 습관부터 만들어.`,
+        deepen: `약한 종목에 훈련량을 몰고 나머지는 유지만 해. 주 1회는 실전처럼 최대 기록을 재.`,
+        sharpen: `측정 방식 그대로 기록을 재고, 강도 높은 날 사이에 회복일을 끼워.`,
+        final: `마지막 주엔 훈련량을 절반 안팎으로 줄이고 수면과 식사를 일정하게 맞춰.`,
+        dday: `충분히 워밍업하고 평소 식사를 하고, 첫 시도에 무리하지 마.`
+      },
+      acts: [`오늘 훈련 종목 1개를 정하고 워밍업 10분부터 시작`, `점심 후 가벼운 걷기 10분과 단백질 챙기기`, `오늘 기록(횟수·시간)을 한 줄로 남기기`],
+      study: [
+        [`📏 기준선 기록`, `지금 기록을 숫자로 남겨. 기록이 있어야 늘었는지 보여.`],
+        [`📈 점진 과부하`, `횟수나 시간을 주당 5~10%씩만 늘려. 갑자기 늘리면 다쳐.`],
+        [`🛌 회복`, `강한 날 다음엔 가벼운 날을 두고, 수면을 일정하게 지켜.`],
+        [`🎯 종목 특이성`, `목표 종목과 같은 동작으로 훈련해. 측정 방식(자세·제한시간)을 먼저 확인해.`]
+      ]
+    },
+    project: {
+      core: {
+        build: `방향을 좁히는 시기야. 만들 것 하나를 정해. ({D})`,
+        deepen: `핵심 기능에만 집중해. ({D})`,
+        sharpen: `완성도를 올리는 시기야. 새 기능 추가는 멈춰. ({D})`,
+        final: `검수하고 내보낼 준비를 해. ({D})`,
+        dday: `오늘 내보내는 날이야. 완벽보다 제출이야.`
+      },
+      focus: {
+        build: `최종 결과물을 한 문장으로 정의하고, 가장 작은 버전부터 만들어 공개 가능한 상태로 만들어.`,
+        deepen: `전체 가치의 대부분을 만드는 핵심 20%를 정해 먼저 끝내고, 나머지는 목록으로만 남겨.`,
+        sharpen: `남은 일을 마감 순서로 줄 세우고 새 아이디어는 다음 버전 목록으로 보내.`,
+        final: `마감 전엔 체크리스트로 점검하고, 한 번은 처음 보는 사람의 눈으로 확인받아.`,
+        dday: `미완성인 부분을 숨길 방법을 찾지 말고 지금 상태로 제출·공개해.`
+      },
+      acts: [`가장 중요한 작업 1개를 25분 타이머로 시작`, `오전 결과물을 점검하고 막힌 부분 하나만 정리`, `오늘 끝낸 것과 내일 첫 작업을 한 줄로 적기`],
+      study: [
+        [`🎯 한 문장 정의`, `결과물이 무엇인지 한 문장으로 적어. 못 적으면 아직 방향이 안 정해진 거야.`],
+        [`🧱 작게 쪼개기`, `작업을 하루 안에 끝낼 크기로 쪼개. 큰 덩어리는 미루게 돼.`],
+        [`⏱️ 타임박스`, `작업마다 시간 상자를 정해. 시간이 끝나면 완성도보다 진행을 우선해.`],
+        [`🔁 주간 회고`, `주 1회 끝낸 것, 막힌 것, 다음 주 핵심 하나를 적어.`]
+      ]
+    },
+    general: {
+      core: {
+        build: `시작 기반을 만드는 시기야. 작은 습관 하나를 정해. ({D})`,
+        deepen: `꾸준함이 쌓이는 시기야. ({D})`,
+        sharpen: `남은 일을 정리하는 시기야. ({D})`,
+        final: `마무리에 집중할 때야. ({D})`,
+        dday: `오늘이 그날이야. 해온 대로 하자.`
+      },
+      focus: {
+        build: `목표를 측정 가능한 숫자로 바꾸고, 매일 5분이라도 할 수 있는 최소 단위를 정해.`,
+        deepen: `주 단위로 점검하고, 빠진 날은 이유를 한 줄 적어 같은 이유가 반복되는지 봐.`,
+        sharpen: `남은 일을 목록으로 만들어 중요도 순으로 줄 세우고, 하지 않을 것도 정해.`,
+        final: `새로 시작하지 말고 끝낼 것에만 시간을 써. 마감 하루 전에 점검을 끝내.`,
+        dday: `준비한 대로 실행하고 결과는 마친 뒤에 평가해.`
+      },
+      acts: [`오늘의 핵심 한 가지를 25분만 시작`, `오전 진행을 체크하고 방해 요소 하나 제거`, `오늘 한 일을 한 줄로 적고 내일 첫 행동 정하기`],
+      study: [
+        [`🔢 숫자로 바꾸기`, `목표를 횟수·시간·금액처럼 측정 가능한 숫자로 바꿔.`],
+        [`🌱 최소 단위`, `하루 5분이라도 할 수 있는 크기로 줄여서 끊기지 않게 해.`],
+        [`📆 주간 점검`, `주 1회 진행 상황을 점검하고 다음 주 하나만 바꿔.`],
+        [`🧭 우선순위`, `중요한 일 3개만 남기고 나머지는 과감히 미뤄.`]
+      ]
+    }
+  };
+  const LIFE_G = {
+    heavy: [
+      `지금은 새 기회를 찾을 때가 아니라 하나를 끝낼 때야. 이 단계를 끝내면 선택지는 저절로 넓어져.`,
+      `큰 결과는 평범한 하루의 반복이 쌓여서 나와. 오늘 한 블록을 지킨 사람이 결국 이겨.`,
+      `남과 비교하고 싶어지면 어제의 네 기록과 비교해. 비교에 쓰는 시간이 실행 시간을 깎아.`
+    ],
+    calm: [
+      `일이 정리된 시기엔 사람을 챙겨. 오늘 가족이나 친구 한 명에게 먼저 연락해 봐.`,
+      `돈·시간·체력 중 지금 가장 부족한 하나만 골라서 오늘 그것을 지켜.`,
+      `방향을 다시 잡을 시간도 필요해. 앞으로 1년 동안 바라는 모습을 세 줄로 적어봐.`
+    ]
+  };
+
+  /* ---------- 단계 계산 ---------- */
+  function genericStage(g) {
+    const d = daysTo(g.date);
+    if (isNaN(d) || d < 0) return { key: 'after', d };
+    if (d === 0) return { key: 'dday', d };
+    const start = toDate(g.start || app.todayStr());
+    const total = Math.max(1, Math.round((toDate(g.date) - start) / 86400000));
+    const sc = Math.min(1, total / 90);
+    const tFinal = Math.max(2, Math.round(7 * sc));
+    const tSharp = Math.max(tFinal + 2, Math.round(21 * sc));
+    const tDeep = Math.max(tSharp + 3, Math.round(60 * sc));
+    const key = d <= tFinal ? 'final' : d <= tSharp ? 'sharpen' : d <= tDeep ? 'deepen' : 'build';
+    return { key, d };
+  }
+
+  C.focus = function () {
+    const g = this.mainGoal();
+    if (!g) return null;
+    if (g.pack === 'coastguard') return { goal: g, pack: true, ph: this.phaseNow(), d: daysTo(this.goalEnd(g)) };
+    const st = genericStage(g), T = GEN[g.type] || GEN.general, meta = GEN_META[st.key];
+    const core = st.key === 'after' ? AFTER.core : T.core[st.key];
+    const focus = st.key === 'after' ? AFTER.focus : T.focus[st.key];
+    const ph = { key: st.key, icon: meta.icon, name: meta.name, core: fillD(core, st.d), adv: SLOT_LEAD.map((l) => l + focus), act: st.key === 'after' ? AFTER.acts : T.acts, study: st.key === 'after' ? AFTER.study : T.study, n: { D: st.d } };
+    return { goal: g, pack: false, ph, d: st.d };
+  };
+
+  /* ---------- 아침·점심·저녁 코칭 ---------- */
+  const prevSlotLocal = C.slotLocal;
+  C.slotLocal = function (slot) {
+    const f = this.focus();
+    if (!f) return this.baseSlotLocal(slot);
+    if (f.pack) return prevSlotLocal.call(this, slot);
+    const base = this.baseSlotLocal(slot), ph = f.ph, i = ['morning', 'lunch', 'evening'].indexOf(slot);
+    if (i < 0) return base;
+    let extra = '';
+    try {
+      const s = this.snapshot(), l = s.log || {};
+      const notable = s.overdue.length >= 1 || !s.tasks.length || (l.sleep && l.sleep <= 5) || (l.energy && l.energy <= 2) || l.meal === 0;
+      if (notable) extra = ` 📍 ${base.advice}`;
+    } catch (e) { /* 무시 */ }
+    return { ...base, core: ph.core, advice: `${ph.adv[i]}${extra}`, action: ph.act[i] };
+  };
+
+  /* ---------- 인생 조언 ---------- */
+  const prevLife = C.lifeAdvice;
+  C.lifeAdvice = function () {
+    const f = this.focus();
+    if (f && f.pack) return prevLife.call(this);
+    const L = app.coachLog || {}, today = app.todayStr();
+    const recent = Object.keys(L).sort().slice(-7).map((d) => L[d] || {});
+    const avg = (k) => { const v = recent.map((r) => r[k]).filter((x) => typeof x === 'number'); return v.length >= 3 ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    const sleep = avg('sleep'), mood = avg('mood');
+    const pick = (arr, salt) => arr[app.seededPick(today, 'life-' + salt, arr.length)];
+    if (sleep !== null && sleep <= 6) return { tag: '회복', text: `최근 수면 평균이 ${sleep.toFixed(1)}시간대야. 지금은 계획을 늘릴 때가 아니라 잠부터 지킬 때야. 피곤한 상태의 노력은 시간 대비 남는 게 눈에 띄게 줄어.` };
+    if (mood !== null && mood <= 2.2) return { tag: '마음', text: `기분 기록이 최근 일주일 계속 낮아. 오늘은 계획을 줄이고 믿는 사람에게 안부 한 통을 보내. 이런 상태가 2주 넘게 이어지면 혼자 버티지 말고 전문가 상담도 선택지로 열어둬.` };
+    const others = this.activeGoals().filter((g) => !f || g.id !== f.goal.id);
+    if (f && f.d >= 0 && f.d <= 60 && others.length && app.seededPick(today, 'life-par', 2) === 0) {
+      return { tag: '집중', text: `'${others[0].title}'는 지금 메인 목표 다음 순위야. 메인 목표 ${chip(f.d)} 전까지는 주 3시간 이내로만 두고, 마감 주간엔 0으로 둬. 둘을 동시에 70%로 하는 것보다 하나를 100%로 끝내는 게 결과가 나아.` };
+    }
+    const heavy = f && ['deepen', 'sharpen', 'final', 'dday'].includes(f.ph.key);
+    return { tag: f ? f.ph.name : '오늘', text: pick(heavy ? LIFE_G.heavy : LIFE_G.calm, f ? f.ph.key : 'none') };
+  };
+
+  /* ---------- 화면: 목표 배너 ---------- */
+  C.bannerHtml = function () {
+    const f = this.focus();
+    if (!f) {
+      return `<div class="cc-card gb-empty">🎯 아직 목표가 없어요. 목표와 날짜를 정하면 그 날짜가 다가오는 정도에 맞춰 조언해줘요.<div class="cc-btnrow"><button class="btn-primary" onclick="app.coach.openGoals()">목표 추가하기</button></div></div>`;
+    }
+    const g = f.goal, ph = f.ph, T = TYPES[g.type] || TYPES.general, pct = this.goalProgress(g);
+    let ringTop, ringBot, head, chips = '', resRow = '', warn = '';
+    if (f.pack) {
+      const tl = this.timeline(), n = ph.n, next = tl.find((i) => i.state === 'now' || i.state === 'next');
+      const range = (it) => `${md(it.from)}${it.from !== it.to ? '~' + md(it.to) : ''}`;
+      ringTop = next ? (next.state === 'now' ? '진행 중' : chip(next.dFrom)) : '완료';
+      ringBot = next ? next.name : '종료';
+      head = next ? (next.state === 'now' ? `${next.name} 진행 중 (${range(next)})` : `${next.name} ${chip(next.dFrom)} (${md(next.from)})`) : '모든 일정 종료';
+      const mark = { done: '✓', now: '▶', next: '●', later: '○' };
+      chips = `<div class="gb-chips">${tl.map((i) => `<span class="gb-chip ${i.state}">${mark[i.state]} ${i.name} ${md(i.from)}</span>`).join('')}</div>`;
+      if (n.W < 0 && n.Z >= 0) {
+        resRow = `<div class="cc-row" style="margin-top:8px;"><b style="width:auto;">필기 결과</b>${[['pending', '미정'], ['pass', '합격'], ['fail', '불합격']].map(([v, t]) => `<button class="cc-opt ${ph.res === v ? 'on' : ''}" onclick="app.coach.setWrittenResult('${v}')">${t}</button>`).join('')}</div>`;
+      }
+      if (ph.needResult) warn = `<div style="font-size:12px;color:#c96a8a;font-weight:700;margin-top:6px;">📢 발표가 났다면 위에서 합격/불합격을 골라줘. 선택에 따라 코칭이 바뀌어요.</div>`;
+    } else {
+      ringTop = f.d >= 0 ? chip(f.d) : '종료';
+      ringBot = '목표일';
+      head = `${md(g.date)} 목표일 · ${T.label}`;
+    }
+    const list = this.activeGoals();
+    const pills = list.length > 1 ? `<div class="gb-pills">${list.map((x) => `<button class="gb-pill ${x.id === g.id ? 'on' : ''}" onclick="app.coach.setMain('${x.id}')">${(TYPES[x.type] || TYPES.general).icon} ${esc(cut(x.title, 12))}</button>`).join('')}</div>` : '';
+    return `<div>${pills}<div class="gb"><div class="gb-ring" style="--p:${pct}%"><div class="gb-ring-in"><b>${esc(ringTop)}</b><span>${esc(ringBot)}</span></div></div><div class="gb-main"><div class="gb-title">${T.icon} ${esc(g.title)}</div><div class="gb-sub">${ph.icon} ${esc(ph.name)} · ${esc(head)}</div><div class="gb-bar"><i style="width:${pct}%"></i></div>${chips}${resRow}${warn}</div></div></div>`;
+  };
+
+  const prevPrescription = C.prescriptionHtml;
+  C.prescriptionHtml = function () {
+    const f = this.focus();
+    if (!f) return '';
+    if (f.pack) return prevPrescription.call(this);
+    const ph = f.ph, life = this.lifeAdvice();
+    const list = ph.study.map(([t, d]) => `<li><b>${esc(t)}</b> ${esc(d)}</li>`).join('');
+    return `<div class="cc-card action"><b>🧠 지금 단계의 실행법 · ${esc(ph.name)}</b><ul class="gb-list">${list}</ul><div class="cc-note">※ 일반적으로 효과가 알려진 원칙이에요. 개인차가 있으니 2주 써보고 기록으로 확인해요.</div></div><div class="cc-card"><b>🌱 오늘의 인생 조언 · ${esc(life.tag)}</b><br>${esc(life.text)}</div>`;
+  };
+
+  /* ---------- 화면: 달력 페이지 D-day 위젯 ---------- */
+  C.dashHtml = function () {
+    const list = this.activeGoals().map((g) => ({ g, d: daysTo(this.goalEnd(g)) })).sort((a, b) => (a.d < 0 ? 9999 : a.d) - (b.d < 0 ? 9999 : b.d)).slice(0, 3);
+    if (!list.length) return `<div class="gd-empty">목표를 추가하면 D-day와 진행률을 보여줘요.</div>`;
+    const main = this.mainGoal();
+    return list.map(({ g, d }) => {
+      const t = TYPES[g.type] || TYPES.general, pct = this.goalProgress(g);
+      let sub;
+      if (g.pack === 'coastguard') {
+        const nx = this.timeline().find((i) => i.state === 'now' || i.state === 'next');
+        sub = nx ? `${nx.name} ${nx.state === 'now' ? '진행 중' : chip(nx.dFrom)}` : '모든 일정 종료';
+      } else sub = `${md(g.date)} · ${GEN_META[genericStage(g).key].name}`;
+      return `<div class="gd-item ${main && main.id === g.id ? 'main' : ''}" onclick="app.coach.openGoals()"><div class="gd-top"><span>${t.icon}</span><b>${esc(cut(g.title, 18))}</b><em>${d < 0 ? '종료' : chip(d)}</em></div><div class="gd-bar"><i style="width:${pct}%"></i></div><div class="gd-sub">${esc(sub)} · 진행 ${pct}%</div></div>`;
+    }).join('');
+  };
+  C.renderDash = function () { const el = document.getElementById('goalDash'); if (el) el.innerHTML = this.dashHtml(); };
+
+  /* ---------- 목표 관리 ---------- */
+  C.refreshAll = function () {
+    app.renderDailyQuote();
+    if (CC.cardVisible()) CC.renderToday();
+    const sd = document.getElementById('ccSettingsDetails');
+    if (sd && sd.open) CC.renderSettings();
+  };
+  C.openGoals = function () {
+    app.ui.openCoachPlanner();
+    setTimeout(() => {
+      const d = document.getElementById('ccSettingsDetails');
+      if (d) { d.open = true; CC.renderSettings(); d.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }, 80);
+  };
+  C.setMain = function (id) { P().mainGoal = id; saveProfile(); this.refreshAll(); };
+  C.addGoal = function () {
+    const title = (document.getElementById('ngTitle').value || '').trim();
+    const type = document.getElementById('ngType').value, date = document.getElementById('ngDate').value;
+    if (!title) return app.ui.showToast('목표 이름을 적어주세요 ✍️');
+    if (!date) return app.ui.showToast('목표 날짜를 골라주세요 📅');
+    if (daysTo(date) < 0) return app.ui.showToast('목표 날짜는 오늘 이후로 정해주세요 🙏');
+    const g = { id: 'g_' + Date.now().toString(36), title, type, start: app.todayStr(), date };
+    this.goalList().push(g);
+    P().mainGoal = g.id;
+    saveProfile();
+    app.ui.showToast(`🎯 "${cut(title, 14)}" 목표를 메인으로 설정했어요`);
+    this.refreshAll();
+  };
+  C.removeGoal = function (id) {
+    const g = this.goalList().find((x) => x.id === id);
+    if (!g || !window.confirm(`"${g.title}" 목표를 삭제할까요?`)) return;
+    const p = P();
+    p.goalList = p.goalList.filter((x) => x.id !== id);
+    if (p.mainGoal === id) p.mainGoal = (p.goalList.find((x) => !x.done) || {}).id || null;
+    saveProfile();
+    this.refreshAll();
+  };
+  C.saveSched = function () {
+    const p = P(), oldWritten = this.sched().written, next = { ...this.sched() };
+    SCHED_LABELS.forEach(([k]) => { const el = document.getElementById('sc_' + k); if (el && el.value) next[k] = el.value; });
+    p.sched = next;
+    if (next.written !== oldWritten) p.writtenResult = 'pending';
+    saveProfile();
+    app.ui.showToast('📅 일정을 저장했어요');
+    this.refreshAll();
+  };
+  C.resetSched = function () {
+    SCHED_LABELS.forEach(([k]) => { const el = document.getElementById('sc_' + k); if (el) el.value = DEFAULT_SCHED[k]; });
+    app.ui.showToast('공고 기본값을 채워뒀어요. 일정 저장을 눌러야 적용돼요');
+  };
+
+  CC.renderSettings = function () {
+    const box = document.getElementById('ccPane-settings');
+    if (!box) return;
+    const list = C.goalList(), main = C.mainGoal();
+    const rows = list.length ? list.map((g) => {
+      const end = C.goalEnd(g), d = daysTo(end), t = TYPES[g.type] || TYPES.general, isMain = main && main.id === g.id;
+      return `<div class="gl-row ${isMain ? 'main' : ''}"><div class="gl-ico">${t.icon}</div><div class="gl-txt"><b>${esc(g.title)}</b><span>${t.label} · ${md(end)} · ${d < 0 ? '종료' : chip(d)}</span></div><div class="gl-act">${isMain ? '<em>메인</em>' : `<button onclick="app.coach.setMain('${g.id}')">메인으로</button>`}<button class="btn-danger" onclick="app.coach.removeGoal('${g.id}')">삭제</button></div></div>`;
+    }).join('') : `<div style="font-size:12.5px;color:var(--ink-soft);padding:6px 0;">아직 목표가 없어요. 아래에서 추가해보세요.</div>`;
+    const typeOpts = Object.entries(TYPES).map(([k, v]) => `<option value="${k}">${v.icon} ${v.label}</option>`).join('');
+    let sched = '';
+    if (list.some((g) => g.pack === 'coastguard')) {
+      const S = C.sched();
+      const srows = SCHED_LABELS.map(([k, label]) => `<div class="cc-row"><b style="width:104px;">${label}</b><input type="date" id="sc_${k}" value="${S[k]}" style="flex:1;padding:8px;"></div>`).join('');
+      sched = `<div class="cc-card"><details><summary style="cursor:pointer;font-weight:700;">📅 해경 3차 세부 일정 편집</summary><div style="font-size:11.5px;color:var(--ink-faint);margin:6px 0;">공고 기준 기본값이에요. 합격자 발표 때 나오는 공고로 다시 확인해요.</div>${srows}<div class="cc-btnrow"><button onclick="app.coach.resetSched()">공고 기본값</button><button class="btn-primary" onclick="app.coach.saveSched()">일정 저장</button></div></details></div>`;
+    }
+    box.innerHTML = `<div class="cc-card"><b>🎯 내 목표</b><div style="font-size:11.5px;color:var(--ink-faint);margin:2px 0 4px;">메인 목표의 날짜가 다가오는 정도에 맞춰 조언이 바뀌어요.</div>${rows}</div>
+      <div class="cc-card"><b>➕ 새 목표 추가</b>
+        <label>목표 이름</label><input type="text" id="ngTitle" placeholder="예: 정보처리기사 필기 합격" style="width:100%;padding:10px;">
+        <label>종류</label><select id="ngType">${typeOpts}</select>
+        <label>목표 날짜</label><input type="date" id="ngDate" style="width:100%;padding:10px;">
+        <div class="cc-btnrow"><button class="btn-primary" onclick="app.coach.addGoal()">목표 추가</button></div>
+      </div>${sched}`;
+  };
+
+  /* ---------- 히어로 문장 + D-day 위젯 갱신 ---------- */
+  app.renderDailyQuote = function () {
+    const el = document.getElementById('heroQuote');
+    if (el) {
+      const d = app.coach.build(), f = app.coach.focus();
+      let chipTxt = '';
+      if (f) {
+        if (f.pack) {
+          const nx = app.coach.timeline().find((i) => i.state === 'now' || i.state === 'next');
+          chipTxt = nx ? (nx.state === 'now' ? `${nx.name} 진행 중` : `${nx.name} ${chip(nx.dFrom)}`) : '';
+        } else chipTxt = `${cut(f.goal.title, 10)} ${f.d >= 0 ? chip(f.d) : '종료'}`;
+      }
+      el.innerHTML = `${d.icon} <b>${esc(d.core)}</b> <span class="hq-meta">${chipTxt ? esc(chipTxt) + ' · ' : ''}${d.slotName} 코칭 ▸</span>`;
+    }
+    app.coach.renderDash();
+  };
+})();
+
 </script>
 </body>
 </html>
