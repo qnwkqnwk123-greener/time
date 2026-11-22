@@ -661,6 +661,137 @@
     .gl-act { width: 100%; justify-content: flex-end; }
   }
 </style>
+<style id="2026-visual-refresh">
+  :root {
+    --ink: #243047;
+    --ink-soft: #5d6b82;
+    --ink-faint: #8592a6;
+    --paper: #f4f6fa;
+    --paper-raised: #ffffff;
+    --line: #e3e8f0;
+    --accent: #5868d8;
+    --accent-deep: #4051b8;
+    --accent-bg: #edf0ff;
+    --sky-bg: #edf5fb;
+    --mint: #39a786;
+    --mint-bg: #e8f6f0;
+    --blush: #d97c95;
+    --blush-bg: #fff0f3;
+    --amber-bg: #fff6e8;
+    --radius-lg: 20px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --shadow-sm: 0 1px 2px rgba(26, 38, 62, .04), 0 8px 22px -14px rgba(26, 38, 62, .20);
+    --shadow-md: 0 14px 32px -20px rgba(34, 47, 86, .36);
+    --glass: rgba(255, 255, 255, .96);
+    --glass-line: rgba(227, 232, 240, .96);
+    --g-default: linear-gradient(125deg, #39477f 0%, #5364b9 58%, #7385da 100%);
+    --g-sunny: linear-gradient(125deg, #805439 0%, #ad7954 58%, #6b6cb5 100%);
+    --g-cloudy: linear-gradient(125deg, #46566f 0%, #627697 58%, #737fae 100%);
+    --g-rain: linear-gradient(125deg, #344a68 0%, #4d6688 58%, #5b6da8 100%);
+    --g-snow: linear-gradient(125deg, #456985 0%, #5d83a5 58%, #6976b7 100%);
+    --g-fog: linear-gradient(125deg, #596177 0%, #747e9d 58%, #7375a6 100%);
+    --g-storm: linear-gradient(125deg, #34364f 0%, #4c4b79 58%, #5e5c9b 100%);
+    --g-night: linear-gradient(125deg, #20284f 0%, #373b78 58%, #525a9d 100%);
+  }
+  body.dark {
+    --ink: #e9edf7;
+    --ink-soft: #b8c1d2;
+    --ink-faint: #929db2;
+    --paper: #171d2b;
+    --paper-raised: #202838;
+    --line: #343e51;
+    --accent-bg: #2b355b;
+    --sky-bg: #253747;
+    --mint-bg: #213a35;
+    --blush-bg: #402a36;
+    --amber-bg: #403626;
+    --glass: rgba(32, 40, 56, .97);
+    --glass-line: #343e51;
+  }
+  body {
+    background-color: var(--paper) !important;
+    background-image: radial-gradient(ellipse at 8% 0%, rgba(88, 104, 216, .055), transparent 38%),
+      radial-gradient(ellipse at 100% 10%, rgba(57, 167, 134, .045), transparent 34%) !important;
+    color: var(--ink);
+  }
+  #weatherScenePhoto { opacity: .12 !important; filter: saturate(.65) !important; }
+  body.dark #weatherScenePhoto { opacity: .08 !important; }
+  body.weather-scene-on #weatherSceneOverlay { opacity: .32 !important; }
+  body:before, body:after { opacity: .12 !important; }
+  .weather-scene-label { background: var(--paper-raised) !important; border-color: var(--line) !important; opacity: .9; }
+  #calendarView, #plannerView, #diaryView { max-width: 1440px; }
+  .hero {
+    min-height: 0 !important;
+    padding: clamp(20px, 2.3vw, 30px) clamp(20px, 2.6vw, 36px) !important;
+    margin-bottom: 16px !important;
+    border: 1px solid rgba(255,255,255,.24);
+    border-radius: 22px !important;
+    box-shadow: 0 16px 34px -22px rgba(28, 39, 79, .56) !important;
+  }
+  .hero::after { background: radial-gradient(ellipse at 92% 0%, rgba(255,255,255,.20), transparent 42%) !important; }
+  .hero-title { font-size: clamp(22px, 2vw, 28px) !important; letter-spacing: -.03em !important; }
+  .hero-sub { font-size: 13px !important; opacity: .9 !important; }
+  .hero-quote {
+    max-width: 560px;
+    color: #fff !important;
+    background: rgba(18, 25, 50, .18) !important;
+    border: 1px solid rgba(255,255,255,.23) !important;
+    box-shadow: none !important;
+  }
+  .hero-nav button { background: rgba(255,255,255,.14) !important; border-color: rgba(255,255,255,.28) !important; }
+  .box-panel, .timer-display, .kpi-card, .planner-header, .diary-header {
+    background: var(--paper-raised) !important;
+    border: 1px solid var(--line) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: var(--shadow-sm) !important;
+  }
+  .box-panel { border-radius: 18px !important; }
+  .kpi-card { border-radius: 16px !important; }
+  .box-title { color: var(--ink); border-bottom-color: var(--line) !important; }
+  .planner-header, .diary-header { border-radius: 16px !important; }
+  button { border-radius: 12px; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent) 36%, transparent);
+    outline-offset: 2px;
+  }
+  .calendar-grid { gap: clamp(5px, .65vw, 10px) !important; }
+  .day-name { color: var(--ink-soft) !important; font-size: 12px !important; font-weight: 700; }
+  .cal-day {
+    background: var(--paper-raised) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease !important;
+  }
+  .cal-day:hover { border-color: color-mix(in srgb, var(--accent) 48%, var(--line)) !important; box-shadow: var(--shadow-sm) !important; transform: translateY(-2px) !important; }
+  .cal-day.today { background: var(--accent-bg) !important; border: 1.5px solid var(--accent) !important; box-shadow: inset 0 0 0 1px var(--accent) !important; }
+  .cal-day.progress-high { background: #edf8f2 !important; border-color: #9dcdb5 !important; box-shadow: inset 0 0 0 1px #9dcdb5 !important; }
+  .cal-day.progress-mid { background: #fff8e9 !important; border-color: #e8cf8e !important; box-shadow: inset 0 0 0 1px #e8cf8e !important; }
+  .cal-day.progress-low { background: #fff1f2 !important; border-color: #e8a8b0 !important; box-shadow: inset 0 0 0 1px #e8a8b0 !important; }
+  .cal-day.today.progress-high, .cal-day.today.progress-mid, .cal-day.today.progress-low { border-color: var(--accent) !important; box-shadow: inset 0 0 0 1px var(--accent) !important; }
+  .cal-progress-badge { box-shadow: none !important; padding: 2px 7px !important; }
+  .cal-day.progress-high .cal-progress-badge { background: #328262 !important; }
+  .cal-day.progress-mid .cal-progress-badge { background: #a67821 !important; }
+  .cal-day.progress-low .cal-progress-badge { background: #b64d5d !important; }
+  .weather-card, .timer-display, .planner-coach-card, .planner-coach-card .cc-card, .gd-item { border-radius: 14px !important; }
+  .timer-display { background: var(--paper) !important; }
+  .wx-hour-item, .cc-card, .gd-item { background: var(--paper) !important; }
+  body.dark .cal-day.progress-high { background: #223b34 !important; border-color: #3e806b !important; }
+  body.dark .cal-day.progress-mid { background: #3b3426 !important; border-color: #847044 !important; }
+  body.dark .cal-day.progress-low { background: #3d2932 !important; border-color: #87505d !important; }
+  @media (max-width: 600px) {
+    .hero { padding: 18px 16px !important; border-radius: 18px !important; }
+    .hero-top { gap: 12px !important; }
+    .hero-nav { gap: 6px !important; }
+    .box-panel { border-radius: 15px !important; }
+    .cal-day { border-radius: 11px !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cal-day, button { transition: none !important; }
+  }
+</style>
 </head>
 <body>
   <div id="weatherScenePhoto" aria-hidden="true"></div>
