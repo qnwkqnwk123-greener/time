@@ -715,9 +715,9 @@
       radial-gradient(ellipse at 100% 10%, rgba(57, 167, 134, .045), transparent 34%) !important;
     color: var(--ink);
   }
-  #weatherScenePhoto { opacity: .12 !important; filter: saturate(.65) !important; }
+  #weatherScenePhoto { opacity: .035 !important; filter: saturate(.55) !important; }
   body.dark #weatherScenePhoto { opacity: .08 !important; }
-  body.weather-scene-on #weatherSceneOverlay { opacity: .32 !important; }
+  body.weather-scene-on #weatherSceneOverlay { opacity: .16 !important; }
   body:before, body:after { opacity: .12 !important; }
   .weather-scene-label { background: var(--paper-raised) !important; border-color: var(--line) !important; opacity: .9; }
   #calendarView, #plannerView, #diaryView { max-width: 1440px; }
@@ -730,6 +730,14 @@
     box-shadow: 0 16px 34px -22px rgba(28, 39, 79, .56) !important;
   }
   .hero::after { background: radial-gradient(ellipse at 92% 0%, rgba(255,255,255,.20), transparent 42%) !important; }
+  #calHero { background-image: var(--g-default) !important; background-size: auto !important; }
+  body.weather-sunny #calHero { background-image: var(--g-sunny) !important; }
+  body.weather-cloudy #calHero { background-image: var(--g-cloudy) !important; }
+  body.weather-rain #calHero { background-image: var(--g-rain) !important; }
+  body.weather-snow #calHero { background-image: var(--g-snow) !important; }
+  body.weather-fog #calHero { background-image: var(--g-fog) !important; }
+  body.weather-storm #calHero { background-image: var(--g-storm) !important; }
+  body.weather-night #calHero { background-image: var(--g-night) !important; }
   .hero-title { font-size: clamp(22px, 2vw, 28px) !important; letter-spacing: -.03em !important; }
   .hero-sub { font-size: 13px !important; opacity: .9 !important; }
   .hero-quote {
