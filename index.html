@@ -664,6 +664,17 @@
 
 <style id="opportunity-companion-styles">
   body>div#opportunityModal:not(#weatherSceneLabel):not(#weatherScenePhoto):not(#weatherSceneOverlay), body>div#todoModal:not(#weatherSceneLabel):not(#weatherScenePhoto):not(#weatherSceneOverlay) { position:fixed!important; inset:0; z-index:10020!important; }
+  .calendar-grid { gap:clamp(6px,1vw,12px)!important; }
+  .day-name { font-size:11px!important; letter-spacing:.12em!important; padding-bottom:8px!important; color:var(--ink-soft)!important; }
+  .cal-day { min-height:clamp(98px,10vw,132px)!important; padding:9px 8px!important; border-radius:17px!important; align-items:stretch!important; gap:5px!important; background:rgba(255,255,255,.92)!important; border:1px solid rgba(113,126,154,.18)!important; box-shadow:0 6px 18px rgba(30,40,65,.07),inset 0 1px rgba(255,255,255,.85); backdrop-filter:blur(10px); }
+  body.dark .cal-day { background:rgba(31,38,54,.94)!important; border-color:rgba(177,188,215,.16)!important; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+  .cal-day:hover { transform:translateY(-2px)!important; box-shadow:0 10px 24px rgba(30,40,65,.12)!important; }
+  .cal-day > span:first-child { align-self:flex-start; display:grid; place-items:center; min-width:26px; height:26px; padding:0 6px; border-radius:9px; font-weight:750; }
+  .cal-day.today { border:1.5px solid var(--accent)!important; box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent),0 8px 22px rgba(30,40,65,.08)!important; }
+  .cal-day.today > span:first-child { background:var(--accent);color:#fff!important; }
+  .calendar-event-chip { width:100%;max-width:100%!important;padding:4px 6px!important;border-radius:8px!important;white-space:normal!important;line-height:1.25;text-align:left!important;background:var(--accent-bg)!important;color:var(--accent-deep)!important; }
+  .calendar-event-chip.is-done { background:var(--mint-bg)!important;color:var(--mint)!important; }
+  @media(max-width:600px){.cal-day{min-height:88px!important;padding:6px 4px!important;border-radius:13px!important}.calendar-event-chip{font-size:7px!important;padding:2px 3px!important}.day-name{padding-bottom:5px!important}}
   body.time-morning #weatherSceneOverlay { background:linear-gradient(125deg,rgba(255,206,151,.30),rgba(255,241,211,.16),rgba(176,194,255,.10)); }
   body.time-midday #weatherSceneOverlay { background:linear-gradient(125deg,rgba(190,226,255,.20),rgba(255,255,255,.08),rgba(169,233,213,.12)); }
   body.time-evening #weatherSceneOverlay { background:linear-gradient(125deg,rgba(255,140,102,.30),rgba(221,126,163,.18),rgba(54,58,133,.22)); }
@@ -2758,13 +2769,7 @@
           }
           if (app.holidays[year] && app.holidays[year][dateStr]) { dateStyle = 'class="sun"'; extraHtml += `<div class="holiday-text">🎈 ${app.holidays[year][dateStr]}</div>`; }
           app.events.filter(e => e.date === dateStr).forEach(e => { const eventIndex = app.events.indexOf(e); extraHtml += `<button type="button" class="event-text calendar-event-chip ${e.done ? 'is-done' : ''}" title="${e.done ? '완료 취소' : '완료 체크'}" onclick="event.stopPropagation();app.toggleCalendarEventDone(${eventIndex})">${e.done ? '✓' : '○'} ${this.escapeHtml(e.title || '')}</button>`; });
-          (app.todos?.items || []).forEach((todo, todoIndex) => {
-            const startDate = todo.dueDate || String(todo.createdAt || dateStr).slice(0, 10);
-            const alreadyShown = app.events.some(e => e.date === dateStr && (e.todoId === todo.id || (e.title && todo.title && e.title.includes(todo.title))));
-            if (!todo.done && dateStr >= startDate && !alreadyShown) {
-              extraHtml += `<button type="button" class="event-text calendar-event-chip todo-carry-chip" title="완료 전까지 다음 날에도 표시" onclick="event.stopPropagation();app.todos.toggleByIndex(${todoIndex})">○ ↻ ${this.escapeHtml(todo.title || '')}</button>`;
-            }
-          });
+
           const diaryEntry = this.getDiaryEntry(dateStr);
           const diaryHasTitle = diaryEntry.title && diaryEntry.title.trim() !== '', diaryHasText = diaryEntry.text && diaryEntry.text.trim() !== '', diaryHasPhotos = diaryEntry.photos && diaryEntry.photos.length > 0;
           if (diaryHasTitle || diaryHasText || diaryHasPhotos) { let preview = diaryHasTitle ? diaryEntry.title.trim() : (diaryHasText ? diaryEntry.text.trim().split('\n')[0] : ''); if (preview.length > 16) preview = preview.slice(0, 16) + '…'; if (!preview) preview = `사진 ${diaryEntry.photos.length}장`; extraHtml += `<div class="diary-indicator" onclick="event.stopPropagation(); app.ui.openDiary('${dateStr}', 'calendarView')">📓 ${this.escapeHtml(preview)}</div>`; }
@@ -2791,7 +2796,7 @@
     }
   };
   app.daypart.update();
-  setInterval(() => app.daypart.update(), 60000);
+  setInterval(() => { app.daypart.update(); app.todos?.rollover(); }, 60000);
 
   app.todos = {
     activeFilter: '전체',
@@ -2808,6 +2813,12 @@
     persist() {
       localStorage.setItem('appTodos', JSON.stringify(this.items));
       if (app.cloud && app.cloud.queuePush) app.cloud.queuePush();
+    },
+    todayKey() { const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
+    rollover() {
+      const today=this.todayKey();let changed=false;
+      this.items.forEach(item=>{if(item.done)return;if(!item.dueDate||item.dueDate<today){item.dueDate=today;this.syncCalendar(item);changed=true;}});
+      if(changed){this.persist();if(app.ui&&document.getElementById('calendarDays'))app.ui.renderCalendar();}
     },
     daysLeft(date) { if(!date)return null; const a=new Date();a.setHours(0,0,0,0);return Math.ceil((new Date(date+'T00:00:00')-a)/86400000); },
     open() { this.render(); const modal=document.getElementById('todoModal');modal.classList.remove('hidden');modal.style.display='grid'; },
@@ -2835,7 +2846,7 @@
       modal.onclick=e=>{if(e.target===modal)this.close();};
     },
     save(event) {
-      event.preventDefault();const f=new FormData(event.currentTarget);const title=String(f.get('title')||'').trim();const dueDate=String(f.get('dueDate')||'');const category=String(f.get('category')||'일반');const now=new Date().toISOString();
+      event.preventDefault();const f=new FormData(event.currentTarget);const title=String(f.get('title')||'').trim();const dueDate=String(f.get('dueDate')||this.todayKey());const category=String(f.get('category')||'일반');const now=new Date().toISOString();
       const existing=this.items.find(x=>x.title.trim().toLowerCase()===title.toLowerCase()&&(x.category||'일반')===category);
       const item={...(existing||{}),id:existing?.id||'todo-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,dueDate,category,priority:String(f.get('priority')||'보통'),notes:String(f.get('notes')||'').trim(),done:existing?.done||false,createdAt:existing?.createdAt||now,updatedAt:existing?now:null};
       if(existing)this.items[this.items.indexOf(existing)]=item;else this.items.push(item);
@@ -2853,11 +2864,12 @@
     remove(id) {this.items=this.items.filter(x=>x.id!==id);app.events=app.events.filter(e=>e.todoId!==id);localStorage.setItem('appEvents',JSON.stringify(app.events));this.persist();this.render();app.ui.renderCalendar();},
     restore(raw){if(Array.isArray(raw)){this.items=raw;return;}try{const legacy=JSON.parse(localStorage.getItem('appOpportunities')||'[]');this.items=Array.isArray(legacy)?legacy.map(x=>({id:'todo-'+(x.id||Date.now()),title:(x.category?'['+x.category+'] ':'')+x.title,dueDate:x.deadline||x.meetingDate||'',category:x.category||'일반',notes:x.notes||'',priority:x.priority||'보통',done:false,createdAt:x.createdAt||new Date().toISOString()})):[];localStorage.setItem('appTodos',JSON.stringify(this.items));}catch{this.items=[];}}
   };
+  app.todos.rollover();
   app.toggleCalendarEventDone = function(index) {const e=app.events[index];if(!e)return;e.done=!e.done;if(e.todoId){const item=app.todos.items.find(x=>x.id===e.todoId);if(item){item.done=e.done;app.todos.persist();}}localStorage.setItem('appEvents',JSON.stringify(app.events));if(app.cloud&&app.cloud.queuePush)app.cloud.queuePush();app.ui.renderCalendar();};
   app.cloud.SYNC_KEYS.push('appTodos');
   app.BACKUP_KEYS.push('appTodos');
   const oldApplyRemoteData=app.cloud.applyRemoteData.bind(app.cloud);
-  app.cloud.applyRemoteData=async function(data){await oldApplyRemoteData(data);app.todos.restore(localStorage.getItem('appTodos') ? JSON.parse(localStorage.getItem('appTodos')) : null);};
+  app.cloud.applyRemoteData=async function(data){await oldApplyRemoteData(data);app.todos.restore(localStorage.getItem('appTodos') ? JSON.parse(localStorage.getItem('appTodos')) : null);app.todos.rollover();};
 
   document.addEventListener('DOMContentLoaded', () => {
     app.init();
