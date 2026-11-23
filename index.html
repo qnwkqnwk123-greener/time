@@ -2758,6 +2758,13 @@
           }
           if (app.holidays[year] && app.holidays[year][dateStr]) { dateStyle = 'class="sun"'; extraHtml += `<div class="holiday-text">🎈 ${app.holidays[year][dateStr]}</div>`; }
           app.events.filter(e => e.date === dateStr).forEach(e => { const eventIndex = app.events.indexOf(e); extraHtml += `<button type="button" class="event-text calendar-event-chip ${e.done ? 'is-done' : ''}" title="${e.done ? '완료 취소' : '완료 체크'}" onclick="event.stopPropagation();app.toggleCalendarEventDone(${eventIndex})">${e.done ? '✓' : '○'} ${this.escapeHtml(e.title || '')}</button>`; });
+          (app.todos?.items || []).forEach((todo, todoIndex) => {
+            const startDate = todo.dueDate || String(todo.createdAt || dateStr).slice(0, 10);
+            const alreadyShown = app.events.some(e => e.date === dateStr && (e.todoId === todo.id || (e.title && todo.title && e.title.includes(todo.title))));
+            if (!todo.done && dateStr >= startDate && !alreadyShown) {
+              extraHtml += `<button type="button" class="event-text calendar-event-chip todo-carry-chip" title="완료 전까지 다음 날에도 표시" onclick="event.stopPropagation();app.todos.toggleByIndex(${todoIndex})">○ ↻ ${this.escapeHtml(todo.title || '')}</button>`;
+            }
+          });
           const diaryEntry = this.getDiaryEntry(dateStr);
           const diaryHasTitle = diaryEntry.title && diaryEntry.title.trim() !== '', diaryHasText = diaryEntry.text && diaryEntry.text.trim() !== '', diaryHasPhotos = diaryEntry.photos && diaryEntry.photos.length > 0;
           if (diaryHasTitle || diaryHasText || diaryHasPhotos) { let preview = diaryHasTitle ? diaryEntry.title.trim() : (diaryHasText ? diaryEntry.text.trim().split('\n')[0] : ''); if (preview.length > 16) preview = preview.slice(0, 16) + '…'; if (!preview) preview = `사진 ${diaryEntry.photos.length}장`; extraHtml += `<div class="diary-indicator" onclick="event.stopPropagation(); app.ui.openDiary('${dateStr}', 'calendarView')">📓 ${this.escapeHtml(preview)}</div>`; }
@@ -2841,6 +2848,7 @@
       else app.events.push({id:item.id,date:item.dueDate,title:'☑ '+item.title,done:!!item.done,todoId:item.id});
       localStorage.setItem('appEvents',JSON.stringify(app.events));if(app.cloud&&app.cloud.queuePush)app.cloud.queuePush();
     },
+    toggleByIndex(index) {const item=this.items[index];if(item)this.toggle(item.id);},
     toggle(id) {const x=this.items.find(v=>v.id===id);if(!x)return;x.done=!x.done;this.persist();app.events.forEach(e=>{if(e.todoId===id)e.done=x.done;});localStorage.setItem('appEvents',JSON.stringify(app.events));this.render();app.ui.renderCalendar();},
     remove(id) {this.items=this.items.filter(x=>x.id!==id);app.events=app.events.filter(e=>e.todoId!==id);localStorage.setItem('appEvents',JSON.stringify(app.events));this.persist();this.render();app.ui.renderCalendar();},
     restore(raw){if(Array.isArray(raw)){this.items=raw;return;}try{const legacy=JSON.parse(localStorage.getItem('appOpportunities')||'[]');this.items=Array.isArray(legacy)?legacy.map(x=>({id:'todo-'+(x.id||Date.now()),title:(x.category?'['+x.category+'] ':'')+x.title,dueDate:x.deadline||x.meetingDate||'',category:x.category||'일반',notes:x.notes||'',priority:x.priority||'보통',done:false,createdAt:x.createdAt||new Date().toISOString()})):[];localStorage.setItem('appTodos',JSON.stringify(this.items));}catch{this.items=[];}}
