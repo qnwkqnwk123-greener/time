@@ -687,6 +687,13 @@
   .todo-copy h3 { line-height:1.4; }
   .todo-done .todo-copy h3 { color:var(--ink-faint,#8592a6);text-decoration:line-through; }
   @media(max-width:600px){.todo-item{grid-template-columns:28px 1fr auto;gap:6px}.todo-copy h3{font-size:14px}}
+  #calHero { border:1px solid rgba(255,255,255,.30)!important; border-radius:26px!important; box-shadow:0 26px 64px rgba(29,41,58,.22),inset 0 1px rgba(255,255,255,.32)!important; overflow:hidden; }
+  #calHero .hero-title { font-family:'Gowun Batang',serif!important; letter-spacing:-.035em!important; text-shadow:0 2px 18px rgba(28,34,42,.18); }
+  #weatherBadgeCal { backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,.42)!important; box-shadow:0 10px 28px rgba(24,38,45,.15); }
+  body.weather-scene-on #weatherScenePhoto { opacity:.72!important; }
+  #weatherSceneLabel::before { content:attr(data-animal); display:inline-grid; place-items:center; width:34px; height:34px; font-size:25px; border-radius:12px; background:rgba(255,255,255,.18); box-shadow:inset 0 1px rgba(255,255,255,.28); }
+  #weatherSceneLabel { gap:10px!important; padding:8px 13px 8px 9px!important; border:1px solid rgba(255,255,255,.22); letter-spacing:.015em; }
+  @media(max-width:600px){#calHero{border-radius:20px!important}#weatherSceneLabel{max-width:78vw;font-size:9px}}
   #weatherSceneLabel { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:rgba(28,35,56,.52); color:#fff; backdrop-filter:blur(10px); box-shadow:0 8px 24px rgba(16,24,40,.16); }
   #weatherSceneLabel::first-letter { font-size:19px; }
   .calendar-event-chip { display:block; width:max-content; max-width:95%; border:0; cursor:pointer; text-align:left; font:inherit; }
@@ -1807,13 +1814,13 @@
         const group = isNight && (info?.group === 'sunny' || info?.group === 'cloudy') ? 'night' : (info?.group || 'cloudy');
         document.body.classList.add('weather-' + group, 'weather-scene-on');
         const scenes = {
-          sunny: { label: '☀️ 맑은 하늘 · 산뜻한 분위기', animal: '🦊', image: 'https://images.unsplash.com/photo-1499346030926-9a72daac6c63?auto=format&fit=crop&w=2000&q=82' },
-          cloudy: { label: '☁️ 구름 낀 하늘 · 포근한 분위기', animal: '🐻', image: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=2000&q=82' },
-          rain: { label: '🌧️ 비 오는 창가 · 차분한 분위기', animal: '🐸', image: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=2000&q=82' },
-          snow: { label: '❄️ 눈 오는 밤 · 포근한 분위기', animal: '🐧', image: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?auto=format&fit=crop&w=2000&q=82' },
-          fog: { label: '🌫️ 안개 낀 풍경 · 잔잔한 분위기', animal: '🦉', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2000&q=82' },
-          storm: { label: '⛈️ 폭풍우 · 집중 모드', animal: '🐈‍⬛', image: 'https://images.unsplash.com/photo-1605727216801-e27ce1a3ee9c?auto=format&fit=crop&w=2000&q=82' },
-          night: { label: '🌙 밤하늘 · 편안한 분위기', animal: '🦝', image: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=2000&q=82' }
+          sunny: { label: '햇살 내리는 숲길 · 여우의 산책', animal: '🦊', image: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=2000&q=84' },
+          cloudy: { label: '구름 사이 숲길 · 곰의 느린 오후', animal: '🐻', image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=84' },
+          rain: { label: '초록 연못 · 비를 만난 개구리', animal: '🐸', image: 'https://images.unsplash.com/photo-1746246134387-27f215d8cce4?auto=format&fit=crop&w=2000&q=84' },
+          snow: { label: '눈 덮인 소나무 숲 · 펭귄의 겨울 산책', animal: '🐧', image: 'https://images.unsplash.com/photo-1614846715513-1450c4973614?auto=format&fit=crop&w=2000&q=84' },
+          fog: { label: '안개 낀 숲길 · 부엉이의 고요한 쉼', animal: '🦉', image: 'https://images.unsplash.com/photo-1588027934983-925918135a30?auto=format&fit=crop&w=2000&q=84' },
+          storm: { label: '파도가 이는 바닷가 · 갈매기의 비행', animal: '🐦', image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=2000&q=84' },
+          night: { label: '별빛 아래 산책 · 너구리의 밤', animal: '🦝', image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2000&q=84' }
         };
         const scene = scenes[group] || scenes.cloudy;
         const photo = document.getElementById('weatherScenePhoto');
@@ -1824,17 +1831,17 @@
           preloader.onerror = () => { photo.style.backgroundImage = 'none'; photo.dataset.sceneImage = 'fallback'; };
           preloader.src = scene.image;
         }
-        const el = document.getElementById('weatherSceneLabel'); if (el) { el.dataset.weatherLabel = `${scene.animal || '🐾'}  ${scene.label}`; app.daypart?.update(); el.setAttribute('aria-label', `오늘의 날씨 친구 ${scene.animal || '🐾'} · ${scene.label}`); }
+        const el = document.getElementById('weatherSceneLabel'); if (el) { el.dataset.weatherLabel = scene.label; el.dataset.animal = scene.animal || '🐾'; app.daypart?.update(); el.setAttribute('aria-label', `오늘의 풍경 ${scene.animal || '🐾'} · ${scene.label}`); }
         const hero = document.getElementById('calHero');
         if (hero && scene.image) {
           const heroOverlay = {
-            sunny: 'linear-gradient(135deg, rgba(255,186,88,.56), rgba(255,143,99,.34), rgba(92,91,176,.24))',
-            cloudy: 'linear-gradient(135deg, rgba(108,122,154,.58), rgba(143,157,196,.40), rgba(86,76,146,.28))',
-            rain: 'linear-gradient(135deg, rgba(37,58,92,.66), rgba(57,79,121,.52), rgba(53,48,99,.42))',
-            snow: 'linear-gradient(135deg, rgba(185,216,238,.46), rgba(143,181,219,.38), rgba(91,92,169,.30))',
-            fog: 'linear-gradient(135deg, rgba(169,164,188,.54), rgba(138,141,178,.40), rgba(78,75,122,.28))',
-            storm: 'linear-gradient(135deg, rgba(23,28,53,.74), rgba(45,43,92,.62), rgba(22,21,52,.66))',
-            night: 'linear-gradient(135deg, rgba(22,28,78,.76), rgba(42,33,103,.62), rgba(8,10,31,.72))'
+            sunny: 'linear-gradient(135deg, rgba(225,172,112,.48), rgba(132,154,116,.27), rgba(63,83,91,.18))',
+            cloudy: 'linear-gradient(135deg, rgba(85,104,105,.52), rgba(107,128,120,.34), rgba(45,64,68,.24))',
+            rain: 'linear-gradient(135deg, rgba(30,70,66,.64), rgba(48,102,87,.42), rgba(24,52,58,.36))',
+            snow: 'linear-gradient(135deg, rgba(170,199,215,.50), rgba(141,169,188,.34), rgba(59,87,113,.22))',
+            fog: 'linear-gradient(135deg, rgba(143,157,148,.55), rgba(110,131,121,.36), rgba(47,72,70,.24))',
+            storm: 'linear-gradient(135deg, rgba(26,53,72,.68), rgba(38,76,94,.48), rgba(19,36,58,.44))',
+            night: 'linear-gradient(135deg, rgba(23,43,67,.72), rgba(35,51,86,.52), rgba(10,20,40,.58))'
           }[group] || 'linear-gradient(135deg, rgba(86,76,160,.48), rgba(50,60,120,.30))';
           hero.style.backgroundImage = `${heroOverlay}, url("${scene.image}")`;
           hero.style.backgroundPosition = 'center'; hero.style.backgroundSize = 'cover';
@@ -2791,7 +2798,7 @@
       const el = document.getElementById('weatherSceneLabel');
       if (el && el.dataset.weatherLabel) {
         el.textContent = `${parts[key][0]} ${parts[key][1]} · ${el.dataset.weatherLabel}`;
-        el.setAttribute('aria-label', `${parts[key][1]} 시간대 분위기 · ${el.dataset.weatherLabel}`);
+        el.setAttribute('aria-label', `오늘의 풍경 ${el.dataset.animal || '🐾'} · ${parts[key][1]} · ${el.dataset.weatherLabel}`);
       }
     }
   };
