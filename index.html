@@ -707,6 +707,12 @@
   #weatherSceneLabel { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:rgba(28,35,56,.52); color:#fff; backdrop-filter:blur(10px); box-shadow:0 8px 24px rgba(16,24,40,.16); }
   #weatherSceneLabel::first-letter { font-size:19px; }
   .calendar-event-chip { display:block; width:max-content; max-width:95%; border:0; cursor:pointer; text-align:left; font:inherit; }
+  .calendar-event-chip.todo-calendar-chip { display:flex; align-items:center; gap:3px; width:100%; max-width:100%!important; min-width:0; padding:3px 5px!important; border:1px solid color-mix(in srgb,var(--accent) 15%,var(--line))!important; border-radius:7px!important; background:color-mix(in srgb,var(--paper-raised) 65%,var(--accent-bg))!important; color:var(--accent-deep)!important; white-space:nowrap!important; overflow:hidden; text-overflow:ellipsis; font-size:9px!important; line-height:1.2; }
+  .todo-calendar-status { flex:0 0 auto; font-size:9px; font-weight:900; }
+  .todo-calendar-label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .todo-calendar-chip.is-done { opacity:.62; }
+  .calendar-more-todos { width:100%; padding:2px 4px!important; border:0!important; background:transparent!important; color:var(--ink-soft)!important; font-size:8px!important; line-height:1.2; }
+  @media(max-width:600px){.calendar-event-chip.todo-calendar-chip{padding:2px 3px!important;font-size:7px!important}.todo-calendar-status{font-size:7px}.calendar-more-todos{font-size:7px!important}}
   .calendar-event-chip.is-done { opacity:.55; text-decoration:line-through; }
   .opportunity-modal { position:fixed; inset:0; z-index:10020; display:grid; place-items:center; padding:18px; background:rgba(18,24,40,.56); backdrop-filter:blur(5px); }
   .opportunity-card { width:min(880px,96vw); max-height:88vh; overflow:auto; background:var(--paper,#fff); color:var(--ink,#243047); border-radius:24px; padding:24px; box-shadow:0 24px 80px rgba(9,16,32,.3); }
@@ -2798,7 +2804,15 @@
             if (dd && dd.timetable) { const planned = Object.values(dd.timetable).filter(t => t && t.text && t.text.trim() !== ""); if (planned.length > 0) { const p = typeof dd.progress === 'number' ? dd.progress : 0; if (p >= 80) classes += " progress-high"; else if (p >= 40) classes += " progress-mid"; else classes += " progress-low"; progressBadge = `<span class="cal-progress-badge">${p}%</span>`; } }
           }
           if (app.holidays[year] && app.holidays[year][dateStr]) { dateStyle = 'class="sun"'; extraHtml += `<div class="holiday-text">🎈 ${app.holidays[year][dateStr]}</div>`; }
-          app.events.filter(e => e.date === dateStr).forEach(e => { const eventIndex = app.events.indexOf(e); extraHtml += `<button type="button" class="event-text calendar-event-chip ${e.done ? 'is-done' : ''}" title="${e.done ? '완료 취소' : '완료 체크'}" onclick="event.stopPropagation();app.toggleCalendarEventDone(${eventIndex})">${e.done ? '✓' : '○'} ${this.escapeHtml(e.title || '')}</button>`; });
+          const dayEvents = app.events.filter(e => e.date === dateStr), todoEvents = dayEvents.filter(e => e.todoId), otherEvents = dayEvents.filter(e => !e.todoId);
+          [...otherEvents, ...todoEvents.slice(0, 2)].forEach(e => {
+            const eventIndex = app.events.indexOf(e), isTodo = !!e.todoId;
+            const fullTitle = isTodo && app.todos ? app.todos.fullTitle(e) : (e.title || '');
+            const label = isTodo && app.todos ? app.todos.calendarLabel(e) : fullTitle;
+            const titleAttr = isTodo ? `${e.done ? '완료' : '미완료'} · ${fullTitle} · To Do List에서 전체 보기` : (e.done ? '완료 취소' : '완료 체크');
+            extraHtml += `<button type="button" class="event-text calendar-event-chip ${isTodo ? 'todo-calendar-chip' : ''} ${e.done ? 'is-done' : ''}" title="${this.escapeHtml(titleAttr)}" aria-label="${this.escapeHtml(titleAttr)}" onclick="event.stopPropagation();app.toggleCalendarEventDone(${eventIndex})">${isTodo ? `<span class="todo-calendar-status" aria-hidden="true">${e.done ? '✓' : '○'}</span><span class="todo-calendar-label">${this.escapeHtml(label)}</span>` : `${e.done ? '✓' : '○'} ${this.escapeHtml(label)}`}</button>`;
+          });
+          if(todoEvents.length>2) extraHtml += `<button type="button" class="calendar-more-todos" title="이 날짜의 나머지 할 일 ${todoEvents.length-2}개 보기" onclick="event.stopPropagation();app.todos.open()">+${todoEvents.length-2}개 더</button>`;
 
           const diaryEntry = this.getDiaryEntry(dateStr);
           const diaryHasTitle = diaryEntry.title && diaryEntry.title.trim() !== '', diaryHasText = diaryEntry.text && diaryEntry.text.trim() !== '', diaryHasPhotos = diaryEntry.photos && diaryEntry.photos.length > 0;
@@ -2899,6 +2913,14 @@
       this.items.forEach(item=>{if(item.done)return;if(!item.dueDate||item.dueDate<today){item.dueDate=today;this.syncCalendar(item);changed=true;}});
       if(changed){this.persist();if(app.ui&&document.getElementById('calendarDays'))app.ui.renderCalendar();}
     },
+    fullTitle(event) {
+      const item=this.items.find(x=>x.id===event.todoId);
+      return (item&&item.title||event.title||'').replace(/^☑\s*/,'').trim();
+    },
+    calendarLabel(event) {
+      const chars=Array.from(this.fullTitle(event).replace(/\s+/g,' ').trim());
+      return chars.length>12?chars.slice(0,12).join('')+'…':chars.join('');
+    },
     daysLeft(date) { if(!date)return null; const a=new Date();a.setHours(0,0,0,0);return Math.ceil((new Date(date+'T00:00:00')-a)/86400000); },
     open() { this.render(); const modal=document.getElementById('todoModal');modal.classList.remove('hidden');modal.style.display='grid'; },
     close() { const modal=document.getElementById('todoModal');if(modal){modal.classList.add('hidden');modal.style.display='none';} },
@@ -2934,8 +2956,8 @@
     syncCalendar(item) {
       const matches=app.events.filter(e=>e.todoId===item.id);
       if(!item.dueDate){app.events=app.events.filter(e=>e.todoId!==item.id);}
-      else if(matches.length){const e=matches[0];e.date=item.dueDate;e.title='☑ '+item.title;e.done=!!item.done;for(const extra of matches.slice(1))app.events.splice(app.events.indexOf(extra),1);}
-      else app.events.push({id:item.id,date:item.dueDate,title:'☑ '+item.title,done:!!item.done,todoId:item.id});
+      else if(matches.length){const e=matches[0];e.date=item.dueDate;e.title=item.title;e.done=!!item.done;for(const extra of matches.slice(1))app.events.splice(app.events.indexOf(extra),1);}
+      else app.events.push({id:item.id,date:item.dueDate,title:item.title,done:!!item.done,todoId:item.id});
       localStorage.setItem('appEvents',JSON.stringify(app.events));if(app.cloud&&app.cloud.queuePush)app.cloud.queuePush();
     },
     toggleByIndex(index) {const item=this.items[index];if(item)this.toggle(item.id);},
