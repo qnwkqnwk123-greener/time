@@ -277,6 +277,22 @@
   .priority-item input, .finance-item select, .finance-item input { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 12px; box-sizing: border-box; font-size: 16px !important; background: var(--paper); }
   .priority-item input { flex: 1; width: auto; }
   .priority-item .btn-danger { flex: 0 0 auto; padding: 8px 12px; }
+  #panelPriority .priority-item { gap:9px; padding:8px 9px; border:1px solid color-mix(in srgb,var(--accent) 14%,var(--line)); border-radius:14px; background:linear-gradient(135deg,var(--paper-raised),color-mix(in srgb,var(--accent-bg) 52%,var(--paper-raised))); box-shadow:0 4px 14px rgba(47,42,61,.04); transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+  #panelPriority .priority-item:hover { transform:translateY(-1px); border-color:color-mix(in srgb,var(--accent) 35%,var(--line)); box-shadow:var(--shadow-sm); }
+  .priority-check-wrap { display:grid; place-items:center; flex:0 0 28px; cursor:pointer; }
+  .priority-check { appearance:none; width:22px!important; height:22px; margin:0; padding:0!important; border:1.5px solid color-mix(in srgb,var(--accent) 35%,var(--line))!important; border-radius:7px!important; background:var(--paper-raised)!important; cursor:pointer; display:grid; place-items:center; transition:all .18s ease; }
+  .priority-check::after { content:'✓'; color:#fff; font-size:13px; font-weight:900; transform:scale(0); transition:transform .16s ease; }
+  .priority-check:checked { background:linear-gradient(135deg,var(--mint),#21a980)!important; border-color:var(--mint)!important; box-shadow:0 4px 10px color-mix(in srgb,var(--mint) 28%,transparent); }
+  .priority-check:checked::after { transform:scale(1); }
+  .priority-check:disabled { opacity:.35; cursor:not-allowed; }
+  #panelPriority .priority-item .priority-title { min-width:0; flex:1; padding:10px 12px; border-radius:11px; background:var(--paper-raised); transition:background .18s ease,opacity .18s ease; }
+  #panelPriority .priority-item.is-complete .priority-title { opacity:.62; text-decoration:line-through; }
+  #panelPriority .priority-item .priority-rank { flex-basis:26px; font-size:14px; }
+  #panelPriority .priority-item .btn-danger { padding:7px 9px; border-radius:10px; }
+  #panelPriority:not(.collapsed) .collapsible-body { max-height:min(68vh,720px); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+  .priority-progress-chip { width:max-content; max-width:100%; padding:2px 5px; border-radius:999px; background:var(--mint-bg); color:#198d68; font-size:8px; line-height:1.2; font-weight:800; white-space:nowrap; }
+  @media(max-width:600px){#panelPriority .priority-item{gap:6px;padding:6px}.priority-check-wrap{flex-basis:24px}.priority-check{width:20px!important;height:20px}#panelPriority .priority-item .priority-rank{flex-basis:22px;font-size:12px}}
+
   .priority-item input:focus, .finance-item select:focus, .finance-item input:focus { outline: none; border-color: var(--accent); background: white; }
   .finance-item { display: flex; gap: 6px; flex-wrap: wrap; }
   @media (min-width: 400px) { .finance-item { flex-wrap: nowrap; } }
@@ -1211,7 +1227,11 @@
       if (!this.monthlyData[key]) this.monthlyData[key] = { priorities: ["", "", ""], finances: [] };
       if (!this.monthlyData[key].priorities) this.monthlyData[key].priorities = ["", "", ""];
       if (!this.monthlyData[key].finances) this.monthlyData[key].finances = [];
-      return this.monthlyData[key];
+      const bucket=this.monthlyData[key];
+      if(!Array.isArray(bucket.priorityIds))bucket.priorityIds=bucket.priorities.map((_,i)=>`priority-${key}-${i}`);
+      while(bucket.priorityIds.length<bucket.priorities.length)bucket.priorityIds.push(`priority-${key}-${bucket.priorityIds.length}`);
+      if(bucket.priorityIds.length>bucket.priorities.length)bucket.priorityIds=bucket.priorityIds.slice(0,bucket.priorities.length);
+      return bucket;
     },
     getMonthlyBucket(dateStr) { return this.getMonthlyBucketByKey(this.monthKey(dateStr)); },
     saveMonthlyBucket(dateStr, patch) { const bucket = this.getMonthlyBucket(dateStr); Object.assign(bucket, patch); localStorage.setItem('appMonthlyData', JSON.stringify(this.monthlyData)); this.cloud.queuePush(); },
@@ -1345,9 +1365,11 @@
       this.ui.renderCalendar(); this.ui.updatePanelSummaries();
     },
     savePriorities() {
-      const priorities = Array.from(document.querySelectorAll('#priorityList .priority-item input')).map(i => i.value);
-      this.saveMonthlyBucket(this.selectedDateStr, { priorities });
-      this.ui.updatePanelSummaries(); this.ui.updateMonthGoalBadge();
+      const rows=Array.from(document.querySelectorAll('#priorityList .priority-item'));
+      const priorities=rows.map(row=>row.querySelector('.priority-title')?.value||'');
+      const priorityIds=rows.map((row,i)=>row.dataset.priorityId||`priority-${this.monthKey(this.selectedDateStr)}-${i}`);
+      this.saveMonthlyBucket(this.selectedDateStr,{priorities,priorityIds});
+      this.ui.updatePanelSummaries();this.ui.updateMonthGoalBadge();this.ui.renderCalendar();
     },
     saveFinances() {
       const rows = Array.from(document.querySelectorAll('.finance-item'));
@@ -2340,7 +2362,7 @@
       updatePanelSummaries() {
         const data = app.dailyData[app.selectedDateStr] || {}, monthly = app.getMonthlyBucket(app.selectedDateStr);
         const priEl = document.getElementById('prioritySummary');
-        if (priEl) { const inputs = document.querySelectorAll('#priorityList .priority-item input'); const filled = Array.from(inputs).filter(i => i.value.trim()).length; priEl.textContent = filled > 0 ? `${filled}개 입력됨` : ''; }
+        if (priEl) { const rows=Array.from(document.querySelectorAll('#priorityList .priority-item')),active=rows.filter(r=>(r.querySelector('.priority-title')?.value||'').trim()),done=active.filter(r=>r.querySelector('.priority-check')?.checked).length;priEl.textContent=active.length?`${done}/${active.length} 완료`:''; }
         const evEl = document.getElementById('eventSummary'); if (evEl) { const count = app.events.filter(e => e.date === app.selectedDateStr).length; evEl.textContent = count > 0 ? `${count}개` : ''; }
         const finEl = document.getElementById('financeSummary'); if (finEl) { const total = (monthly.finances || []).reduce((sum, f) => sum + (f.amount || 0), 0); finEl.textContent = total > 0 ? `이번 달 ₩${total.toLocaleString()}` : ''; }
         const growEl = document.getElementById('growthSummary'); if (growEl) { const p = data.progress || 0; growEl.textContent = p > 0 ? `오늘 ${p}%` : ''; }
@@ -2683,23 +2705,33 @@
         this.updateStreakUI(app.calculateStreak()); this.updatePanelSummaries(); app.timer.updateDisplay();
       },
       renderPriorityList(priorities) {
-        const container = document.getElementById('priorityList'); if (!container) return;
-        container.innerHTML = '';
-        const list = (priorities && priorities.length > 0) ? priorities : [''];
-        const ranks = ['🥇', '🥈', '🥉'];
-        list.forEach((text, idx) => {
-          const div = document.createElement('div'); div.className = 'priority-item';
-          const rank = ranks[idx] || `${idx + 1}.`;
-          div.innerHTML = `<span class="priority-rank">${rank}</span><input type="text" value="${this.escapeHtml(text)}" placeholder="목표를 적어보세요" onchange="app.savePriorities()" oninput="app.ui.updatePanelSummaries()"><button class="btn-danger" onclick="this.parentElement.remove(); app.savePriorities();">❌</button>`;
+        const container=document.getElementById('priorityList');if(!container)return;
+        container.innerHTML='';
+        const list=(priorities&&priorities.length>0)?priorities:[''],bucket=app.getMonthlyBucket(app.selectedDateStr),ids=bucket.priorityIds||[],doneMap=(app.dailyData[app.selectedDateStr]||{}).priorityDone||{},ranks=['🥇','🥈','🥉'];
+        list.forEach((text,idx)=>{
+          const div=document.createElement('div'),id=ids[idx]||`priority-${app.monthKey(app.selectedDateStr)}-${idx}`;
+          const done=!!doneMap[id],rank=ranks[idx]||`${idx+1}.`,safeId=this.escapeHtml(id),label=this.escapeHtml(text||'');
+          div.className='priority-item'+(done?' is-complete':'');div.dataset.priorityId=id;
+          div.innerHTML=`<label class="priority-check-wrap" title="오늘 완료 체크"><input class="priority-check" type="checkbox" ${done?'checked':''} ${String(text||'').trim()?'':'disabled'} aria-label="${label||'목표'} 완료" onchange="app.ui.togglePriorityDone('${safeId}',this.checked)"></label><span class="priority-rank">${rank}</span><input class="priority-title" type="text" value="${label}" placeholder="목표를 적어보세요" onchange="app.savePriorities()" oninput="this.closest('.priority-item').querySelector('.priority-check').disabled=!this.value.trim();app.ui.updatePanelSummaries()"><button class="btn-danger" aria-label="목표 삭제" title="목표 삭제" onclick="this.parentElement.remove();app.savePriorities();">×</button>`;
           container.appendChild(div);
         });
       },
+      togglePriorityDone(id,checked) {
+        const date=app.selectedDateStr;if(!date)return;
+        const data=app.dailyData[date]||(app.dailyData[date]={timetable:{},timers:{},progress:0});
+        if(!data.priorityDone)data.priorityDone={};
+        if(checked)data.priorityDone[id]=true;else delete data.priorityDone[id];
+        localStorage.setItem('appDailyData',JSON.stringify(app.dailyData));app.cloud.queuePush();
+        const row=Array.from(document.querySelectorAll('#priorityList .priority-item')).find(r=>r.dataset.priorityId===id);
+        if(row)row.classList.toggle('is-complete',checked);
+        this.updatePanelSummaries();this.renderCalendar();
+      },
       addPriorityRow() {
         const container = document.getElementById('priorityList'); if (!container) return;
-        const idx = container.children.length, ranks = ['🥇', '🥈', '🥉'], rank = ranks[idx] || `${idx + 1}.`;
-        const div = document.createElement('div'); div.className = 'priority-item';
-        div.innerHTML = `<span class="priority-rank">${rank}</span><input type="text" value="" placeholder="목표를 적어보세요" onchange="app.savePriorities()" oninput="app.ui.updatePanelSummaries()"><button class="btn-danger" onclick="this.parentElement.remove(); app.savePriorities();">❌</button>`;
-        container.appendChild(div); div.querySelector('input').focus();
+        const idx=container.children.length,ranks=['🥇','🥈','🥉'],rank=ranks[idx]||`${idx+1}.`,id=`priority-${app.monthKey(app.selectedDateStr)}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,5)}`;
+        const div=document.createElement('div');div.className='priority-item';div.dataset.priorityId=id;
+        div.innerHTML=`<label class="priority-check-wrap" title="오늘 완료 체크"><input class="priority-check" type="checkbox" disabled aria-label="목표 완료" onchange="app.ui.togglePriorityDone('${this.escapeHtml(id)}',this.checked)"></label><span class="priority-rank">${rank}</span><input class="priority-title" type="text" value="" placeholder="목표를 적어보세요" onchange="app.savePriorities()" oninput="this.closest('.priority-item').querySelector('.priority-check').disabled=!this.value.trim();app.ui.updatePanelSummaries()"><button class="btn-danger" aria-label="목표 삭제" title="목표 삭제" onclick="this.parentElement.remove();app.savePriorities();">×</button>`;
+        container.appendChild(div);div.querySelector('.priority-title').focus();
       },
       addFinanceRow(category = "식비", desc = "", amount = "", installment = null) {
         const fContainer = document.getElementById('financeList');
@@ -2818,6 +2850,8 @@
             if (dd && dd.timetable) { const planned = Object.values(dd.timetable).filter(t => t && t.text && t.text.trim() !== ""); if (planned.length > 0) { const p = typeof dd.progress === 'number' ? dd.progress : 0; if (p >= 80) classes += " progress-high"; else if (p >= 40) classes += " progress-mid"; else classes += " progress-low"; progressBadge = `<span class="cal-progress-badge">${p}%</span>`; } }
           }
           if (app.holidays[year] && app.holidays[year][dateStr]) { dateStyle = 'class="sun"'; extraHtml += `<div class="holiday-text">🎈 ${app.holidays[year][dateStr]}</div>`; }
+          const monthBucket=app.getMonthlyBucket(dateStr),goalRows=(monthBucket.priorities||[]).map((title,i)=>({title,id:(monthBucket.priorityIds||[])[i]})).filter(x=>String(x.title||'').trim()),dayPriorityDone=(app.dailyData[dateStr]||{}).priorityDone||{},goalDone=goalRows.filter(x=>x.id&&dayPriorityDone[x.id]).length;
+          if(goalRows.length&&goalDone)extraHtml+=`<div class="priority-progress-chip" title="핵심 목표 ${goalDone}/${goalRows.length} 완료">✓ ${goalDone}/${goalRows.length} 목표</div>`;
           const dayEvents = app.events.filter(e => e.date === dateStr), todoEvents = dayEvents.filter(e => e.todoId), otherEvents = dayEvents.filter(e => !e.todoId);
           [...otherEvents, ...todoEvents.slice(0, 2)].forEach(e => {
             const eventIndex = app.events.indexOf(e), isTodo = !!e.todoId;
