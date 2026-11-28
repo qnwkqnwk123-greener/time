@@ -704,7 +704,18 @@
   .quick-schedule-hint,#quickScheduleStatus { color:var(--ink-soft); font-size:11px; }
   #quickScheduleStatus { min-height:18px; margin-top:7px; }
   .quick-schedule-preview { display:grid; gap:8px; margin-top:12px; }
-  .quick-task-draft { display:grid; grid-template-columns:22px minmax(0,1fr); gap:7px 9px; align-items:start; padding:11px; border:1px solid var(--line); border-radius:13px; background:var(--paper-raised); }
+  .quick-task-draft { display:grid; grid-template-columns:22px minmax(0,1fr) auto; gap:7px 9px; align-items:start; padding:11px; border:1px solid var(--line); border-radius:13px; background:var(--paper-raised); }
+  .quick-draft-remove { padding:5px 9px; color:#c24b72; border-color:color-mix(in srgb,#c24b72 22%,var(--line)); font-size:11px; }
+  .daily-todo-list { display:grid; gap:8px; }
+  .daily-todo-item { display:grid; grid-template-columns:24px minmax(0,1fr) auto; align-items:center; gap:9px; padding:10px 12px; border-radius:14px; border:1px solid var(--line); background:var(--paper-raised); }
+  .daily-todo-item.is-done { opacity:.72; background:var(--mint-bg); }
+  .daily-todo-item.is-done .daily-todo-title { text-decoration:line-through; color:var(--ink-soft); }
+  .daily-todo-title { font-size:13px; font-weight:700; }
+  .daily-todo-meta { margin-top:3px; font-size:10px; color:var(--ink-soft); }
+  .daily-todo-check { width:20px; height:20px; accent-color:var(--mint); cursor:pointer; }
+  .daily-todo-actions { display:flex; gap:5px; }
+  .daily-todo-actions button { padding:5px 8px; font-size:10px; }
+  .daily-todo-empty { padding:18px; text-align:center; color:var(--ink-soft); background:var(--paper); border:1px dashed var(--line); border-radius:14px; font-size:12px; }
   .quick-draft-check { padding-top:7px; }
   .quick-draft-fields { display:grid; grid-template-columns:minmax(160px,1fr) minmax(135px,170px) minmax(125px,150px) 105px; gap:8px; }
   .quick-draft-fields label { display:grid; gap:4px; color:var(--ink-soft); font-size:10px; font-weight:700; }
@@ -998,6 +1009,10 @@
         </div>
       </div>
       <div class="right-col">
+        <div class="box-panel" id="panelDailyTodo">
+          <div class="box-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span>🗓️ 이 날짜의 To Do <span id="dailyTodoSummary" class="collapsible-summary"></span></span><button type="button" style="padding:6px 10px;font-size:11px;" onclick="app.todos.openForDate(app.selectedDateStr)">➕ 할 일</button></div>
+          <div id="dailyTodoList" class="daily-todo-list"></div>
+        </div>
         <div class="box-panel collapsible" id="panelPriority">
           <h3 class="box-title collapsible-header" onclick="app.ui.toggleCollapse('panelPriority')">
             <span>🎯 이번 달 핵심 목표 <span class="collapsible-summary" id="prioritySummary"></span></span>
@@ -2495,6 +2510,7 @@
         app.weather.renderPlannerWeather(dateStr);
         try { this.loadPlannerData(); } catch (e) { console.error('플래너 데이터 로딩 중 오류:', e); app.timer.updateDisplay(); this.showToast('일부 위젯을 불러오는 중 문제가 있었어요.'); }
         this.renderCoachPlanner();
+        if (app.todos) app.todos.renderDailyPanel();
         window.scrollTo(0, 0);
       },
       showCalendar() {
@@ -2905,7 +2921,7 @@
     })(),
     esc(value) { const d=document.createElement('div'); d.textContent=String(value ?? ''); return d.innerHTML; },
     parseScheduleDate(text) {
-      const base=new Date();base.setHours(0,0,0,0);
+      const base=new Date((app.selectedDateStr||this.todayStr())+'T00:00:00');base.setHours(0,0,0,0);
       const make=(year,month,day,token)=>{const d=new Date(year,month-1,day);if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;return {date:`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`,token};};
       let m=text.match(/(20\d{2})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})\s*일?/);
       if(m){const out=make(+m[1],+m[2],+m[3],m[0]);if(out)return out;}
@@ -2913,6 +2929,8 @@
       if(m){let y=base.getFullYear(),out=make(y,+m[1],+m[2],m[0]);if(out&&new Date(out.date+'T00:00:00')<base){y++;out=make(y,+m[1],+m[2],m[0]);}if(out)return out;}
       m=text.match(/(?<!\d)(\d{1,2})[./](\d{1,2})(?!\d)/);
       if(m){let y=base.getFullYear(),out=make(y,+m[1],+m[2],m[0]);if(out&&new Date(out.date+'T00:00:00')<base){y++;out=make(y,+m[1],+m[2],m[0]);}if(out)return out;}
+      m=text.match(/(?<!\d)(\d{1,2})\s*일\s*(?:뒤|후)/);
+      if(m){const d=new Date(base);d.setDate(d.getDate()+Number(m[1]));return {date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),token:m[0]};}
       m=text.match(/오늘|금일|내일|모레|글피/);
       if(m){const offsets={오늘:0,금일:0,내일:1,모레:2,글피:3},d=new Date(base);d.setDate(d.getDate()+offsets[m[0]]);return {date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,token:m[0]};}
       m=text.match(/(?:(다음|이번)\s*주\s*)?(일|월|화|수|목|금|토)(?:요일)/);
@@ -2930,11 +2948,18 @@
     analyzeInput() {
       const input=document.getElementById('quickScheduleInput'),status=document.getElementById('quickScheduleStatus'),preview=document.getElementById('quickSchedulePreview');
       if(!input||!status||!preview)return;
-      const chunks=input.value.replace(/\r/g,'').split(/\n+|\t+| {2,}|[;；]+/).map(x=>x.trim()).filter(Boolean);
+      const chunks=input.value.replace(/\r/g,'').split(/\n+|\t+| {2,}|[;；]+|(?<=[.!?])\s+/).map(x=>x.trim()).filter(x=>x&&!/^(?:달력|캘린더)에\s*(?:복습|등록|표시)(?:해|하기)?[.!?]?$/i.test(x));
       if(!chunks.length){status.textContent='할 일과 날짜를 적어주세요. 예: 내일 오전 9시 이력서 제출';input.focus();return;}
-      let activeDate='';
+      let activeDate=app.selectedDateStr||this.todayKey();
       const drafts=[];
       for(const raw of chunks){
+        const reviewMatch=raw.match(/((?:\d{1,2}\s*일\s*[·,，/및과]\s*)+\d{1,2}\s*일)\s*(?:뒤|후)/);
+        if(reviewMatch){
+          const topic=raw.slice(0,reviewMatch.index).replace(/(?:은|는|을|를|에)\s*$/,'').trim()||'오답';
+          const offsets=reviewMatch[1].match(/\d+/g).map(Number).filter(n=>n>0&&n<=365);
+          offsets.forEach(offset=>{const d=new Date((app.selectedDateStr||this.todayKey())+'T00:00:00');d.setDate(d.getDate()+offset);const dueDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),title=topic+' 복습',category=this.inferCategory(raw);drafts.push({title,dueDate,category,priority:'보통',selected:true,duplicate:false,source:raw});});
+          continue;
+        }
         const parsed=this.parseScheduleDate(raw);
         let title=raw;
         if(parsed){
@@ -2965,8 +2990,15 @@
           <label>분류<select name="draftCategory" aria-label="분류 ${i+1}">${this.categories.map(c=>`<option value="${this.esc(c)}" ${c===d.category?'selected':''}>${this.esc(c)}</option>`).join('')}</select></label>
           <label>우선순위<select name="draftPriority" aria-label="우선순위 ${i+1}"><option value="보통" ${d.priority==='보통'?'selected':''}>보통</option><option value="높음" ${d.priority==='높음'?'selected':''}>높음</option></select></label>
         </div>
+        <button type="button" class="quick-draft-remove" aria-label="이 항목 제거" onclick="app.todos.removeDraft(${i})">삭제</button>
       </article>`).join('');
       preview.innerHTML=rows+`<div class="quick-schedule-preview-actions"><button type="button" class="btn-ghost" onclick="app.todos.analyzeInput()">다시 분석</button><button type="button" class="btn-primary" onclick="app.todos.addFromText()">선택한 할 일 등록</button></div>`;
+    },
+    removeDraft(index) {
+      this.drafts.splice(index,1);
+      this.renderDrafts();
+      const status=document.getElementById('quickScheduleStatus');
+      if(status)status.textContent=this.drafts.length?'미리보기에서 항목을 삭제했어요. 남은 '+this.drafts.length+'개를 확인하세요.':'미리보기 항목을 모두 삭제했어요. 원문을 수정하거나 다시 분석할 수 있어요.';
     },
     addFromText() {
       const preview=document.getElementById('quickSchedulePreview'),status=document.getElementById('quickScheduleStatus');
@@ -2994,6 +3026,7 @@
     persist() {
       localStorage.setItem('appTodos', JSON.stringify(this.items));
       if (app.cloud && app.cloud.queuePush) app.cloud.queuePush();
+      this.renderDailyPanel();
     },
     todayKey() { const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
     rollover() {
@@ -3011,6 +3044,14 @@
     },
     daysLeft(date) { if(!date)return null; const a=new Date();a.setHours(0,0,0,0);return Math.ceil((new Date(date+'T00:00:00')-a)/86400000); },
     open() { this.editingId=null;this.render(); const modal=document.getElementById('todoModal');modal.classList.remove('hidden');modal.style.display='grid'; },
+    openForDate(date) { const target=date||this.todayKey();this.open();const form=document.querySelector('#todoModal .todo-form');if(form)form.elements.dueDate.value=target; },
+    editFromPanel(id) { this.open();this.edit(id); },
+    renderDailyPanel() {
+      const root=document.getElementById('dailyTodoList');if(!root)return;
+      const date=app.selectedDateStr||this.todayKey(),items=this.items.filter(x=>x.dueDate===date).sort((a,b)=>Number(a.done)-Number(b.done)||String(a.title).localeCompare(String(b.title),'ko'));
+      const done=items.filter(x=>x.done).length,summary=document.getElementById('dailyTodoSummary');if(summary)summary.textContent=items.length?done+'/'+items.length+' 완료':'';
+      root.innerHTML=items.length?items.map(x=>'<article class="daily-todo-item '+(x.done?'is-done':'')+'"><input class="daily-todo-check" type="checkbox" aria-label="할 일 완료" '+(x.done?'checked':'')+' onchange="app.todos.toggle(\''+this.esc(x.id)+'\')"><div><div class="daily-todo-title">'+this.esc(x.title)+'</div><div class="daily-todo-meta">'+this.esc(x.category||'일반')+(x.priority==='높음'?' · 우선':'')+'</div></div><div class="daily-todo-actions"><button type="button" class="btn-ghost" onclick="app.todos.editFromPanel(\''+this.esc(x.id)+'\')">수정</button><button type="button" class="btn-ghost" onclick="app.todos.remove(\''+this.esc(x.id)+'\')">삭제</button></div></article>').join(''):'<div class="daily-todo-empty">이 날짜에 등록된 할 일이 없어요.<br>문장 입력으로 일정을 만들거나 할 일을 추가해 보세요.</div>';
+    },
     close() { const modal=document.getElementById('todoModal');if(modal){modal.classList.add('hidden');modal.style.display='none';}this.editingId=null; },
     render() {
       let modal=document.getElementById('todoModal');
