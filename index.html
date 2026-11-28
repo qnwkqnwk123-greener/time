@@ -687,6 +687,19 @@
   .quick-schedule-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:10px; }
   .quick-schedule-hint,#quickScheduleStatus { color:var(--ink-soft); font-size:11px; }
   #quickScheduleStatus { min-height:18px; margin-top:7px; }
+  .quick-schedule-preview { display:grid; gap:8px; margin-top:12px; }
+  .quick-task-draft { display:grid; grid-template-columns:22px minmax(0,1fr); gap:7px 9px; align-items:start; padding:11px; border:1px solid var(--line); border-radius:13px; background:var(--paper-raised); }
+  .quick-draft-check { padding-top:7px; }
+  .quick-draft-fields { display:grid; grid-template-columns:minmax(160px,1fr) minmax(135px,170px) minmax(125px,150px) 105px; gap:8px; }
+  .quick-draft-fields label { display:grid; gap:4px; color:var(--ink-soft); font-size:10px; font-weight:700; }
+  .quick-draft-fields input,.quick-draft-fields select { width:100%; min-width:0; padding:8px 9px; border:1px solid var(--line); border-radius:9px; background:var(--paper-raised); color:var(--ink); font:inherit; font-size:12px; }
+  .quick-draft-fields input[name="draftTitle"] { font-weight:700; color:var(--ink); }
+  .quick-schedule-preview-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .todo-actions { display:flex; align-items:center; gap:5px; }
+  .todo-actions button { padding:6px 9px; font-size:11px; }
+  @media(max-width:760px){.quick-draft-fields{grid-template-columns:1fr 1fr}.quick-draft-fields label:first-child{grid-column:1/-1}}
+  @media(max-width:600px){.quick-draft-fields{grid-template-columns:1fr}.quick-draft-fields label:first-child{grid-column:auto}.todo-actions{flex-wrap:wrap}}
+
   @media(max-width:600px){.quick-schedule-card{padding:14px}.quick-schedule-head h2{font-size:16px}.quick-schedule-footer .btn-primary{width:100%}}
   .todo-form { margin-bottom:12px; }
   .todo-item { grid-template-columns:32px 1fr auto; align-items:center; }
@@ -832,10 +845,11 @@
       <label for="quickScheduleInput" style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">할 일과 날짜를 자유롭게 적어주세요</label>
       <textarea id="quickScheduleInput" rows="3" placeholder="예: 내일 오전 9시 이력서 제출&#10;12월 5일까지 해양경찰 체력시험 준비&#10;다음 주 월요일 면접 보기" onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();app.todos.addFromText()}"></textarea>
       <div class="quick-schedule-footer">
-        <span class="quick-schedule-hint">날짜가 포함된 문장마다 할 일 하나씩 만들어요 · Ctrl+Enter로 등록</span>
-        <button type="button" class="btn-primary" onclick="app.todos.addFromText()">내용 분석해 달력에 등록</button>
+        <span class="quick-schedule-hint">탭·두 칸 이상 공백·줄바꿈으로 할 일을 나눠요 · Ctrl+Enter로 분석</span>
+        <button type="button" class="btn-primary" onclick="app.todos.analyzeInput()">내용 나누어 미리보기</button>
       </div>
       <div id="quickScheduleStatus" role="status" aria-live="polite"></div>
+      <div id="quickSchedulePreview" class="quick-schedule-preview"></div>
     </section>
 
     <div class="calendar-grid">
@@ -2844,6 +2858,8 @@
 
   app.todos = {
     activeFilter: '전체',
+    editingId: null,
+    drafts: [],
     categories: ['일반','지원','교육','채용','해양경찰','부동산'],
     items: (() => {
       try {
@@ -2877,31 +2893,69 @@
       if(/지원|신청|접수|제출/.test(text))return '지원';
       return '일반';
     },
-    addFromText() {
-      const input=document.getElementById('quickScheduleInput'),status=document.getElementById('quickScheduleStatus');
-      if(!input||!status)return;
-      const lines=input.value.split(/\n|[;；]/).map(x=>x.trim()).filter(Boolean);
-      if(!lines.length){status.textContent='할 일과 날짜를 적어주세요. 예: 내일 오전 9시 이력서 제출';input.focus();return;}
-      const added=[],duplicates=[],unmatched=[];
-      for(const raw of lines){
+    analyzeInput() {
+      const input=document.getElementById('quickScheduleInput'),status=document.getElementById('quickScheduleStatus'),preview=document.getElementById('quickSchedulePreview');
+      if(!input||!status||!preview)return;
+      const chunks=input.value.replace(/\r/g,'').split(/\n+|\t+| {2,}|[;；]+/).map(x=>x.trim()).filter(Boolean);
+      if(!chunks.length){status.textContent='할 일과 날짜를 적어주세요. 예: 내일 오전 9시 이력서 제출';input.focus();return;}
+      let activeDate='';
+      const drafts=[];
+      for(const raw of chunks){
         const parsed=this.parseScheduleDate(raw);
-        if(!parsed){unmatched.push(raw);continue;}
-        let title=raw.replace(parsed.token,' ').replace(/(?:오전|오후)?\s*\d{1,2}\s*시(?:\s*\d{1,2}\s*분)?/g,' ').replace(/\d{1,2}:\d{2}/g,' ').replace(/^(?:일정|할\s*일|to\s*do)\s*[:：-]?\s*/i,'').replace(/\s+/g,' ').trim();
+        let title=raw;
+        if(parsed){
+          activeDate=parsed.date;
+          title=title.replace(parsed.token,' ').replace(/^[\s([{]*|[\s)\]}]*$/g,' ').replace(/^(?:일|월|화|수|목|금|토)(?:요일)?\s*/,'').replace(/\(\s*\)/g,' ').replace(/\s+/g,' ').trim();
+          if(title.length<2)continue;
+        }
+        title=title.replace(/(?:오전|오후)?\s*\d{1,2}\s*시(?:\s*\d{1,2}\s*분)?/g,' ').replace(/\d{1,2}:\d{2}/g,' ').replace(/^(?:일정|할\s*일|to\s*do)\s*[:：-]?\s*/i,'').replace(/\s+/g,' ').trim();
         title=title.replace(/^(?:까지|마감은|마감|기한은|기한|에|까지는)\s*/,'').trim();
-        if(title.length<2)title=raw;
-        const category=this.inferCategory(raw),dueDate=parsed.date,existing=this.items.find(x=>x.dueDate===dueDate&&(x.title||'').trim().toLowerCase()===title.toLowerCase()&&(x.category||'일반')===category);
-        if(existing){duplicates.push(title);continue;}
-        const urgent=/긴급|급함|마감\s*임박|오늘까지/.test(raw);
-        const item={id:'todo-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,dueDate,category,notes:'문장 입력에서 자동으로 날짜와 분류를 찾았어요.',priority:urgent?'높음':'보통',done:false,createdAt:new Date().toISOString()};
-        this.items.push(item);this.syncCalendar(item);added.push(item);
+        if(title.length<2)continue;
+        const dueDate=parsed?.date||activeDate;
+        const category=this.inferCategory(raw),duplicate=!!this.items.find(x=>x.dueDate===dueDate&&(x.title||'').trim().toLowerCase()===title.toLowerCase()&&(x.category||'일반')===category);
+        drafts.push({title,dueDate,category,priority:/긴급|급함|마감\s*임박|오늘까지/.test(raw)?'높음':'보통',selected:!duplicate,duplicate,source:raw});
       }
-      if(added.length){this.persist();app.ui.renderCalendar();input.value='';}
+      this.drafts=drafts;
+      this.renderDrafts();
+      status.textContent=drafts.length?`${drafts.length}개 할 일로 나눴어요. 날짜·제목·분류·우선순위를 수정한 뒤 선택한 항목을 등록하세요.`:'할 일을 찾지 못했어요. 탭이나 두 칸 이상 공백으로 작업을 나누고 날짜 머리글을 넣어주세요.';
+    },
+    renderDrafts() {
+      const preview=document.getElementById('quickSchedulePreview');
+      if(!preview)return;
+      if(!this.drafts.length){preview.innerHTML='';return;}
+      const rows=this.drafts.map((d,i)=>`<article class="quick-task-draft" data-index="${i}">
+        <label class="quick-draft-check" aria-label="등록할 항목 선택"><input type="checkbox" class="quick-draft-include" ${d.selected?'checked':''}></label>
+        <div class="quick-draft-fields">
+          <label>할 일<input name="draftTitle" type="text" maxlength="120" value="${this.esc(d.title)}" aria-label="할 일 ${i+1}"></label>
+          <label>날짜<input name="draftDate" type="date" value="${this.esc(d.dueDate)}" aria-label="날짜 ${i+1}"></label>
+          <label>분류<select name="draftCategory" aria-label="분류 ${i+1}">${this.categories.map(c=>`<option value="${this.esc(c)}" ${c===d.category?'selected':''}>${this.esc(c)}</option>`).join('')}</select></label>
+          <label>우선순위<select name="draftPriority" aria-label="우선순위 ${i+1}"><option value="보통" ${d.priority==='보통'?'selected':''}>보통</option><option value="높음" ${d.priority==='높음'?'selected':''}>높음</option></select></label>
+        </div>
+      </article>`).join('');
+      preview.innerHTML=rows+`<div class="quick-schedule-preview-actions"><button type="button" class="btn-ghost" onclick="app.todos.analyzeInput()">다시 분석</button><button type="button" class="btn-primary" onclick="app.todos.addFromText()">선택한 할 일 등록</button></div>`;
+    },
+    addFromText() {
+      const preview=document.getElementById('quickSchedulePreview'),status=document.getElementById('quickScheduleStatus');
+      if(!preview||!status)return;
+      const rows=Array.from(preview.querySelectorAll('.quick-task-draft')),added=[],duplicates=[];
+      let incomplete=0,unselected=0;
+      rows.forEach(row=>{
+        if(!row.querySelector('.quick-draft-include')?.checked){unselected++;return;}
+        const title=String(row.querySelector('[name="draftTitle"]')?.value||'').trim(),dueDate=String(row.querySelector('[name="draftDate"]')?.value||''),category=String(row.querySelector('[name="draftCategory"]')?.value||'일반'),priority=String(row.querySelector('[name="draftPriority"]')?.value||'보통');
+        if(!title||!dueDate){incomplete++;return;}
+        const existing=this.items.find(x=>x.dueDate===dueDate&&(x.title||'').trim().toLowerCase()===title.toLowerCase()&&(x.category||'일반')===category);
+        if(existing){duplicates.push(title);return;}
+        const item={id:'todo-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,dueDate,category,notes:'문장 입력에서 날짜와 분류를 찾았어요.',priority,done:false,createdAt:new Date().toISOString()};
+        this.items.push(item);this.syncCalendar(item);added.push(item);
+      });
+      if(added.length){this.persist();app.ui.renderCalendar();this.render();document.getElementById('quickScheduleInput').value='';this.drafts=[];preview.innerHTML='';}
       const parts=[];
       if(added.length)parts.push(`달력에 ${added.length}개 등록했어요`);
       if(duplicates.length)parts.push(`중복 ${duplicates.length}개는 건너뛰었어요`);
-      if(unmatched.length)parts.push(`날짜를 찾지 못한 ${unmatched.length}개 문장: ${unmatched.slice(0,2).join(' · ')} — “내일”, “12월 5일”, “다음 주 월요일”처럼 날짜를 넣어주세요.`);
-      status.textContent=parts.join(' · ')||'등록할 일정이 없어요.';
-      if(added.length){this.render();app.ui.showToast(`📅 ${added.length}개 할 일을 달력에 등록했어요`);}
+      if(incomplete)parts.push(`${incomplete}개는 제목이나 날짜를 입력해야 등록돼요`);
+      if(unselected)parts.push(`${unselected}개는 선택하지 않아 건너뛰었어요`);
+      status.textContent=parts.join(' · ')||'등록할 항목을 선택해주세요.';
+      if(added.length)app.ui.showToast(`📅 ${added.length}개 할 일을 달력에 등록했어요`);
     },
     persist() {
       localStorage.setItem('appTodos', JSON.stringify(this.items));
@@ -2922,8 +2976,8 @@
       return chars.length>12?chars.slice(0,12).join('')+'…':chars.join('');
     },
     daysLeft(date) { if(!date)return null; const a=new Date();a.setHours(0,0,0,0);return Math.ceil((new Date(date+'T00:00:00')-a)/86400000); },
-    open() { this.render(); const modal=document.getElementById('todoModal');modal.classList.remove('hidden');modal.style.display='grid'; },
-    close() { const modal=document.getElementById('todoModal');if(modal){modal.classList.add('hidden');modal.style.display='none';} },
+    open() { this.editingId=null;this.render(); const modal=document.getElementById('todoModal');modal.classList.remove('hidden');modal.style.display='grid'; },
+    close() { const modal=document.getElementById('todoModal');if(modal){modal.classList.add('hidden');modal.style.display='none';}this.editingId=null; },
     render() {
       let modal=document.getElementById('todoModal');
       if(!modal){modal=document.createElement('div');modal.id='todoModal';modal.className='opportunity-modal hidden';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');document.body.appendChild(modal);}
@@ -2942,16 +2996,24 @@
           <div class="opportunity-actions wide"><button class="btn-primary" type="submit">할 일 추가</button><button type="button" class="btn-ghost" onclick="app.todos.close()">닫기</button></div>
         </form>
         <nav class="opportunity-actions todo-filters" aria-label="할 일 필터" style="flex-wrap:wrap;margin-top:12px">${['전체','미완료','오늘','완료'].map(f=>`<button type="button" class="${this.activeFilter===f?'btn-primary':'btn-ghost'}" onclick="app.todos.activeFilter='${f}';app.todos.render()">${f}</button>`).join('')}</nav>
-        <div class="opportunity-list todo-list">${list.length?list.map(x=>{const d=this.daysLeft(x.dueDate);return `<article class="opportunity-item todo-item ${x.done?'todo-done':''}"><label class="todo-check"><input type="checkbox" ${x.done?'checked':''} onchange="app.todos.toggle('${this.esc(x.id)}')"><span class="todo-checkmark">${x.done?'✓':''}</span></label><div class="todo-copy"><h3>${this.esc(x.title)}</h3><p><span class="opportunity-tag">${this.esc(x.category||'일반')}</span>${x.priority==='높음'?'<span class="opportunity-tag urgent">우선</span>':''}${d!==null&&d>=0&&d<=2&&!x.done?'<span class="opportunity-tag urgent">마감 임박</span>':''}</p><p>날짜: ${x.dueDate||'미정'} ${d!==null&&!x.done?(d===0?'· 오늘':d>0?'· '+d+'일 남음':'· 기한 지남'):''}</p>${x.notes?`<p>${this.esc(x.notes)}</p>`:''}</div><button type="button" class="btn-ghost" onclick="app.todos.remove('${this.esc(x.id)}')">삭제</button></article>`}).join(''):'<div class="opportunity-empty">표시할 할 일이 없어요.<br>위에서 새 할 일을 추가해 보세요.</div>'}</div>
+        <div class="opportunity-list todo-list">${list.length?list.map(x=>{const d=this.daysLeft(x.dueDate);return `<article class="opportunity-item todo-item ${x.done?'todo-done':''}"><label class="todo-check"><input type="checkbox" ${x.done?'checked':''} onchange="app.todos.toggle('${this.esc(x.id)}')"><span class="todo-checkmark">${x.done?'✓':''}</span></label><div class="todo-copy"><h3>${this.esc(x.title)}</h3><p><span class="opportunity-tag">${this.esc(x.category||'일반')}</span>${x.priority==='높음'?'<span class="opportunity-tag urgent">우선</span>':''}${d!==null&&d>=0&&d<=2&&!x.done?'<span class="opportunity-tag urgent">마감 임박</span>':''}</p><p>날짜: ${x.dueDate||'미정'} ${d!==null&&!x.done?(d===0?'· 오늘':d>0?'· '+d+'일 남음':'· 기한 지남'):''}</p>${x.notes?`<p>${this.esc(x.notes)}</p>`:''}</div><div class="todo-actions"><button type="button" class="btn-ghost" onclick="app.todos.edit('${this.esc(x.id)}')">수정</button><button type="button" class="btn-ghost" onclick="app.todos.remove('${this.esc(x.id)}')">삭제</button></div></article>`}).join(''):'<div class="opportunity-empty">표시할 할 일이 없어요.<br>위에서 새 할 일을 추가해 보세요.</div>'}</div>
       </section>`;
       modal.onclick=e=>{if(e.target===modal)this.close();};
     },
     save(event) {
       event.preventDefault();const f=new FormData(event.currentTarget);const title=String(f.get('title')||'').trim();const dueDate=String(f.get('dueDate')||this.todayKey());const category=String(f.get('category')||'일반');const now=new Date().toISOString();
-      const existing=this.items.find(x=>x.title.trim().toLowerCase()===title.toLowerCase()&&(x.category||'일반')===category);
+      const editing=this.editingId&&this.items.find(x=>x.id===this.editingId);
+      const existing=editing||this.items.find(x=>x.title.trim().toLowerCase()===title.toLowerCase()&&(x.category||'일반')===category);
       const item={...(existing||{}),id:existing?.id||'todo-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,dueDate,category,priority:String(f.get('priority')||'보통'),notes:String(f.get('notes')||'').trim(),done:existing?.done||false,createdAt:existing?.createdAt||now,updatedAt:existing?now:null};
       if(existing)this.items[this.items.indexOf(existing)]=item;else this.items.push(item);
-      this.persist();this.syncCalendar(item);this.render();app.ui.renderCalendar();app.ui.showToast(existing?'할 일을 업데이트했어요.':'할 일을 추가했어요.');
+      this.editingId=null;this.persist();this.syncCalendar(item);this.render();app.ui.renderCalendar();app.ui.showToast(editing?'할 일을 수정했어요.':existing?'할 일을 업데이트했어요.':'할 일을 추가했어요.');
+    },
+    edit(id) {
+      const item=this.items.find(x=>x.id===id);if(!item)return;
+      this.editingId=id;this.render();
+      const form=document.querySelector('#todoModal .todo-form');if(!form)return;
+      form.elements.title.value=item.title||'';form.elements.category.value=item.category||'일반';form.elements.dueDate.value=item.dueDate||'';form.elements.priority.value=item.priority||'보통';form.elements.notes.value=item.notes||'';
+      form.scrollIntoView({behavior:'smooth',block:'center'});form.elements.title.focus();
     },
     syncCalendar(item) {
       const matches=app.events.filter(e=>e.todoId===item.id);
