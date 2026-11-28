@@ -678,6 +678,16 @@
   body.time-morning #weatherSceneOverlay { background:linear-gradient(125deg,rgba(255,206,151,.30),rgba(255,241,211,.16),rgba(176,194,255,.10)); }
   body.time-midday #weatherSceneOverlay { background:linear-gradient(125deg,rgba(190,226,255,.20),rgba(255,255,255,.08),rgba(169,233,213,.12)); }
   body.time-evening #weatherSceneOverlay { background:linear-gradient(125deg,rgba(255,140,102,.30),rgba(221,126,163,.18),rgba(54,58,133,.22)); }
+  .quick-schedule-card { margin:0 0 18px; padding:18px 20px; border:1px solid color-mix(in srgb,var(--accent) 20%,var(--line)); background:linear-gradient(135deg,var(--paper-raised),var(--accent-bg)); }
+  .quick-schedule-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .quick-schedule-head h2 { margin:0; font-size:18px; color:var(--accent-deep); }
+  .quick-schedule-head p { margin:3px 0 0; color:var(--ink-soft); font-size:12px; }
+  #quickScheduleInput { width:100%; min-height:88px; resize:vertical; padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:var(--paper-raised); color:var(--ink); font:inherit; line-height:1.6; }
+  #quickScheduleInput:focus { outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent); border-color:var(--accent); }
+  .quick-schedule-footer { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:10px; }
+  .quick-schedule-hint,#quickScheduleStatus { color:var(--ink-soft); font-size:11px; }
+  #quickScheduleStatus { min-height:18px; margin-top:7px; }
+  @media(max-width:600px){.quick-schedule-card{padding:14px}.quick-schedule-head h2{font-size:16px}.quick-schedule-footer .btn-primary{width:100%}}
   .todo-form { margin-bottom:12px; }
   .todo-item { grid-template-columns:32px 1fr auto; align-items:center; }
   .todo-check { width:27px; height:27px; position:relative; cursor:pointer; }
@@ -808,6 +818,19 @@
         <div id="goalDash"></div>
       </div>
     </div>
+
+    <section class="box-panel quick-schedule-card" aria-labelledby="quickScheduleTitle">
+      <div class="quick-schedule-head">
+        <div><h2 id="quickScheduleTitle">✨ 문장으로 일정 추가</h2><p>적은 내용에서 날짜와 할 일을 찾아 To Do와 달력에 등록해요.</p></div>
+      </div>
+      <label for="quickScheduleInput" style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">할 일과 날짜를 자유롭게 적어주세요</label>
+      <textarea id="quickScheduleInput" rows="3" placeholder="예: 내일 오전 9시 이력서 제출&#10;12월 5일까지 해양경찰 체력시험 준비&#10;다음 주 월요일 면접 보기" onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();app.todos.addFromText()}"></textarea>
+      <div class="quick-schedule-footer">
+        <span class="quick-schedule-hint">날짜가 포함된 문장마다 할 일 하나씩 만들어요 · Ctrl+Enter로 등록</span>
+        <button type="button" class="btn-primary" onclick="app.todos.addFromText()">내용 분석해 달력에 등록</button>
+      </div>
+      <div id="quickScheduleStatus" role="status" aria-live="polite"></div>
+    </section>
 
     <div class="calendar-grid">
       <div class="day-name sun">일</div><div class="day-name">월</div><div class="day-name">화</div>
@@ -2817,6 +2840,55 @@
       } catch { return []; }
     })(),
     esc(value) { const d=document.createElement('div'); d.textContent=String(value ?? ''); return d.innerHTML; },
+    parseScheduleDate(text) {
+      const base=new Date();base.setHours(0,0,0,0);
+      const make=(year,month,day,token)=>{const d=new Date(year,month-1,day);if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;return {date:`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`,token};};
+      let m=text.match(/(20\d{2})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})\s*일?/);
+      if(m){const out=make(+m[1],+m[2],+m[3],m[0]);if(out)return out;}
+      m=text.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/);
+      if(m){let y=base.getFullYear(),out=make(y,+m[1],+m[2],m[0]);if(out&&new Date(out.date+'T00:00:00')<base){y++;out=make(y,+m[1],+m[2],m[0]);}if(out)return out;}
+      m=text.match(/(?<!\d)(\d{1,2})[./](\d{1,2})(?!\d)/);
+      if(m){let y=base.getFullYear(),out=make(y,+m[1],+m[2],m[0]);if(out&&new Date(out.date+'T00:00:00')<base){y++;out=make(y,+m[1],+m[2],m[0]);}if(out)return out;}
+      m=text.match(/오늘|금일|내일|모레|글피/);
+      if(m){const offsets={오늘:0,금일:0,내일:1,모레:2,글피:3},d=new Date(base);d.setDate(d.getDate()+offsets[m[0]]);return {date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,token:m[0]};}
+      m=text.match(/(?:(다음|이번)\s*주\s*)?(일|월|화|수|목|금|토)(?:요일)/);
+      if(m){const target={일:0,월:1,화:2,수:3,목:4,금:5,토:6}[m[2]],current=base.getDay();let offset=(target-current+7)%7;if(m[1]==='다음')offset=offset?offset+7:7;const d=new Date(base);d.setDate(d.getDate()+offset);return {date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,token:m[0]};}
+      return null;
+    },
+    inferCategory(text) {
+      if(/해양경찰|해경/.test(text))return '해양경찰';
+      if(/부동산|매물|임대차|전세|월세/.test(text))return '부동산';
+      if(/채용|면접|입사|이력서|자소서|공고/.test(text))return '채용';
+      if(/교육|강의|수업|훈련|공부|시험/.test(text))return '교육';
+      if(/지원|신청|접수|제출/.test(text))return '지원';
+      return '일반';
+    },
+    addFromText() {
+      const input=document.getElementById('quickScheduleInput'),status=document.getElementById('quickScheduleStatus');
+      if(!input||!status)return;
+      const lines=input.value.split(/\n|[;；]/).map(x=>x.trim()).filter(Boolean);
+      if(!lines.length){status.textContent='할 일과 날짜를 적어주세요. 예: 내일 오전 9시 이력서 제출';input.focus();return;}
+      const added=[],duplicates=[],unmatched=[];
+      for(const raw of lines){
+        const parsed=this.parseScheduleDate(raw);
+        if(!parsed){unmatched.push(raw);continue;}
+        let title=raw.replace(parsed.token,' ').replace(/(?:오전|오후)?\s*\d{1,2}\s*시(?:\s*\d{1,2}\s*분)?/g,' ').replace(/\d{1,2}:\d{2}/g,' ').replace(/^(?:일정|할\s*일|to\s*do)\s*[:：-]?\s*/i,'').replace(/\s+/g,' ').trim();
+        title=title.replace(/^(?:까지|마감은|마감|기한은|기한|에|까지는)\s*/,'').trim();
+        if(title.length<2)title=raw;
+        const category=this.inferCategory(raw),dueDate=parsed.date,existing=this.items.find(x=>x.dueDate===dueDate&&(x.title||'').trim().toLowerCase()===title.toLowerCase()&&(x.category||'일반')===category);
+        if(existing){duplicates.push(title);continue;}
+        const urgent=/긴급|급함|마감\s*임박|오늘까지/.test(raw);
+        const item={id:'todo-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,dueDate,category,notes:'문장 입력에서 자동으로 날짜와 분류를 찾았어요.',priority:urgent?'높음':'보통',done:false,createdAt:new Date().toISOString()};
+        this.items.push(item);this.syncCalendar(item);added.push(item);
+      }
+      if(added.length){this.persist();app.ui.renderCalendar();input.value='';}
+      const parts=[];
+      if(added.length)parts.push(`달력에 ${added.length}개 등록했어요`);
+      if(duplicates.length)parts.push(`중복 ${duplicates.length}개는 건너뛰었어요`);
+      if(unmatched.length)parts.push(`날짜를 찾지 못한 ${unmatched.length}개 문장: ${unmatched.slice(0,2).join(' · ')} — “내일”, “12월 5일”, “다음 주 월요일”처럼 날짜를 넣어주세요.`);
+      status.textContent=parts.join(' · ')||'등록할 일정이 없어요.';
+      if(added.length){this.render();app.ui.showToast(`📅 ${added.length}개 할 일을 달력에 등록했어요`);}
+    },
     persist() {
       localStorage.setItem('appTodos', JSON.stringify(this.items));
       if (app.cloud && app.cloud.queuePush) app.cloud.queuePush();
